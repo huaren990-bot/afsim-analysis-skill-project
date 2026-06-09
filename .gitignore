@@ -1,0 +1,7 @@
+# Ignore all dot-files and dot-directories
+.*
+# But still track .gitignore itself
+!.gitignore
+
+# Ignore source_root
+source_root/
