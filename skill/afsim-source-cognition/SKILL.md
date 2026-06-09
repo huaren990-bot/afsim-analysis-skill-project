@@ -20,8 +20,9 @@ metadata:
 - 识别仿真初始化、场景加载、对象创建、模型更新、事件处理、输出和清理流程。
 - 梳理状态对象、配置项、脚本或场景文件如何影响运行时行为。
 - 生成 `workspace/source-index/` 索引和 `docs/architecture/` 架构报告。
+- 发现算法核心、框架封装、配置依赖和可迁移代码位置。
 
-如果用户请求算法公式、迁移代码或需求缺口分析，本 skill 只负责提供源码认知和候选位置；后续交给对应专项 skill。
+**重要**：每次被调用时，必须先读取本 skill 的"已完成的基线记录"一节，确认当前分析范围是否已被覆盖。如果已有基线覆盖了目标范围，直接复用已有索引作为起点进行增量更新，**不要重新扫描已完整索引的源码目录**。如果分析边界超出已有基线，在基线记录中追加新条目。
 
 ## 输入要求
 
@@ -39,7 +40,7 @@ metadata:
 
 ### 1. 确认边界
 
-记录本轮分析的源码根目录、纳入范围、排除范围、分析深度和使用过的历史材料。所有正式产物都要能回到这个边界说明。
+记录本轮分析的源码根目录、纳入范围、排除范围、分析深度和使用过的历史材料。所有正式产物都要能回到这个边界说明。并在分析前先读取已存在的输出产物，确认是否需要覆盖或增量更新。不要在不清楚范围的情况下盲目扫描整个源码树；也不要把用户无关目录当作事实来源。
 
 ### 2. 发现文件
 
@@ -202,6 +203,57 @@ metadata:
 - 不把文件名相似、路径相近或命名相近当作功能等价证据。
 - 未阅读、无法解析或证据不足的内容标记为 `unknown` 或 `inferred`。
 - 输出只记录可审查的证据、假设、决策、结论和风险，不记录隐藏推理过程。
+
+## 已完成的基线记录
+
+每次完成一轮分析后，将分析边界、产出和统计信息追加到本节。**后续使用本 skill 时必须先读取本节，确认已有分析资产，避免重复扫描已索引的源码。**
+
+---
+
+### 基线 1：core/ 全覆盖 module 深度分析
+
+| 字段 | 值 |
+|------|-----|
+| 完成日期 | 2026-06-09 |
+| source_root | `source_root/afsim-2_9/swdev/src/core/` |
+| analysis_scope | core/ 全部 14 个模块（wsf / wsf_mil / wsf_space / wsf_nx / wsf_parser / wsf_mil_parser / wsf_grammar_check / wsf_util / wsf_ripr / wsf_cyber / wsf_l16 / wsf_mtt / wsf_weapon_server / sensor_plot_lib） |
+| analysis_depth | module（含符号级扫描 + 7 个核心头文件源码验证） |
+| exclude_paths | `.git`, `.` 开头文件, `build/`, `3rd_party/`, `.tar.gz`, `*.osgb`, `*.dll`, `*.so`, 测试目录未深度展开 |
+| baseline_docs | `docs/baseline/WsfSimulation_Design_Document.md`, `docs/baseline/WsfSimulation_Core_Design_Document.md` |
+
+#### 产出文件
+
+| 文件 | 行数 | 内容 |
+|------|------|------|
+| `workspace/source-index/file-index.jsonl` | 4,997 | 全文件索引，2,413 文件含 includes 数组 |
+| `workspace/source-index/symbol-index.jsonl` | 3,255 | 去重符号索引（class/struct/enum/typedef/using），含行号和继承 |
+| `workspace/source-index/function-index.jsonl` | 4,099 | 函数/方法索引，含返回类型、参数、生命周期角色、算法提示 |
+| `workspace/source-index/dependency-index.jsonl` | 1,113 | 依赖索引：inheritance(1014) + composition(50) + call(16) + build(14) + include(10) + registration(9) |
+| `docs/architecture/afsim-architecture.md` | — | 完整架构报告：模块总览、生命周期、数据流、配置流、扩展点、未知项 |
+| `docs/architecture/module-dependency.md` | — | 模块依赖说明：构建依赖图、架构继承/组合关系、子系统间依赖 |
+
+#### 已确认的关键资产
+
+- **14 个模块**的文件统计、核心职责、构建依赖链
+- **7 阶段仿真生命周期**：entry → scenario_load → object_create → simulation_loop → model_update → output → shutdown，每个阶段的入口函数、关键类、配置来源和主要状态对象
+- **13 个扩展点机制**：ApplicationExtension / SimulationExtension / ScenarioExtension / ComponentFactory / PluginManager / CorrelationStrategy / FusionStrategy / TrackExtrapolationStrategy / TrackReportingStrategy / Observer 系统 / EventPipe / XIO / ScriptSystem
+- **核心组合关系**已从 WsfSimulation.hpp (33 个成员字段)、WsfPlatform.hpp (11 个成员字段)、WsfComponentFactory.hpp、WsfExtension.hpp、WsfPluginManager.hpp 源码验证
+- **核心调用链**：Initialize → CreateClock → AddInputPlatforms → Start → AdvanceTime → DispatchEvents → Complete
+
+#### 仍为 unknown 的项
+
+1. RIPR 全称 — CMake/源码中未找到展开名
+2. wsf_mtt 与 WsfTrackManager 的调用链交互细节 — 需读 .cpp 实现文件
+3. wsf_nx ALARM 电磁模型与 wsf EM 模型的关系 — 函数级分析未展开
+4. 约 75.6% 函数的 lifecycle_role 仍为 unknown — 仅对核心控制类和关键接口方法做了手动分类，大量内部实现函数未被覆盖，进一步精细化需要 AST 级分析
+
+#### 复用指引
+
+- 再次分析 core/ 时，直接读取已有索引文件作为起点，按需增量更新
+- 如需扩展到 `wsf_plugins/`、`tools/`、应用层（mission/warlock/mystic 等），新建基线记录
+- 如需 symbol 深度（逐函数 full signature + AST），在 module 索引基础上执行符号级增强
+
+---
 
 ## 交付摘要
 
