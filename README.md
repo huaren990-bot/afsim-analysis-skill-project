@@ -1,18 +1,53 @@
-# AFSIM Analysis Skill Suite
+# AFSIM Analysis Skill Project
 
-本项目用于构建一套面向 AFSIM 的多 skill 协作体系。目标是让未来的大模型能够通过不同 skill 快速完成对 AFSIM 的认知学习、源码索引、架构理解、算法提取、需求映射和功能迁移，并最终生成可以快速用在自有项目中的算法说明、接口规范、代码原型和测试计划。
+本项目用于构建一套面向 **AFSIM 的多 agent 协作体系**。
 
-项目以用户提供的 `afsim实现.md` 为基准，将其提出的“知识提取 -> 需求映射 -> 代码迁移”路线落成可执行、可扩展、可追溯的目录结构。
+目标是能通过该项目实现快速完成对 AFSIM 的**认知学习**、**源码索引**、**架构理解**、**算法提取**、**需求映射**和**功能迁移**，并最终生成可以快速用在自有项目中的算法说明、接口规范、代码原型和测试计划。
 
-## 建设目标
+将**知识提取 -> 需求映射 -> 代码迁移**路线落成可执行、可扩展、可追溯的目录结构。
 
-1. 让大模型快速学习 AFSIM：从目录、模块、类、函数、调用链、数据流和仿真生命周期建立整体认知。
-2. 让大模型快速定位功能：通过源码索引和架构报告找到 AFSIM 中与目标需求相关的模块和实现。
-3. 让大模型快速提取算法：将源码中的数学公式、数值计算、模型逻辑和控制流程转化为算法卡片、伪代码和接口说明。
-4. 让大模型快速服务自有项目：把用户需求或自有项目源码作为基准，输出缺口分析、迁移方案、适配接口和验证计划。
-5. 让分析可持续积累：每次分析都沉淀为知识库，后续任务复用已有索引、报告和决策记录。
+以下方案从**架构设计、Agent 分工、数据流、文档与规范**四个层面给出可落地的路线图。
 
-## 项目结构
+---
+
+## 一、总体思路：以“知识提取→需求映射→代码迁移”为主干
+
+整个项目可以分为 7 个阶段，每个阶段都有对应的 Agent 和输出文档：
+
+1. **源码索引与静态分析准备**
+
+2. **架构与功能提取（理解 AFSIM）**：从目录、模块、类、函数、调用链、数据流和仿真生命周期建立整体认知；通过源码索引和架构报告找到 AFSIM 中与目标需求相关的模块和实现。
+
+3. **数学公式与算法解析**：将源码中的数学公式、数值计算、模型逻辑和控制流程转化为算法卡片、伪代码和接口说明。
+
+4. **需求分析与功能缺口推断**：把用户需求或自有项目源码作为基准，输出缺口分析、迁移方案、适配接口和验证计划。
+
+5. **AFSIM 源码定位与适配方案生成**
+
+6. **代码迁移与集成到自有内核**
+
+7. **验证、文档生成与闭环记录**：每次分析都沉淀为知识库，后续任务复用已有索引、报告和决策记录。
+
+---
+
+## 二、Agent 体系设计（1个总体Agent + 5 个专职 Agent）
+
+基于大模型（如 GPT-4/Claude 3.5 级别）搭建 Agent，每个 Agent 有明确的角色、输入、输出和可调用的工具。
+
+| Agent 名称                                | 作用                                                   | 主要产物                                 |
+| --------------------------------------- | ---------------------------------------------------- | ------------------------------------ |
+| `afsim-analyst`                         | 总控入口，判断任务类型并协调其他 skill                               | 阶段计划、路由决策、综合报告                       |
+| `afsim-source-cognition`(源码分析 Agent)    | 快速学习 AFSIM 源码，总结架构，提取函数、类、数据流                        | 源码索引、架构报告、模块依赖                       |
+| `afsim-algorithm-extractor`(数学解析 Agent) | 识别并解释源码中的算法、公式、变量映射，转化为标准数学表示和伪代码                    | 算法卡片、伪代码、接口规格                        |
+| `afsim-requirement-mapper`(需求分析 Agent)  | 阅读规范需求文档，推断自有仿真器缺少的功能，生成待补充功能列表                      | 需求缺口报告、功能映射矩阵                        |
+| `afsim-migration-builder`(代码迁移 Agent)   | 在 AFSIM 源码中定位所需功能，进行代码切片、简化、适配，生成迁移方案、适配接口、代码原型和测试计划 | 迁移记录、适配方案、测试计划                       |
+| `afsim-knowledge-curator`(知识记录 Agent)   | 整理知识库、追溯矩阵、决策记录和后续任务，全程记录每一步的输入、思考链、决策、输出，生成阶段性文档    | 知识地图、追溯矩阵、过程记录、文档模板、Markdown 生成、版本快照 |
+
+---
+
+## 三、分阶段实施步骤与规范
+
+### 项目结构
 
 ```text
 afsim-analysis-skill-project/
@@ -38,7 +73,7 @@ afsim-analysis-skill-project/
 │   └── afsim-knowledge-curator/
 │       └── SKILL.md
 ├── docs/
-│   ├── architecture/
+│   ├── architecture/   # 架构总结、API说明
 │   ├── algorithms/
 │   ├── requirements/
 │   ├── migration/
@@ -49,7 +84,7 @@ afsim-analysis-skill-project/
 │       ├── migration-record.md
 │       └── requirement-gap.md
 ├── workspace/
-│   ├── source-index/
+│   ├── source-index/    # 索引说明
 │   ├── analysis-cache/
 │   ├── extracted-algorithms/
 │   └── own-kernel-adapters/
@@ -64,29 +99,37 @@ afsim-analysis-skill-project/
 └── tests/
 ```
 
-## Skill 套件分工
+### 阶段 1：AFSIM 源码结构化分析
 
-| Skill | 作用 | 主要产物 |
-| --- | --- | --- |
-| `afsim-analyst` | 总控入口，判断任务类型并协调其他 skill | 阶段计划、路由决策、综合报告 |
-| `afsim-source-cognition` | 快速学习 AFSIM 源码结构、模块职责、调用链和数据流 | 源码索引、架构报告、模块依赖 |
-| `afsim-algorithm-extractor` | 提取算法、公式、变量映射、伪代码和可移植接口 | 算法卡片、伪代码、接口规格 |
-| `afsim-requirement-mapper` | 将自有项目需求与 AFSIM 能力对齐 | 需求缺口报告、功能映射矩阵 |
-| `afsim-migration-builder` | 生成迁移方案、适配接口、代码原型和测试计划 | 迁移记录、适配方案、测试计划 |
-| `afsim-knowledge-curator` | 整理知识库、追溯矩阵、决策记录和后续任务 | 知识地图、追溯矩阵、过程记录 |
+**Agent：`afsim-source-cognition`(源码分析 Agent)**
 
-## 端到端工作流
+**输入：** AFSIM 源码目录
 
-### 1. AFSIM 认知学习
+**过程：**
 
-使用 `afsim-source-cognition` 读取源码，建立文件级、类级、函数级和依赖索引。输出应保存到：
+1. **代码切分**：用 AST 工具将源码切分为函数级、类级片段，保留文件路径和行号。
 
-- `workspace/source-index/file-index.jsonl`
-- `workspace/source-index/symbol-index.jsonl`
-- `workspace/source-index/function-index.jsonl`
-- `workspace/source-index/dependency-index.jsonl`
-- `docs/architecture/afsim-architecture.md`
-- `docs/architecture/module-dependency.md`
+2. **摘要生成**：让大模型为每个代码单元生成功能摘要、输入输出说明、依赖关系。
+
+3. **架构归纳**：由大模型阅读主要模块的摘要，绘制组件图、数据流图（可用 Mermaid）。
+
+4. **人工校验**：开发人员校对架构图与关键模块理解，修正后存入 `/docs/architecture/`。
+
+**输出：**
+
+- ```
+  workspace/source-index/
+  ├── file-index.jsonl        # 文件级索引
+  ├── symbol-index.jsonl      # 符号索引（类、枚举、全局变量等）
+  ├── function-index.jsonl    # 函数/方法索引
+  └── dependency-index.jsonl  # 模块依赖关系索引
+  
+  docs/architecture/
+  ├── afsim-architecture.md   # 总体架构文档（含 Mermaid 图）
+  └── module-dependency.md    # 模块依赖关系
+  ```
+
+**记录要求：** 文档 Agent 记录每个总结所依据的代码片段、模型思考过程（通过 Chain-of-Thought 提示生成）。
 
 ### 2. 算法与功能提取
 
