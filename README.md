@@ -34,69 +34,161 @@
 
 基于大模型（如 GPT-4/Claude 3.5 级别）搭建 Agent，每个 Agent 有明确的角色、输入、输出和可调用的工具。
 
-| Agent 名称                                | 作用                                                   | 主要产物                                 |
-| --------------------------------------- | ---------------------------------------------------- | ------------------------------------ |
-| `afsim-analyst`                         | 总控入口，判断任务类型并协调其他 skill                               | 阶段计划、路由决策、综合报告                       |
-| `afsim-source-cognition`(源码分析 Agent)    | 快速学习 AFSIM 源码，总结架构，提取函数、类、数据流                        | 源码索引、架构报告、模块依赖                       |
-| `afsim-algorithm-extractor`(数学解析 Agent) | 识别并解释源码中的算法、公式、变量映射，转化为标准数学表示和伪代码                    | 算法卡片、伪代码、接口规格                        |
-| `afsim-requirement-mapper`(需求分析 Agent)  | 阅读规范需求文档，推断自有仿真器缺少的功能，生成待补充功能列表                      | 需求缺口报告、功能映射矩阵                        |
-| `afsim-migration-builder`(代码迁移 Agent)   | 在 AFSIM 源码中定位所需功能，进行代码切片、简化、适配，生成迁移方案、适配接口、代码原型和测试计划 | 迁移记录、适配方案、测试计划                       |
-| `afsim-knowledge-curator`(知识记录 Agent)   | 整理知识库、追溯矩阵、决策记录和后续任务，全程记录每一步的输入、思考链、决策、输出，生成阶段性文档    | 知识地图、追溯矩阵、过程记录、文档模板、Markdown 生成、版本快照 |
+| Agent 名称                                | 作用                                                   | 主要产物                                 | 状态 |
+| --------------------------------------- | ---------------------------------------------------- | ------------------------------------ | --- |
+| `afsim-analyst`                         | 总控入口，判断任务类型并协调其他 skill                               | 阶段计划、路由决策、综合报告                       | ✅ SKILL.md + references 就绪 |
+| `afsim-source-cognition`(源码分析 Agent)    | 快速学习 AFSIM 源码，总结架构，提取函数、类、数据流                        | 源码索引、架构报告、模块依赖                       | ✅ 已执行首轮（P0 core/ 全 14 模块） |
+| `afsim-algorithm-extractor`(数学解析 Agent) | 识别并解释源码中的算法、公式、变量映射，转化为标准数学表示和伪代码                    | 算法卡片、伪代码、接口规格                        | ⏳ SKILL.md 就绪，待执行 |
+| `afsim-requirement-mapper`(需求分析 Agent)  | 阅读规范需求文档，推断自有仿真器缺少的功能，生成待补充功能列表                      | 需求缺口报告、功能映射矩阵                        | ⏳ SKILL.md 就绪，待执行 |
+| `afsim-migration-builder`(代码迁移 Agent)   | 在 AFSIM 源码中定位所需功能，进行代码切片、简化、适配，生成迁移方案、适配接口、代码原型和测试计划 | 迁移记录、适配方案、测试计划                       | ⏳ SKILL.md 就绪，待执行 |
+| `afsim-knowledge-curator`(知识记录 Agent)   | 整理知识库、追溯矩阵、决策记录和后续任务，全程记录每一步的输入、思考链、决策、输出，生成阶段性文档    | 知识地图、追溯矩阵、过程记录、文档模板、Markdown 生成、版本快照 | ⏳ SKILL.md 就绪，待执行 |
 
 ---
 
 ## 三、分阶段实施步骤与规范
 
+### 当前进展
+
+首轮分析已完成 **阶段 1（AFSIM 源码结构化分析）** 的 P0 核心部分：
+
+| 维度 | 产出 |
+|------|------|
+| **分析范围** | `source_root/afsim-2_9/swdev/src/core/` 全部 14 个模块，4,997 个源文件 |
+| **文件索引** | `workspace/source-index/file-index.jsonl` — 4,997 行，含 2,413 文件的 includes |
+| **符号索引** | `workspace/source-index/symbol-index.jsonl` — 3,255 个去重符号（class/struct/enum/typedef/using） |
+| **函数索引** | `workspace/source-index/function-index.jsonl` — 4,099 个函数/方法（24.4% 已分类生命周期角色） |
+| **依赖索引** | `workspace/source-index/dependency-index.jsonl` — 1,113 条依赖（inheritance/composition/call/build/include/registration） |
+| **架构报告** | `docs/architecture/afsim-architecture.md` — 完整 8 章架构报告 |
+| **依赖说明** | `docs/architecture/module-dependency.md` — 构建依赖图 + 继承/组合关系 |
+| **目录树** | `docs/architecture/directroy_structure.md` — AFSIM 2.9.0 完整目录结构 |
+| **功能体系** | `docs/architecture/x-level-capabilities.md` — 四层功能分解 |
+
+后续待执行：P1-P4 深度展开、阶段 2（算法提取）、阶段 3（需求映射）、阶段 4（迁移生成）、阶段 5（知识沉淀）。
+
 ### 项目结构
 
 ```text
 afsim-analysis-skill-project/
-├── README.md
-├── skill/
-│   ├── afsim-analyst/
-│   │   ├── SKILL.md
-│   │   ├── references/
-│   │   │   ├── baseline-workflow.md
-│   │   │   ├── output-contracts.md
-│   │   │   ├── skill-routing.md
-│   │   │   └── traceability-rules.md
-│   │   ├── scripts/
-│   │   └── assets/
-│   ├── afsim-source-cognition/
-│   │   └── SKILL.md
-│   ├── afsim-algorithm-extractor/
-│   │   └── SKILL.md
-│   ├── afsim-requirement-mapper/
-│   │   └── SKILL.md
-│   ├── afsim-migration-builder/
-│   │   └── SKILL.md
-│   └── afsim-knowledge-curator/
-│       └── SKILL.md
-├── docs/
-│   ├── architecture/   # 架构总结、API说明
-│   ├── algorithms/
-│   ├── requirements/
-│   ├── migration/
-│   ├── records/
-│   └── templates/
-│       ├── architecture-report.md
-│       ├── algorithm-card.md
-│       ├── migration-record.md
-│       └── requirement-gap.md
-├── workspace/
-│   ├── source-index/    # 索引说明
-│   ├── analysis-cache/
-│   ├── extracted-algorithms/
-│   └── own-kernel-adapters/
-├── tools/
-│   ├── prompts/
-│   ├── indexers/
-│   ├── validators/
-│   └── orchestrators/
-├── examples/
-│   ├── requests/
-│   └── outputs/
-└── tests/
+├── README.md                                   # 项目总览（本文件）
+├── readme2.md                                  # 早期方案草案（多 Agent 协同开发流水线）
+├── deep-research-report.md                     # 深度研究报告：AFSIM 功能迁移方案
+├── .gitignore                                  # Git 忽略规则（排除 .* 文件和 source_root/）
+├── .obsidian/                                  # Obsidian 笔记工具配置（个人工作区，不纳入版本管理）
+│
+├── skill/                                      # ═══════════ 可被大模型调用的 Skill 系统 ═══════════
+│   ├── afsim-analyst/                          # 【总控 Agent】判断任务类型并协调其他 skill
+│   │   ├── SKILL.md                            #   总控入口：任务路由、标准工作流（6 步）、输出规则、证据规则、迁移原则
+│   │   ├── references/                         #   参考规范（定义执行约束）
+│   │   │   ├── baseline-workflow.md            #     阶段模型与 Agent 职责（Phase 0-6）
+│   │   │   ├── output-contracts.md             #     输出字段规范（架构报告、算法卡片、需求缺口、迁移记录）
+│   │   │   ├── skill-routing.md                #     Skill 选择规则（单任务路由 + 组合任务路由 + 停止条件）
+│   │   │   └── traceability-rules.md           #     证据等级（5 级）、追溯链和记录规则
+│   │   ├── scripts/                            #   编排脚本（预留）
+│   │   │   └── README.md
+│   │   └── assets/                             #   静态资源（预留）
+│   │       └── README.md
+│   │
+│   ├── afsim-source-cognition/                 # 【源码认知 Skill】快速学习 AFSIM 源码结构与架构
+│   │   └── SKILL.md                            #   7 步工作流：确认边界→发现文件→符号索引→依赖索引→生命周期→数据流→生成报告
+│   │                                           #   输出规范：4 个 JSONL 索引文件(file/symbol/function/dependency) + 架构文档
+│   │                                           #   质量门槛 + 基线记录（已完成 core/ 全 14 模块深度分析）
+│   │
+│   ├── afsim-algorithm-extractor/              # 【算法提取 Skill】从源码中识别并抽取算法与数学公式
+│   │   └── SKILL.md                            #   7 步执行：定位→区分→抽取→转换→映射→评估→验证
+│   │                                           #   输出：算法卡片 + 伪代码 + 接口规格 + 原型代码
+│   │
+│   ├── afsim-requirement-mapper/               # 【需求映射 Skill】自有需求与 AFSIM 能力的缺口分析
+│   │   └── SKILL.md                            #   6 步执行：抽取需求→识别能力→拆分原子能力→查找候选→判断状态→推荐下一步
+│   │                                           #   四类判断：已满足/部分满足/缺失/未知
+│   │
+│   ├── afsim-migration-builder/                # 【迁移生成 Skill】生成可落地的迁移方案和代码原型
+│   │   └── SKILL.md                            #   6 步执行：确认接入点→评估耦合度→选择迁移方式→接口适配→迁移记录→按需生成代码
+│   │                                           #   三种迁移方式：直接适配 / 局部重写 / clean-room 重实现
+│   │
+│   └── afsim-knowledge-curator/                # 【知识沉淀 Skill】整理分析结果为可复用知识库
+│       └── SKILL.md                            #   5 步执行：检查已有→合并重复→更新追溯矩阵→记录决策→标记风险
+│                                               #   输出：过程记录 + 追溯矩阵 + 迁移汇总 + 知识地图
+│
+├── docs/                                       # ═══════════ 人工可读、可审查的分析产物 ═══════════
+│   ├── architecture/                           # 架构分析结果
+│   │   ├── .gitkeep
+│   │   ├── afsim-architecture.md               #   ✅ AFSIM 总体架构报告（2026-06-09）：模块总览、生命周期、数据流、配置流、扩展点
+│   │   ├── module-dependency.md                #   ✅ 模块依赖说明（2026-06-09）：构建依赖图 + 继承/组合/调用关系 + 子系统依赖
+│   │   ├── directroy_structure.md              #   ✅ AFSIM 2.9.0 源码目录树（afsim_2.9.0_src_linux/ 完整结构说明）
+│   │   └── x-level-capabilities.md             #   🔴 四层功能体系说明（系统级/模块级/类级/方法级）草稿
+│   │
+│   ├── baseline/                               # AFSIM 官方基线文档（作为分析参考输入）
+│   │   ├── WsfSimulation_Design_Document.md    #   WSF 子系统完整软件设计文档（111KB，12 章）
+│   │   └── WsfSimulation_Core_Design_Document.md # WSF 仿真核心控制类设计文档（66KB）
+│   │
+│   ├── algorithms/                             # 算法提取结果（当前为空，待后续分析产出）
+│   │   └── .gitkeep
+│   │
+│   ├── requirements/                           # 需求映射结果（当前为空，待后续分析产出）
+│   │   └── .gitkeep
+│   │
+│   ├── migration/                              # 迁移方案（当前为空，待后续分析产出）
+│   │   └── .gitkeep
+│   │
+│   ├── records/                                # 过程记录、决策记录和进度跟踪
+│   │   ├── .gitkeep
+│   │   ├── 01-scope-boundary.md                #   ✅ 分析边界确认（P0-P4 分级表，~17,190 文件）
+│   │   ├── 01-scope-decision.md                #   ✅ 范围决策记录（代码库规模、模块数）
+│   │   ├── 02-module-inventory.md              #   ✅ 模块清单（P0 核心 ~1,113 文件详细 + P1-P3 概览）
+│   │   ├── 03-batch-plan.md                    #   ✅ 分批分析计划（15 个批次，按依赖顺序）
+│   │   ├── 04-analysis-progress.md             #   ✅ 分析进度跟踪（首轮 P0 核心分析完成）
+│   │   ├── 05-architecture-decisions.md        #   ✅ 架构推导决策（子系统划分依据、数据流推导、初始化顺序）
+│   │   └── 08-analysis-plan-v3.md              #   ✅ 认知分析计划 v3（基于 2026-06-09 修订版提示词）
+│   │
+│   └── templates/                              # 输出文档模板（统一格式，保证一致性）
+│       ├── architecture-report.md              #   架构报告模板（10 个必填章节）
+│       ├── algorithm-card.md                   #   算法卡片模板（元数据/变量映射/可移植性评估/验证计划）
+│       ├── migration-record.md                 #   迁移记录模板（需求ID/源码证据/耦合评估/许可证/测试计划）
+│       ├── requirement-gap.md                  #   需求缺口报告模板（需求ID/自有项目证据/AFSIM证据/状态/下一步）
+│       └── skill-output-checklist.md           #   Skill 输出质量检查清单（通用 + 针对各 skill 的检查项）
+│
+├── workspace/                                  # ═══════════ 机器生成或中间产物 ═══════════
+│   ├── source-index/                           # 源码索引（JSONL 格式，每行一条记录）
+│   │   ├── .gitkeep
+│   │   ├── file-index.jsonl                    #   文件级索引（4,997 行）：路径、语言、类型、模块、职责、includes
+│   │   ├── symbol-index.jsonl                  #   符号索引（3,255 行）：class/struct/enum/typedef/using，含继承关系
+│   │   ├── function-index.jsonl                #   函数索引（4,099 行）：返回类型、参数、调用关系、生命周期角色、算法提示
+│   │   └── dependency-index.jsonl              #   依赖索引（1,113 行）：6 种依赖类型(inheritance/composition/call/build/include/registration)
+│   │
+│   ├── analysis-cache/                         # 分析缓存（当前为空）
+│   │   └── .gitkeep
+│   │
+│   ├── extracted-algorithms/                   # 提取的算法产物（当前为空）
+│   │   └── .gitkeep
+│   │
+│   └── own-kernel-adapters/                    # 适配代码草稿（当前为空）
+│       └── .gitkeep
+│
+├── tools/                                      # ═══════════ 工具脚本与 Prompt 模板 ═══════════
+│   ├── prompts/                                # Prompt 模板（版本化管理，保证过程可复现）
+│   │   └── README.md
+│   ├── indexers/                               # 索引器脚本（C/C++ 源码扫描、JSONL 输出）
+│   │   └── README.md
+│   ├── validators/                             # 校验脚本（索引格式校验、报告完整性检查）
+│   │   └── README.md
+│   └── orchestrators/                          # 编排脚本（多 Agent 流水线自动化）
+│       └── README.md
+│
+├── examples/                                   # ═══════════ 示例（用于检验 skill 稳定性） ═══════════
+│   ├── requests/                               # 典型用户请求示例
+│   │   └── README.md                           #   示例请求列表（分析仿真循环/提取导引算法/对比需求/生成迁移方案）
+│   └── outputs/                                # 对应标准输出示例
+│       └── README.md                           #   经审查的标准输出样例
+│
+├── tests/                                      # ═══════════ 测试与验证 ═══════════
+│   └── README.md                               #   测试目录说明（结构检查/JSONL解析/报告元数据验证/算法原型编译）
+│
+└── source_root/                                # ═══════════ AFSIM 2.9.0 源码（Git 忽略） ═══════════
+    └── afsim-2_9/                              #   AFSIM 2.9.0 完整源码目录 + demos/
+        ├── swdev/src/core/                     #     核心框架（14 个模块，~4,997 文件）
+        ├── swdev/src/wsf_plugins/              #     功能插件
+        ├── swdev/src/tools/                    #     辅助工具
+        └── demos/                              #     示例场景（acoustic/aea_iads/air_to_air 等）
 ```
 
 ### 阶段 1：AFSIM 源码结构化分析
@@ -179,17 +271,32 @@ afsim-analysis-skill-project/
 
 ## 目录职责
 
-`skill/` 保存可被大模型直接使用的 skill。每个 skill 只放执行规则和必要引用，保持精简。
+`skill/` — 可被大模型直接使用的 Skill 系统，包含 6 个 skill（1 个总控 + 5 个专职）。每个 skill 只放执行规则和必要引用文件，保持精简。其中：
 
-`docs/` 保存人工可读、可审查的分析结果。架构、算法、需求、迁移和过程记录分开，方便长期维护。
+- `afsim-analyst` 是总控入口，负责判任务类型、选 skill、定输入输出、保证据追溯
+- `afsim-source-cognition` 是最先开发完成的 skill，已对 AFSIM core/ 全 14 模块完成深度分析（产出了 4 个 JSONL 索引和 2 份架构报告）
+- 其余 4 个专职 skill（算法提取/需求映射/迁移生成/知识沉淀）SKILL.md 已就绪，等待后续阶段执行
 
-`workspace/` 保存机器生成或中间产物，例如源码索引、分析缓存、算法切片和适配草稿。
+`docs/` — 人工可读、可审查的分析结果。架构、算法、需求、迁移和过程记录分开存放：
 
-`tools/` 保存后续可实现的索引器、验证器、编排脚本和 prompt 模板。
+- `architecture/` 已有 4 份产出：总体架构报告、模块依赖说明、源码目录树、四层功能体系
+- `baseline/` 存放 AFSIM 官方设计文档作为分析参考输入（2 份，共 177KB）
+- `records/` 已有 7 份过程记录，覆盖边界确认、模块清单、分批计划、进度跟踪、架构决策和分析计划
+- `templates/` 包含 5 份输出模板和检查清单
+- `algorithms/`、`requirements/`、`migration/` 当前为空，待后续阶段产出
 
-`examples/` 保存典型请求和标准输出样例，用于检验 skill 是否稳定。
+`workspace/` — 机器生成物和中间产物：
 
-`tests/` 保存脚本测试、结构检查和提取算法的最小验证用例。
+- `source-index/` 已产出 4 个 JSONL 索引文件（共约 13,464 条记录），是后续所有分析的基础资产
+- 其余子目录当前为空，待后续阶段填充
+
+`tools/` — 工具脚本和 Prompt 模板（4 个子目录已建好 README，具体工具脚本待实现）。
+
+`examples/` — 典型请求和标准输出样例（目录已建好，样例待补充）。
+
+`tests/` — 测试与验证用例（目录已建好，测试用例待补充）。
+
+`source_root/` — AFSIM 2.9.0 源码（约 17,000+ 文件），已被 `.gitignore` 排除，不纳入版本管理。
 
 ## 输出规范
 
@@ -204,8 +311,8 @@ afsim-analysis-skill-project/
 
 ## 推荐落地顺序
 
-1. 先完善 `tools/indexers/`，实现 C/C++ 源码扫描和 JSONL 索引输出。
-2. 用 `afsim-source-cognition` 生成第一版 AFSIM 架构报告。
+1. ~~先完善 `tools/indexers/`，实现 C/C++ 源码扫描和 JSONL 索引输出。~~ → 首轮分析已通过 Agent 直接扫描完成
+2. ~~用 `afsim-source-cognition` 生成第一版 AFSIM 架构报告。~~ → ✅ 已完成（P0 core/ 全 14 模块）
 3. 选择一个小功能，用 `afsim-algorithm-extractor` 生成算法卡片。
 4. 输入一个自有项目需求，用 `afsim-requirement-mapper` 做缺口分析。
 5. 用 `afsim-migration-builder` 生成迁移方案和最小代码原型。
