@@ -119,19 +119,23 @@ metadata:
 
 将推导结果写入 `afsim-architecture.md`、`module-dependency.md`和 `x-level-capabilities.md`。
 
+### 8.过程留痕
+
+把每一步的决策依据和执行计划生成文档进行记录归档，放在目录docs/records里面，以便人工追溯。
+
 ## 输出文件
 
-- 把每一步的决策依据和执行计划生成文档进行记录归档，放在目录docs/records里面，方便追溯。
 - 每解析一个`extract_root`，就创建新目录`docs/architecure/extract_root`和`workspace/source-index/extract_root`，如果目录存在则不用新建。
 - 在`docs/architecure/extract_root`下放置所有输出的`.md`文件，`.md`文件中所有英文标识、英文别称都应说明其中文翻译，保证中文可读性。
 - 在`workspace/source-index/extract_root`下放置所有输出的`.jsonl`文件。
 - 所有索引写入`.jsonl`文件，使用 UTF-8 。每行必须是一个完整 JSON object，不允许尾逗号、注释、Markdown 代码块或跨行 JSON。字段缺失时使用 `null`、空数组或 `unknown`，不要省略必填字段。
 - 要求所有输出文件用词统一，文件名、模块名、符号名、函数名、依赖名在所有文件中都保持一致，不应产生歧义。
 - 不能使用省略号省略列举内容，如果列举的条目多于30，而应当新建个文件将省略内容全部列出，并将文件连接放置到原本的省略位置。
+- 所有生成的文档都应当面向母语为中文且没有afsim基础知识的新手程序员。
 
 ### `afsim-architecture.md`
 
-总体架构认知报告。要求和模板参考skill/afsim-source-cognition/template_list/template_architecture.md
+总体架构认知报告。要求和格式应当严格遵循模板skill/afsim-source-cognition/template_list/template_architecture.md
 
 ### `module-depencency.md`
 

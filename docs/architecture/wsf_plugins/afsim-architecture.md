@@ -225,6 +225,7 @@ graph TD
 - **ARGO8**：外部高保真导弹模型集成
 
 2.**目录结构细览**：
+
 | 子目录 | 文件数 | 所属模块 | 核心职责 |
 |--------|--------|--------|----------|
 | wsf_p6dof/source/ | 22 | wsf_p6dof | AFSIM Mover 接口、自动驾驶、制导、测试对象 |
@@ -237,11 +238,13 @@ graph TD
 | wsf_argo8/source/ | 1 | wsf_argo8 | ARGO8 Mover 接口封装 |
 | wsf_argo8/argo8/source/ | 少量 | argo8 (独立库) | ARGO8 外部库头文件及封装 |
 
+
 #### 2.1.1 wsf_p6dof 模块（`wsf_plugins/wsf_p6dof/`）
 
 1.**模块概述**：P6DOF（拟6自由度）是 AFSIM 最主要的飞行器运动学模拟插件。它基于 Boeing 研发的 P6DOF 核心库，通过 `WsfP6DOF_Mover`（继承自 `WsfMover`）与 AFSIM 平台框架集成。模块提供完整的气动计算（升力/阻力/侧力/力矩）、推力系统、燃油管理、飞行控制界面（舵面/襟翼/扰流板/起落架）、自动驾驶仪（横向/纵向/速度三通道）、制导计算机（GuidanceComputer）、航路管理、机动/编队执行等。
 
 2.**模块核心类细览**：
+
 | 类 | 文件 | 职责 |
 |----|------|------|
 | WsfP6DOF_Mover | WsfP6DOF_Mover.hpp | P6DOF 运动器主类 — 继承 WsfMover，P6DOF 与 AFSIM 平台的桥梁 |
@@ -262,6 +265,7 @@ graph TD
 模块包含丰富的飞行控制系统（FlightControlSystem），支持手动飞行/合成飞行员/自动驾驶三种模式，以及气动对象、推力系统、积分器等物理计算组件。
 
 2.**模块核心类细览**：
+
 | 类 | 文件 | 职责 |
 |----|------|------|
 | wsf::six_dof::PointMassMover | WsfPointMassSixDOF_Mover.hpp | 点质6DOF 运动器 — 继承自 Mover 基类 |
@@ -278,6 +282,7 @@ graph TD
 1.**模块概述**：ARGO8 是 AFRL 的 6DOF 导弹仿真模型。wsf_argo8 通过 `WsfARGO8_Mover`（继承自 `WsfMover`）将 ARGO8 导弹模型集成到 AFSIM 平台生态中，支持多种制导方式和导引头模式。核心依赖独立的 `argo8` 静态库。
 
 2.**模块核心类细览**：
+
 | 类 | 文件 | 职责 |
 |----|------|------|
 | WsfARGO8_Mover | WsfARGO8_Mover.hpp | ARGO8 导弹运动器 — 对接 Argo8Missile 物理模型 |
@@ -295,6 +300,7 @@ graph TD
 1.**模块概述**：空战 SA（Situational Awareness，态势感知）处理器，通过 `WsfSA_Processor`（基于 `WsfScriptProcessor`）和多个子模块（感知 Perceive、预测 Predict、评估 Assess）协作，为空战平台提供综合态势感知能力。模块使用模块化架构，包含群组管理器（GroupManager）、实体消息传递（EntityMessage）、感知项管理（PerceivedItem）等组件。
 
 2.**模块核心类细览**：
+
 | 类 | 文件 | 职责 |
 |----|------|------|
 | WsfSA_Processor | WsfSA_Processor.hpp | SA 处理器 — 空战态势感知主控制器 |
@@ -321,6 +327,7 @@ graph TD
 - 丰富的交战评估、拦截计算、地形分析、C2 分发等功能模块
 
 2.**模块核心类细览**：
+
 | 类 | 文件 | 职责 |
 |----|------|------|
 | WsfBattleManager | WsfBattleManager.hpp | 战场管理器 — IADS C2 核心处理器 |
@@ -349,6 +356,7 @@ graph TD
 1.**模块概述**：SOSM（Spectral Optical Sensor Model，光谱光学传感器模型）由 Boeing 开发。`WsfSOSM_Interface` 继承自 `WsfScenarioExtension`，提供场景级别的 SOSM 输入处理和传感器/目标类型映射管理。核心物理计算委托给独立的 `sosm` 库。
 
 2.**模块核心类细览**：
+
 | 类 | 文件 | 职责 |
 |----|------|------|
 | WsfSOSM_Interface | WsfSOSM_Interface.hpp | SOSM 场景扩展 — 处理 `sosm_interface` 输入块 |
@@ -360,6 +368,7 @@ graph TD
 1.**模块概述**：覆盖性分析（Coverage Analysis）是 AFSIM 中的重要分析工具。`wsf::coverage::Coverage` 抽象类定义了覆盖性计算的核心框架。它通过指定的网格（Grid）观察平台间的交互，并计算各种效能度量（MOE — Measure of Effectiveness）。支持多种网格类型（LatLonGrid、DistanceSteppedGrid、ExistingPlatformGrid、CompositeGrid），多种资产类型（GridAsset 网格资产、FreeAsset 自由资产），以及多种约束条件。
 
 2.**模块核心类细览**：
+
 | 类 | 文件 | 职责 |
 |----|------|------|
 | wsf::coverage::Coverage | WsfCoverage.hpp | 覆盖性计算框架抽象类 |
@@ -381,6 +390,7 @@ graph TD
 1.**模块概述**：多分辨率建模（Multi-resolution Modeling）由 Stellar Science 开发。它通过 `WsfMultiresolutionPlatformComponent` 模板基类提供了一个保真度（Fidelity）驱动的模型选择框架。用户可以为不同保真度水平选择不同的组件模型，支持通过 `WsfMultiresolutionMultirunTable` 进行多轮次参数扫描。
 
 2.**模块核心类细览**：
+
 | 类 | 文件 | 职责 |
 |----|------|------|
 | WsfMultiresolutionPlatformComponent\<T\> | WsfMultiresolutionPlatformComponent.hpp | 多分辨率组件模板基类 |
@@ -394,6 +404,7 @@ graph TD
 1.**模块概述**：场景分析器（Scenario Analyzer）由 Radiance Technologies 开发，提供了一套自动化的仿真场景合规性检查工具。它包含 19 个核心检查函数，涵盖通信链路检查、指挥链检查、传感器检查、航迹处理器检查、武器检查、运动器能力检查等方面。同时支持 Session Notes（会话记录）功能。
 
 2.**模块核心函数细览**：
+
 | 函数 | 职责 |
 |------|------|
 | checkCommanderInDeclaredCommandChain | 检查指挥链声明的指挥官存在性 |
@@ -427,6 +438,7 @@ graph TD
 1.**模块概述**：SIMDIS（SIMulation DISplay）可视化输出插件，由 Lockheed Martin 开发。它生成 SIMDIS 的 ASI（ASCII Scenario Input）格式文件，支持平台状态、武器命中/击杀事件、传感器航迹、DEAD RECKON 等 3D 场景数据的输出。通过 `wsf::simdis::ScenarioExtension`（继承自 `WsfScenarioExtension`）和 `wsf::simdis::Interface`（继承自 `WsfSimulationExtension`）实现。
 
 2.**模块核心类细览**：
+
 | 类 | 文件 | 职责 |
 |----|------|------|
 | wsf::simdis::ScenarioExtension | WsfSIMDIS_Interface.hpp | SIMDIS 场景扩展 — 读取 SIMDIS 输出配置 |
@@ -437,6 +449,7 @@ graph TD
 1.**模块概述**：OMS/UCI（Open Mission Systems / Universal Command and Control Interface）标准化消息接口插件。这是 wsf_plugins 中最大的模块（8785 个文件，其中 8588 个为 OCI 自动生成头文件）。`wsf::UCI_Interface` 是该模块的核心接口类，它封装了 ASB（Abstract Service Bus，抽象服务总线）连接，管理 UCI 消息的收发、组件注册、工厂服务和消息服务。模块包含 21 个核心源文件，支持 AMTI、ESM、POST 等多种传感器/能力类型的 UCI 消息标准化。
 
 2.**模块核心类细览**：
+
 | 类 | 文件 | 职责 |
 |----|------|------|
 | wsf::UCI_Interface | WsfUCI_Interface.hpp | UCI 核心接口 — ASB 连接管理、消息收发 |
@@ -468,6 +481,7 @@ graph TD
 1.**模块概述**：BRAWLER 大尺度空战仿真模型对接模块，由 Boeing 研发。`WsfBrawler` 继承自 `WsfScenarioExtension`，负责 BRAWLER 相关脚本类型的注册和输入处理。模块通过 `WsfBrawlerMover`、`WsfBrawlerProcessor` 等将 BRAWLER 引擎集成到 AFSIM 平台。核心 BRAWLER 算法封装在独立的 `brawler` 库中。
 
 2.**模块核心类细览**：
+
 | 类 | 文件 | 职责 |
 |----|------|------|
 | WsfBrawler | WsfBrawler.hpp | BRAWLER 场景扩展 — 脚本类型注册 |
@@ -482,6 +496,7 @@ graph TD
 1.**模块概述**：火力/武器（Fires）弹道计算模块，专门处理非制导弹药（炮射弹道武器）的弹道计算。核心数据结构是 `FiresTable`（射表），通过 `FiresTableLoader` 从数据文件加载，通过 `FiresTableLookup` 进行快速查表计算射程、最大弹道高度、弹道飞行时间、发射仰角等参数。`FiresPath` 和 `FiresMover` 负责弹道轨迹的模拟。
 
 2.**模块核心类细览**：
+
 | 类 | 文件 | 职责 |
 |----|------|------|
 | Fires::FiresTable | FiresTable.hpp | 射表 — 弹道数据存储和查询 |
