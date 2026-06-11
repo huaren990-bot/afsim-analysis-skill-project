@@ -1,0 +1,111 @@
+{
+    "created_time": "2026-06-11T15:03:24Z",
+    "files": [
+        {
+            "attachment_folder": "",
+            "created_time": "2026-06-11T15:03:24Z",
+            "id": "79",
+            "modified_time": "2026-06-11T15:03:24Z",
+            "name": "01-scope-boundary.md",
+            "signature": "6278349732983787068",
+            "tags": [
+            ]
+        },
+        {
+            "attachment_folder": "",
+            "created_time": "2026-06-11T15:03:24Z",
+            "id": "80",
+            "modified_time": "2026-06-11T15:03:24Z",
+            "name": "01-scope-decision.md",
+            "signature": "12990080076877581884",
+            "tags": [
+            ]
+        },
+        {
+            "attachment_folder": "",
+            "created_time": "2026-06-11T15:03:24Z",
+            "id": "81",
+            "modified_time": "2026-06-11T15:03:24Z",
+            "name": "02-module-inventory.md",
+            "signature": "9396963832077405756",
+            "tags": [
+            ]
+        },
+        {
+            "attachment_folder": "",
+            "created_time": "2026-06-11T15:03:24Z",
+            "id": "82",
+            "modified_time": "2026-06-11T15:03:24Z",
+            "name": "03-batch-plan.md",
+            "signature": "10611838388798148156",
+            "tags": [
+            ]
+        },
+        {
+            "attachment_folder": "",
+            "created_time": "2026-06-11T15:03:24Z",
+            "id": "83",
+            "modified_time": "2026-06-11T15:03:24Z",
+            "name": "04-analysis-progress.md",
+            "signature": "13245202100627623484",
+            "tags": [
+            ]
+        },
+        {
+            "attachment_folder": "",
+            "created_time": "2026-06-11T15:03:24Z",
+            "id": "84",
+            "modified_time": "2026-06-11T15:03:24Z",
+            "name": "05-architecture-decisions.md",
+            "signature": "7608302032820817468",
+            "tags": [
+            ]
+        },
+        {
+            "attachment_folder": "",
+            "created_time": "2026-06-11T15:03:24Z",
+            "id": "85",
+            "modified_time": "2026-06-11T15:03:24Z",
+            "name": "08-analysis-plan-v3.md",
+            "signature": "5115489248852233788",
+            "tags": [
+            ]
+        },
+        {
+            "attachment_folder": "",
+            "created_time": "2026-06-11T15:03:24Z",
+            "id": "86",
+            "modified_time": "2026-06-11T15:03:24Z",
+            "name": "09-algorithm-extraction-kickoff.md",
+            "signature": "1453709649653714492",
+            "tags": [
+            ]
+        },
+        {
+            "attachment_folder": "",
+            "created_time": "2026-06-11T15:03:24Z",
+            "id": "87",
+            "modified_time": "2026-06-11T15:03:24Z",
+            "name": "10-wsf-space-algorithm-extraction.md",
+            "signature": "9828137076391595580",
+            "tags": [
+            ]
+        },
+        {
+            "attachment_folder": "",
+            "created_time": "2026-06-11T15:03:24Z",
+            "id": "88",
+            "modified_time": "2026-06-11T15:03:24Z",
+            "name": "11-skill-improvement-from-algorithm-extraction.md",
+            "signature": "3511052413830876732",
+            "tags": [
+            ]
+        }
+    ],
+    "folders": [
+    ],
+    "id": "78",
+    "modified_time": "2026-06-11T15:03:24Z",
+    "signature": "716823313269837372",
+    "version": 3
+}

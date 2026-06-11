@@ -223,6 +223,96 @@ WsfSimulation::Update()
 8. **零飞控系统保护**：不挂载飞控系统时（flightControls==null），验证控制项=0，仅稳定项生效。
 9. **零质量保护**：mass<=0 时所有加速度输出为零向量，不崩溃。
 
+### 内部状态
+
+SAS 算法不拥有独立的类——核心代码 `CalculateStabilityAugmentation` 内联在 `PointMassIntegrator::CalculateAcceleration()` 方法中（见 integrator 源文件行 267-343）。该方法本身不持跨帧持久化状态，所有输入来自飞行器对象、所有输出通过引用参数返回。但 SAS 依赖的飞行控制系统 `PointMassFlightControlSystem` 持有内部状态如下（与 SAS 计算直接相关的部分）：
+
+| 变量名 | 类型 | 初始值 | 物理含义 | 更新时机 |
+|--------|------|--------|----------|----------|
+| `mStickBack` | `double` | `0.0` | 驾驶杆后拉位移（0-1 归一化），映射到俯仰角速率指令 | 每帧由飞行员对象更新 |
+| `mStickRight` | `double` | `0.0` | 驾驶杆右压位移，映射到滚转角速率指令 | 每帧由飞行员对象更新 |
+| `mRudderRight` | `double` | `0.0` | 右舵位移，映射到偏航角速率指令 | 每帧由飞行员对象更新 |
+| `mStickBackCurvePtr` | `UtTable::Curve*` | `nullptr` | 杆位移到期望俯仰角速率的映射曲线（deg/s vs 杆位） | 初始化阶段从配置加载 |
+| `mStickRightCurvePtr` | `UtTable::Curve*` | `nullptr` | 杆位移到期望滚转角速率的映射曲线 | 初始化阶段从配置加载 |
+| `mRudderRightCurvePtr` | `UtTable::Curve*` | `nullptr` | 舵位移到期望偏航角速率的映射曲线 | 初始化阶段从配置加载 |
+| `mLastUpdateSimTime_nanosec` | `int64_t` | `0` | 上一次飞控更新的仿真时间 | 每帧 `Update()` 中由外部设置 |
+| `massFraction`（局部） | `double` | 每帧计算 | `m / m_base`；质量越小飞行器越敏捷 | 每帧 `CalculateAcceleration()` 中计算，不在帧间保留 |
+| `moverTimestep_sec`（局部） | `double` | 每帧读取 | 运动器步长，用于一阶差分和稳定项计算 | 每帧从 `GetParentVehicle()->GetStepSize_sec()` 读取 |
+
+SAS 计算中其余变量（`alpha_rad`/`beta_rad`/`alphaDot_rps`/`betaDot_rps`/`rollRate_rps`/`freqStab`均为局部临时变量，每帧重新从 `aState` 读入。
+
+### 变量映射表
+
+| 代码变量 | 数学符号 | 含义 |
+|----------|----------|------|
+| `massFraction` | $m_{fraction}$ | 质量比率 `m / m_{base}`（当前质量 / 基准质量） |
+| `moverTimestep_sec` | $dt_{mover}$ | 运动器仿真步长（秒） |
+| `commandedRotationRates_dps` | $\vec{\omega}_{cmd}$ | 飞控系统输出的期望体轴角速率（deg/s） |
+| `commandedRotationRates_rps` | $\vec{\omega}_{cmd}$ | 期望体轴角速率转换为 rad/s |
+| `currentRotationRates_rps`（即 `aState.GetOmegaBody()`） | $\vec{\omega}_{current}$ | 当前体轴角速率（rad/s） |
+| `rotationalAccelControls_rps2` | $\vec{\alpha}_{controls}$ | 控制项产生的旋转角加速度（rad/s^2） |
+| `rotationalAccelStability_rps2` | $\vec{\alpha}_{stability}$ | 稳定增稳项产生的旋转角加速度（rad/s^2） |
+| `rotationalAccelLimitBase_rps2` | $\vec{\alpha}_{limit,base}$ | 旋转加速度限幅基准（来自气动表，rad/s^2） |
+| `rotationalAccelLimit_rps2` | $\vec{\alpha}_{limit}$ | 质量缩放后的有效旋转限幅 `alphaLimitBase / massFraction` |
+| `alpha_rad` | $\alpha$ | 攻角（rad） |
+| `beta_rad` | $\beta$ | 侧滑角（rad） |
+| `alphaDot_rps` | $\dot{\alpha}$ | 攻角变化率（rad/s） |
+| `betaDot_rps` | $\dot{\beta}$ | 侧滑角变化率（rad/s） |
+| `rollRate_rps`（`p`） | $p$ | 滚转角速率（rad/s） |
+| `rollStabilizingFrequency` | $\omega_{n,roll}$ | 滚转通道稳定化固有频率（rad/s，已除以 massFraction） |
+| `alphaStabilizingFrequency` | $\omega_{n,\alpha}$ | 俯仰通道稳定化固有频率（rad/s，已除以 massFraction） |
+| `betaStabilizingFrequency` | $\omega_{n,\beta}$ | 偏航通道稳定化固有频率（rad/s，已除以 massFraction） |
+| `pitchAccelerationStability` | $\alpha_{pitch,stab}$ | 俯仰通道稳定角加速度（rad/s^2） |
+| `yawAccelerationStability` | $\alpha_{yaw,stab}$ | 偏航通道稳定角加速度（rad/s^2） |
+| `rollAlphaFactor` | $\text{weight}$ | 滚转一阶滞后权重因子 `w_n*dt/(1+w_n*dt)` |
+| `expectedRollRate_rps` | $p_{expected}$ | 一阶滞后平滑后的期望滚转速率 |
+| `rollAccelerationStability` | $\alpha_{roll,stab}$ | 滚转通道稳定角加速度（rad/s^2） |
+| `maxRollAccelerationStability` | $\alpha_{roll,max}$ | 滚转通道数值限幅值 `|p/dt|` |
+| `maxPitchAccelerationStability` | $\alpha_{pitch,max}$ | 俯仰通道数值限幅值 `2/dt^2 * |-alpha - alphaDot*dt|` |
+| `maxYawAccelerationStability` | $\alpha_{yaw,max}$ | 偏航通道数值限幅值 `2/dt^2 * |-beta - betaDot*dt|` |
+| `aRotationalAccel_mps2` | $\vec{\alpha}_{total}$ | 总旋转角加速度 = 控制项 + 稳定项（rad/s^2） |
+| `mStickBack` / `mStickRight` / `mRudderRight` | — | 驾驶杆/脚舵位移（0-1 归一化，输入到飞控曲线） |
+
+### 边界条件
+
+1. **空飞控系统保护**：若 `mVehicle->GetFlightControls()` 返回 `nullptr`（即未挂载飞控系统），控制项 `rotationalAccelControls_rps2` 保持为零向量（初始化默认值）。仅稳定增稳项生效（模拟无飞行员输入时飞行器的自然稳定性）。
+
+2. **零质量保护**：在 `CalculateAcceleration()` 入口（SAS 代码的上层），若 `massProperties.GetMass_lbs() <= 0.0`，该函数立即返回，所有加速度输出保持为零向量。因此 SAS 不会在零质量时被调用。
+
+3. **控制项限幅**：各轴控制加速度独立通过 `UtMath::Limit()` 限幅到 `+/-|rotationalAccelLimit_rps2[i]|`。限幅基准来自气动模型的 `MaximumRoll/Pitch/YawAcceleration` 查表输出，再除以 `massFraction`。质量越小（`massFraction` 越小），限幅越大。
+
+4. **偏航通道符号翻转**：在 SAS 末尾（代码行 340），偏航稳定加速度 `yawAccelerationStability` 在写入矢量时取反：`rotationalAccelStability_rps2.Set(..., -yawAccelerationStability)`。原文注释未说明原因，但从坐标约定看这是为了使正向偏航力矩产生正确的偏航角速率方向。
+
+5. **稳定性数值限幅**：三个通道的稳定加速度均通过 `UtMath::Limit()` 限幅：
+   - 滚转：`max = |rollRate / dt|` —— 物理含义为一步内将滚转速率为零所需加速度。
+   - 俯仰：`max = |2/dt^2 * (-alpha - alphaDot*dt)|` —— 一步内将攻角归零所需加速度的 2 倍（安全裕量 2x）。
+   - 偏航：`max = |2/dt^2 * (-beta - betaDot*dt)|` —— 同理。
+   这些限幅用于防止大时间步长下二阶/一阶系统产生发散加速度。
+
+6. **NaN/Inf 保护**：代码中无显式 `isnan()`/`isinf()` 检查。输入状态中的 NaN（如气动角计算异常）会直接污染输出。稳定性限幅间接限制了发散行为，但不能消除输入 NaN 传播。
+
+7. **质量比率边界**：`massFraction = m / m_base` 在正常操作中应介于 0 到 1 之间（飞行器不增加质量）。若意外大于 1，控制限幅和稳定化频率会缩小（飞行器变得迟钝而不是更敏捷），不会产生数值不稳定。
+
+### 提取策略
+
+- **源文件**：
+  - `WsfPointMassSixDOF_Integrator.cpp` -- SAS 代码内联在 `CalculateAcceleration()` 方法中，行 267-343
+  - `WsfPointMassSixDOF_FlightControlSystem.hpp` -- 飞行控制系统类声明，提供 `GetBodyRateCommands_dps()` 和操纵曲线查表
+  - `WsfPointMassSixDOF_AeroCoreObject.hpp` -- 气动核心对象（提供 `MaximumRoll/Pitch/YawAcceleration_Mach` 和 `StabilizingFrequency_Mach` 限幅与频率基准）
+
+- **提取方法**：SAS 代码没有独立的类/函数，而是内联在 `PointMassIntegrator::CalculateAcceleration()` 中。提取时定位到该方法的旋转加速度计算段落（从 `// Control effects` 注释开始到 `aRotationalAccel_mps2 = ...` 结束），约 76 行代码。需要从上下文中识别 SAS 的输入来源（飞控系统 -> `commandedRotationRates_dps`，气动对象 -> `rotationalAccelerationLimits_rps2` + `stabilizingFrequency_rps`）。
+
+- **函数识别**：从 `function-index.jsonl` 中以 `wsf_plugins::sixdof_flight_control_class` 定位飞控系统类；SAS 本身无独立索引条目（因内联在积分器内）。气动参数来源通过 `wsf_plugins::sixdof_aero_core_class` 索引定位 `PointMassAeroCoreObject`。
+
+- **还原方式**：SAS 核心是三个通道的独立计算——控制项（一阶 P 控制器）、俯仰/偏航稳定项（二阶临界阻尼微分方程）、滚转稳定项（一阶滞后低通滤波），然后叠加和限幅。所有公式为基本代数运算，可直接用任何语言重写。还原时注意：
+  1. `massFraction` 需从飞行器获取 `m / m_base`
+  2. 限幅值由气动表查表得到，替换时可用用户指定的固定值或查表函数
+  3. 控制项限幅基准需从气动模型的 `ForceAndRotationObject` 中读取
+  4. 稳定化频率基准需从气动模型的 `StabilizingFrequency` 输出中读取
+  5. 偏航的 `-yawAccelerationStability` 符号翻转需要保留
+
+- **已知从属**：SAS 依赖 `PointMassAeroCoreObject` 提供旋转限幅基准和稳定化频率基准（见关联卡片 flight-dynamics-pointmass-aero-card.md），依赖 `PointMassFlightControlSystem` 提供操纵曲线映射（将杆位移映射为期望角速率指令）。独立还原时需提供这两个输入源。
+
 #### 可移植性评分
 
 **可移植性**：中-高

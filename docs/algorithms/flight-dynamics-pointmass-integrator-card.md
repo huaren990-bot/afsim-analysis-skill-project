@@ -226,6 +226,77 @@ WsfSimulation::Update()                                                // AFSIM 
 6. **状态拷贝正确性**：验证预测步不修改原始状态（校正步使用原始状态出发）。
 7. **零质量保护**：mass <= 0 时积分器安全返回，不崩溃。
 
+### 内部状态
+
+PointMassIntegrator 本身是一个无状态的计算器类，不持有跨帧持久化的状态变量。其唯一成员变量 `mVehicle` 是指向飞行器对象的裸指针，由外部 `PointMassMover` 设置和持有。所有实际的跨帧状态（位置、速度、姿态、角速率等）都存储在 `mVehicle` 内部的 `KinematicState` 对象中，通过 `mVehicle->GetKinematicState()` 访问和修改。
+
+| 变量名 | 类型 | 初始值 | 物理含义 | 更新时机 |
+|--------|------|--------|----------|----------|
+| `mVehicle` | `PointMassMover*` | `nullptr` | 指向所属飞行器对象的指针，提供对运动状态、质量属性、气动、推进和飞控的访问 | 构造函数 / `SetParentVehicle()` 设置；每帧 `Update()` 通过它读写状态 |
+| `kinematicState`（飞行器内部） | `KinematicState&` | 配置文件定义 | 飞行器的完整运动状态（位置/速度/DCM/角速率/攻角/侧滑角/马赫数/动压/过载等） | 每帧 `Update()` 末尾调用 `UpdateAeroState()` + `CalculateSecondaryParameters()` 更新；Heun 校正步写入位置/速度/姿态 |
+| `massProperties`（飞行器内部） | `MassProperties` | 配置文件定义（含空重和燃重） | 当前质量/基准质量/质心位置/转动惯量 | 每帧 `Update()` 开头调用 `CalculateCurrentMassProperties()` 更新（含燃油消耗） |
+
+**注意**：`initialState`（原始状态副本）和 `tempState`（预测态副本）是 `Update()` 函数内的局部 `const` / 栈上变量，函数返回后即销毁，不属于内部状态。Heun 方法的平均加速度 `a_avg` / `alpha_avg` / `g_avg` 也均为局部临时变量。
+
+### 变量映射表
+
+| 代码变量 | 数学符号 | 含义 |
+|----------|----------|------|
+| `aSimTime_nanosec` | $t_n$ | 当前仿真时间戳（纳秒） |
+| `aDeltaT_sec` | $\Delta t$ | 积分步长（秒），仿真帧率的倒数 |
+| `mVehicle` | — | 飞行器对象指针（框架句柄） |
+| `initialState` | $\mathbf{s}_n$ | Heun 步起点运动状态（位置/速度/姿态/角速率） |
+| `tempState` | $\mathbf{s}_{n+1}^{(p)}$ | 预测态（临时运动状态） |
+| `a0` ($aTranslationalAccel\_mps2\_T0$) | $\mathbf{a}(t_n)$ | 初始时刻体轴平动加速度（m/s^2） |
+| `a1` ($aTranslationalAccel\_mps2\_T1$) | $\mathbf{a}(t_{n+1})$ | 预测态体轴平动加速度（m/s^2） |
+| `a_avg` ($averageTranslationalAcceleration\_mps2$) | $\mathbf{a}_{avg}$ | Heun 平均平动加速度（m/s^2） |
+| `alpha0` ($rotationalAccel\_rps2\_T0$) | $\boldsymbol{\alpha}(t_n)$ | 初始时刻体轴旋转角加速度（rad/s^2） |
+| `alpha1` ($rotationalAccel\_rps2\_T1$) | $\boldsymbol{\alpha}(t_{n+1})$ | 预测态体轴旋转角加速度（rad/s^2） |
+| `alpha_avg` ($averageRotationalAcceleration\_rps2$) | $\boldsymbol{\alpha}_{avg}$ | Heun 平均旋转角加速度（rad/s^2） |
+| `g0` ($gravitationalAccel\_g\_T0$) | $\mathbf{g}(t_n)$ | 初始时刻体轴重力加速度（以 g 为单位） |
+| `g1` ($gravitationalAccel\_g\_T1$) | $\mathbf{g}(t_{n+1})$ | 预测态体轴重力加速度（以 g 为单位） |
+| `g_avg` ($averageGravitationalAcceleration\_g$) | $\mathbf{g}_{avg}$ | Heun 平均重力加速度（以 g 为单位） |
+| `cMaxG` | $G_{max}$ | 平动加速度硬限幅阈值（1000 g） |
+| `cREFERENCE_GRAV_ACCEL_MPS2` | $g_0$ | 标准重力加速度 `9.80665 m/s^2`（英制-公制转换因子） |
+| `translationalAccelerationBody\_mps2` | $\mathbf{a}_{body}$ | 限幅后的体轴平动加速度（m/s^2） |
+| `kinematicState` | $\mathbf{s}_{n+1}$ | 校正步完成后的最终运动状态 |
+| `freezeFlags.testingNoAlpha` | — | 测试标志：若为 true，校正步后将攻角强制归零（仅用于单元测试验证） |
+
+### 边界条件
+
+1. **空指针保护**：`Update()` 入口检查 `mVehicle == nullptr`，若为 `nullptr` 则直接返回，不执行任何积分操作。`CalculateAcceleration()`、`PropagateUsingAcceleration()`、`UpdateUsingAcceleration()` 内部同样有该检查。
+
+2. **零质量保护**：在 `CalculateAcceleration()` 中，若 `massProperties.GetMass_lbs() <= 0.0`，立即返回，后续加速度计算被跳过（旋转加速度保持默认零向量）。
+
+3. **1000G 平动加速度限幅**：在 `PropagateUsingAcceleration()` 中，平动加速度矢量幅值超过 `1000 * 9.80665 m/s^2`（约 9807 m/s^2）时，按比例缩放到上限，保持方向不变。此限幅用于防止碰撞尖峰导致数值发散。
+
+4. **测试模式攻角清除**：在 `Update()` 后处理阶段，若 `freezeFlags.testingNoAlpha` 为 true，调用 `RemoveAlphaForTesting()` 将攻角结果强制置零。此功能仅用于单元测试验证转动项是否独立于气动角。
+
+5. **除零保护**：无直接的除零风险——`PropagateTranslation` 和 `PropagateRotation`（基类实现）中加速度直接乘以 `dt` 做线性叠加，不涉及除法。
+
+6. **NaN/Inf 保护**：代码中无显式 `isnan()`/`isinf()` 检查。1000G 限幅间接防止外力尖峰产生过大加速度，但若外力输入本身为 NaN，则传播行为依赖硬件浮点语义。
+
+7. **燃油消耗时机**：燃油仅在校正步（`UpdateUsingAcceleration`）中消耗一次，预测步（`PropagateUsingAcceleration`）不消耗燃油。这确保质量在预测-校正全过程中一致。
+
+### 提取策略
+
+- **源文件**：
+  - `WsfPointMassSixDOF_Integrator.hpp`（类声明，位于 `source_root/afsim-2_9/swdev/src/wsf_plugins/wsf_six_dof/source/`）
+  - `WsfPointMassSixDOF_Integrator.cpp`（全量实现，412 行）
+  - `WsfSixDOF_Integrator.hpp`（基类声明，`PropagateTranslation`/`PropagateRotation` 接口定义）
+
+- **提取方法**：从 `.hpp` 确认类接口和成员变量（仅 `mVehicle` 指针），从 `.cpp` 中按函数边界提取四个核心函数的完整实现：
+  1. `PointMassIntegrator::Update()`（行 46-151）-- Heun 主循环
+  2. `PointMassIntegrator::CalculateAcceleration()`（行 153-344）-- 加速度汇总（含 SAS 调用）
+  3. `PointMassIntegrator::PropagateUsingAcceleration()`（行 346-394）-- 1000G 限幅 + 平动/转动推进
+  4. `PointMassIntegrator::UpdateUsingAcceleration()`（行 396-411）-- 燃油消耗 + 校正推进
+
+- **函数识别**：从 `function-index.jsonl` 中以 `wsf_plugins::sixdof_integrator_class` 定位 `PointMassIntegrator` 类条目；`CalculateAcceleration` 方法为 `math` 标记（气动汇总 + SAS 数值计算）。
+
+- **还原方式**：Heun 预测-校正法为标准二阶 Runge-Kutta 方法，可直接按伪代码重写。核心是两阶段加速度计算 + 算术平均 + 校正推进。1000G 限幅用 `std::clamp` 或等价操作替换 `UtMath::Limit`。平动推进 `v += a*dt`、`r += v*dt` 为基本向量运算；转动推进（半隐式欧拉 + 四元数姿态）依赖 `PropagateRotation` 基类实现，替换时自行实现即可。
+
+- **已知从属**：`CalculateAcceleration()` 内含内联 SAS 计算代码（控制项一阶跟踪 + 稳定项二阶临界阻尼/一阶滞后）。这些 SAS 公式已在关联卡片 flight-dynamics-pointmass-sas-card.md 中独立记录，还原时可按 SAS 卡片独立还原后嵌入。
+
 #### 可移植性评分
 
 **可移植性**：中-高

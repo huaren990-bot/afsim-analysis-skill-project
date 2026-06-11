@@ -454,6 +454,247 @@ function EclipseEvent.Execute():
 4. **EclipseEventManager 状态机测试**：构造已知轨道（如 LEO 极轨道），验证 EclipseEventManager 正确预测入影/出影时间并在仿真中触发相应事件。测试轨道机动后事件的重新计算是否正确。
 5. **地球-太阳-观测者共线边缘情况**：测试当太阳方向与地心方向平行时（scale < 1e-6），GetDisplacementToSolarLimbs 中的正交矢量构造替代逻辑是否正常工作。
 
+#### 内部状态
+
+本节列出跨帧或跨调用持久化的变量。由于 `WsfSolarTerminator` 本身是**无状态**的命名空间（所有函数为纯函数，不持有成员变量），真正的内部状态集中在 `WsfEclipseEventManager` 及其内部类 `EclipseEvent` 中。
+
+##### WsfEclipseEventManager 内部状态
+
+| 变量名 | 类型 | 初始值 | 物理含义 | 更新时机 |
+|--------|------|--------|----------|----------|
+| `mIsEnabled` | `bool` | `false`（构造函数初始化） | 地影事件监测是否已启用。为 false 时不消耗计算资源 | `Enable()` 设为 true；`Disable()` 设为 false |
+| `mCallbacks` | `UtCallbackHolder` | 空（构造时默认） | 持有平台生命周期回调句柄（平台初始化、删除、轨道机动更新、轨道机动完成） | `Enable()` 注册 4 个回调；`Disable()` 清空 |
+| `mPlatformToCurrentEventIdMap` | `std::map<WsfStringId, size_t>` | 空（构造时默认） | 平台名称 → 当前有效事件 ID 的映射，用于在 `EclipseEvent::Execute()` 中验证事件是否仍是最新的（防止轨道机动后旧事件误触发） | `InitiateEclipseEvent()` 插入/更新；`CeaseMonitoring()` 删除；`Disable()` 清空 |
+
+##### EclipseEvent（内部类）内部状态
+
+| 变量名 | 类型 | 初始值 | 物理含义 | 更新时机 |
+|--------|------|--------|----------|----------|
+| `mType` | `EclipseEvent::Type`（枚举：cENTRY / cEXIT / cEVALUATE） | 构造函数传入 | 当前事件类型：入影、出影还是重新评估。决定 Execute() 执行哪条分支 | 构造函数设置；`Execute()` 中根据 GetEclipseTimes 结果更新（cENTRY→cEXIT 或反之）；`SetType()` 直接设置 |
+| `mId` | `size_t` | 构造函数传入 | 本事件的唯一 ID（与 InitiateEclipseEvent 调用时的 aId 一致）。用于和 mPlatformToCurrentEventIdMap 比对，判断事件是否过期 | 构造时赋值，之后不变 |
+| `mEclipseManager` | `WsfEclipseEventManager&` | 构造函数传入的引用 | 指向所属的 EclipseEventManager，用于访问 mPlatformToCurrentEventIdMap 和 IsEnabled() | 构造时绑定，之后不变 |
+| `mSpaceMoverPtr` | `WsfSpaceMoverBase*` | 构造函数传入 | 指向关联的航天器运动体，用于在事件执行时获取轨道外推器和更新运动状态 | 构造时绑定，之后不变 |
+| `mPlatformIndex` | `size_t` | 构造函数从 `aSpaceMoverPtr->GetPlatform()->GetIndex()` 获取 | 航天器在仿真中的索引号，用于在 Execute() 中验证平台是否仍然存在 | 构造时赋值，之后不变 |
+
+> **关键设计说明**：`EclipseEvent` 对象被仿真事件队列持有，在其 `Execute()` 返回 `cRESCHEDULE` 后重新入队到新的仿真时刻。因此 `mType`、`mSpaceMoverPtr` 等成员变量实现了跨帧的状态记忆，使得同一事件对象可以在不同仿真帧之间切换 cENTRY/cEXIT 状态。
+
+#### 变量映射表
+
+本节建立源代码中变量与数学公式变量之间的对应关系，方便读者在阅读公式时回溯源码。
+
+##### MaskedByHorizon 相关变量
+
+| 代码变量 | 数学符号 | 含义 |
+|----------|----------|------|
+| `aObserverWCS` | $\mathbf{O}$ | 观测者在地心固连坐标系（WCS）中的位置矢量（3 分量数组） |
+| `aTargetWCS` | $\mathbf{T}$ | 目标（太阳边缘点）在地心固连坐标系中的位置矢量 |
+| `TminusO` | $\mathbf{T} - \mathbf{O}$ | 视线方向矢量（目标减去观测者） |
+| `lambdaTarget` | $\lambda_{\text{target}}$ | 视线从观测者到目标的归一化距离（即 $\|\mathbf{T} - \mathbf{O}\|$，同时 TminusO 被原地归一化） |
+| `aCoeff` | $a$ | 二次方程二次项系数 $a = \langle \mathbf{T}-\mathbf{O}, \mathbf{T}-\mathbf{O} \rangle_E$ |
+| `bCoeff` | $b$ | 二次方程一次项系数 $b = 2\langle \mathbf{O}, \mathbf{T}-\mathbf{O} \rangle_E$ |
+| `cCoeff` | $c$ | 二次方程常数项 $c = F(\mathbf{O}) = \langle \mathbf{O},\mathbf{O} \rangle_E - 1$ |
+| `discrim` | $\Delta$ | 二次方程判别式 $\Delta = b^2 - 4ac$ |
+| `sqrtDiscrim` | $\sqrt{\Delta}$ | 判别式的平方根 |
+| `solnOne` | $\lambda_1$ | 较大根 $\lambda_1 = \frac{-b + \sqrt{\Delta}}{2a}$（视线与椭球的远端交点参数） |
+| `solnTwo` | $\lambda_2$ | 较小根 $\lambda_2 = \frac{-b - \sqrt{\Delta}}{2a}$（视线与椭球的近端交点参数） |
+| `cMASKED_BY_EARTH_TOLERANCE` | $\varepsilon$ | 遮挡判定的数值容差（0.05 m），用于处理观测者恰好位于地表时的浮点误差 |
+| `retval` | — | 布尔返回值：true = 被地球遮挡，false = 可见 |
+
+##### GetDisplacementToSolarLimbs 相关变量
+
+| 代码变量 | 数学符号 | 含义 |
+|----------|----------|------|
+| `aLocationWCS` | $\mathbf{P}_{\text{obs}}$ | 观测者（航天器）在地心固连坐标系中的位置 |
+| `aTime` | $t$ | 当前仿真时间（UtCalendar 类型） |
+| `sunLoc` | $\mathbf{P}_{\odot}$ | 太阳中心在地心固连坐标系中的位置（由 UtSun::GetSunLocationWCS 计算） |
+| `sunHat` | $\hat{\mathbf{s}}$ | 太阳方向的单位矢量（从地心指向太阳） |
+| `locHat` | $\hat{\mathbf{r}}$ | 观测者地心方向的单位矢量 |
+| `upVec`（归一化前） | $\hat{\mathbf{r}} \times \hat{\mathbf{s}}$ | “向上”矢量：垂直于地心方向和太阳方向，指向地平面上方 |
+| `upVec`（归一化后） | $\hat{\mathbf{u}}$ | 归一化后的“向上”单位矢量 |
+| `limbVec`（归一化后） | $\hat{\mathbf{l}} = \hat{\mathbf{s}} \times \hat{\mathbf{u}}$ | 太阳圆盘平面内垂直于 $\hat{\mathbf{u}}$ 的单位矢量（边缘方向） |
+| `limbVec`（乘 R 后） | $R_{\odot} \cdot \hat{\mathbf{l}}$ | 太阳边缘相对于太阳中心的位移矢量 |
+| `aUpperLimbWCS` | $\mathbf{P}_{\text{upper}}$ | 太阳上边缘（远离地平线的边缘）的 WCS 位置 = $\mathbf{P}_{\odot} + R_{\odot} \cdot \hat{\mathbf{l}}$ |
+| `aLowerLimbWCS` | $\mathbf{P}_{\text{lower}}$ | 太阳下边缘（靠近地平线的边缘）的 WCS 位置 = $\mathbf{P}_{\odot} - R_{\odot} \cdot \hat{\mathbf{l}}$ |
+| `scale` | $\|\hat{\mathbf{r}} \times \hat{\mathbf{s}}\|$ | 叉积的模长，用于检测地球-太阳-观测者是否共线（scale < 1e-6 时触发替代正交构造） |
+
+##### GetPhaseOfDay 相关变量
+
+| 代码变量 | 数学符号 | 含义 |
+|----------|----------|------|
+| `aLatDegrees` | $\phi$ | 地面观测点的地理纬度（度） |
+| `aLonDegrees` | $\lambda$ | 地面观测点的地理经度（度） |
+| `aTime` | $t$ | 需要判断天光阶段的世界协调时 |
+| `aLimitDegrees` | $\theta_{\text{limit}}$ | 黄昏结束角度（度），默认取 cTWILIGHT_CIVIL = 96° |
+| `vecNED` | $\hat{\mathbf{s}}_{\text{NED}}$ | 太阳方向在 NED（北-东-地）坐标系中的单位矢量 |
+| `vecNED.Get(2)` | $\hat{\mathbf{s}}_{\text{NED},z}$ | NED 矢量的 Z 分量（沿地心方向，向下为正） |
+| `cosTheta` | $\cos\theta$ | 太阳天顶角的余弦值，$\cos\theta = -\hat{\mathbf{s}}_{\text{NED},z}$（取负号因为 NED 的 Z 轴朝下） |
+| `cosLimit` | $\cos\theta_{\text{limit}}$ | 黄昏结束角度的余弦值 |
+| `cCOS_TWILIGHT_BEGIN` | $\cos\theta_{\text{begin}} = \cos(90^\circ 50')$ | 黄昏开始的余弦阈值，太阳在地平线下 50 角分 |
+| `retval` | — | PhaseOfDay 枚举返回值：cDAY / cTWILIGHT / cNIGHT |
+
+##### EclipseEventManager 相关变量
+
+| 代码变量 | 数学符号 | 含义 |
+|----------|----------|------|
+| `aSimTime` | $t_0$ | 当前仿真时间（起点时刻） |
+| `timeToEntry` | $t_{\text{entry}}$ | 从当前时刻到下一次进入地影的相对时间 |
+| `timeToExit` | $t_{\text{exit}}$ | 从当前时刻到下一次离开地影的相对时间 |
+| `solutionExists` | — | 布尔值：当前轨道周期内是否存在地影穿越事件 |
+| `timeToEval` | $\Delta t_{\text{eval}}$ | 无地影事件时的重新评估间隔 = $\frac{0.25}{n \cdot 2\pi}$ |
+| `mType` | — | 事件类型枚举：cENTRY（等待入影）、cEXIT（等待出影）、cEVALUATE（等待重新评估） |
+| `n`（平运动角速率，在源码中不直接命名） | $n$ | 轨道平运动角速率（rad/s），通过 `GetMeanMotion()` 获取 |
+
+##### EllipsoidalInnerProduct 相关变量
+
+| 代码变量 | 数学符号 | 含义 |
+|----------|----------|------|
+| `aVectorA_WCS` | $\mathbf{a}$ | 椭球内积的第一个 WCS 矢量 |
+| `aVectorB_WCS` | $\mathbf{b}$ | 椭球内积的第二个 WCS 矢量 |
+| `UtEarth::cA` | $A$ | 地球 WGS-84 椭球赤道半径（长半轴），约 6378137 m |
+| `UtEarth::cB` | $B$ | 地球 WGS-84 椭球极半径（短半轴），约 6356752 m |
+
+##### 物理常量
+
+| 代码常量 | 数值 | 含义 |
+|----------|------|------|
+| `UtSun::cMEAN_RADIUS` | $6.963420 \times 10^8$ m | 太阳平均半径（来源：Emilio et al., 2012, The Astrophysical Journal） |
+| `UtEarth::cA` | 约 6378137 m | 地球赤道半径（WGS-84 长半轴） |
+| `UtEarth::cB` | 约 6356752 m | 地球极半径（WGS-84 短半轴） |
+
+#### 边界条件
+
+本节列出算法中所有数值稳定性保护、无效输入处理、限幅阈值及回退行为。这些细节是实现时最容易遗漏的部分。
+
+##### 1. MaskedByHorizon — 观测者恰好在地球表面附近
+
+- **问题**：当观测者恰好位于地球椭球表面上时，椭圆函数 $F(\mathbf{O}) \approx 0$，二次方程常数项 $c \approx 0$，导致近端根 $\lambda_2 \approx 0$。此时浮点误差可能将 $\lambda_2$ 计算为一个极小的正数或负数，造成误判。
+- **保护**：容差常量 `cMASKED_BY_EARTH_TOLERANCE = 0.05` m（约 5 cm）在遮挡判定条件中发挥关键作用：
+  - `solnOne > 0.05`：要求远端交点在观测者之外至少 5 cm（排除观测者恰好位于地表内侧的数值抖动）。
+  - `solnTwo + 0.05 < lambdaTarget`：要求近端交点 + 5 cm 仍小于目标距离（排除视线恰好擦过地表的边界情况）。
+- **效果**：该容差排除了注释中列出的情况 2、5、6、7（不应视为遮挡），正确识别情况 1、3、4（应视为遮挡）。
+
+##### 2. MaskedByHorizon — 判别式为负
+
+- **处理**：`if (discrim >= 0.0)` — 若 $\Delta < 0$，则视线与椭球无交点。直接返回 `retval = false`（未被遮挡），不执行任何求根操作。
+- **原因**：$\Delta < 0$ 表示二次方程无实根，视线完全在椭球外部穿过。
+
+##### 3. MaskedByHorizon — aCoeff 为正的隐含前提
+
+- **源码注释**：`aCoeff` 由 `EllipsoidalInnerProduct(TminusO, TminusO)` 计算，因为椭球内积是正定的，所以 $a > 0$（除非观测者位于太阳中心，这在物理上不可能）。
+- **意义**：$a > 0$ 保证了 $\lambda_1 \ge \lambda_2$（较大根在前），使得遮挡判定逻辑中的大小比较有意义。
+- **无显式保护**：代码未对 $a \le 0$ 做防御性检查，因为物理上不可能出现。
+
+##### 4. GetDisplacementToSolarLimbs — 地球-太阳-观测者共线
+
+- **问题**：当 $\hat{\mathbf{r}}$（地心方向）与 $\hat{\mathbf{s}}$（太阳方向）平行或反平行时，叉积 $\hat{\mathbf{r}} \times \hat{\mathbf{s}} = \mathbf{0}$，无法构造“向上”矢量。
+- **检测阈值**：`scale < 1.0e-6`（约对应 1 角秒精度）。当叉积模长小于此阈值时，认为地心方向与太阳方向共线。
+- **回退行为**（源码 WsfSolarTerminator.cpp Line 78-89）：
+  1. 将 `sunHat` 复制到 `upVec`。
+  2. 找出 `sunHat` 的最大分量索引 `maxIter` 和最小分量索引 `minIter`。
+  3. 将 `upVec` 所有分量清零。
+  4. 设置 `upVec[maxIter位置] = -sunHat[minIter位置]`，`upVec[minIter位置] = sunHat[maxIter位置]`。
+  5. 最后归一化 `upVec`。
+- **效果**：这构造了一个与 `sunHat` 正交的方向作为替代的“向上”矢量。虽然不是物理上精确的“地平面上方”，但在共线情况下任何正交方向都等价，不影响遮挡判定结果。
+
+##### 5. GetPlatformSolarIllumination — 平台未关联仿真
+
+- **检测**：`if (aPlatformPtr->GetSimulation() == nullptr)`。
+- **处理**：返回 `PlatformSolarIllumination::cINVALID_PLATFORM`（枚举值 0），不执行任何后续计算。
+- **原因**：地影判别需要仿真时间信息来获取太阳位置和平台最后更新时间，脱离仿真上下文无法完成计算。
+
+##### 6. GetPlatformSolarIllumination — 仅上边缘被遮挡（物理不可能）
+
+- **断言**：`assert(0 && "The upper limb should never be masked if the lower is not.")`。
+- **含义**：太阳下边缘比上边缘更靠近地球地平线。如果下边缘可见（未被遮挡），上边缘（更远离地平线）一定也可见。因此“仅上边缘被遮挡”在物理上不可能发生。
+- **程序行为**：Debug 模式下触发断言中止；Release 模式下会继续执行到最后的 `else` 分支，返回 `cILLUMINATED`（安全回退）。
+
+##### 7. EclipseEventManager — 仿真未激活
+
+- **场景**：`InitiateEclipseEvent()` 在 `GetSimulation().IsActive()` 为 false 时被调用（例如仿真尚未启动的初始化阶段）。
+- **处理**（Line 144-149）：创建一个 `cEVALUATE` 类型事件，安排在当前时间 + 1e-6 秒后触发。仿真启动后立即重新评估。
+- **原因**：仿真未激活时轨道外推器可能尚未就绪，无法调用 `GetEclipseTimes()`。
+
+##### 8. EclipseEvent — 事件过期（过期事件保护）
+
+- **检测条件**（Execute() Line 186-187）：
+  - `mEclipseManager.IsEnabled()` 为 false（地影监测已被禁用）；或
+  - 平台已被删除（`!GetSimulation()->PlatformExists(mPlatformIndex)`）；或
+  - 事件 ID 不是该平台的最新事件 ID（轨道机动导致新事件已创建，旧事件过期）。
+- **处理**：返回 `WsfEvent::cDELETE`，从仿真事件队列中移除该事件。
+- **意义**：防止轨道机动后旧轨道的地影事件被错误触发，或已删除平台的地影事件继续产生回调。
+
+##### 9. EclipseEventManager — 无地影穿越时的重评估间隔
+
+- **场景**：`GetEclipseTimes()` 返回 `solutionExists == false`（当前轨道周期内无地影穿越）。
+- **处理**：不放弃监测，而是安排 1/4 轨道周期后重新评估。
+- **公式**：$\Delta t_{\text{eval}} = \frac{0.25}{n \cdot 2\pi}$（平运动 $n$ 取自轨道外推器当前轨道要素）。
+- **原因**：地球绕太阳公转导致阴影锥方向缓慢旋转，当前无地影的轨道可能在 1/4 圈后进入阴影。
+- **异常场景**：若 `n = 0`（非轨道运动，理论上不会发生在空间平台上），则 `timeToEval` 为无穷大。源码未对此做显式保护，依赖调用上下文保证 $n > 0$。
+
+##### 10. GetPhaseOfDay — 黄昏限角范围
+
+- **默认值**：`aLimitDegrees` 默认取 `cTWILIGHT_CIVIL = 96.0` 度（民用黄昏定义）。
+- **预设三种标准阈值**：
+  - `cTWILIGHT_CIVIL = 96.0`（民用黄昏：太阳在地平线下 6°）
+  - `cTWILIGHT_NAUTICAL = 102.0`（航海黄昏：太阳在地平线下 12°）
+  - `cTWILIGHT_ASTRONOMICAL = 108.0`（天文黄昏：太阳在地平线下 18°）
+- **阈值定义来源**：Fundamentals of Astrodynamics and Applications, 4th Ed., p. 281。
+- **无范围校验**：函数不检查 `aLimitDegrees` 是否在合理范围内（0～180 度）。传入负值会导致 `cosTheta` 阈值大于 1，所有情况均返回黑夜；传入大于 180 的值同理。调用者需自行保证输入合理。
+
+#### 提取策略
+
+本节说明如何从 AFSIM 源码中系统地提取本算法的所有代码元素和数学关系。
+
+##### 提取源文件
+
+| 源文件 | 提取目标 | 提取方式 |
+|--------|----------|----------|
+| `wsf_space/source/WsfSolarTerminator.hpp` | 公开 API 声明、枚举类型定义、常量声明 | 直接解析头文件：提取 `namespace WsfSolarTerminator` 内的所有函数声明、`enum class PhaseOfDay`、`enum class PlatformSolarIllumination`、`constexpr double` 常量 |
+| `wsf_space/source/WsfSolarTerminator.cpp` | 核心算法实现（5 个函数 + 2 个辅助函数） | 逐函数分析：匿名命名空间中的 `EllipsoidalInnerProduct()`、`EllipsoidalFunction()`、`GetDisplacementToSolarLimbs()`；公开函数 `GetPhaseOfDay()`、`MaskedByHorizon()`、`GetPlatformSolarIllumination()` |
+| `wsf_space/source/WsfEclipseEventManager.hpp` | EclipseEventManager 类声明、EclipseEvent 内部类声明 | 解析类成员变量和私有方法签名：`mIsEnabled`、`mCallbacks`、`mPlatformToCurrentEventIdMap`、`EclipseEvent::Type` 枚举 |
+| `wsf_space/source/WsfEclipseEventManager.cpp` | 事件管理器实现（调度逻辑 + 状态机） | 逐方法分析：`Initialize()`、`Enable()`、`Disable()`、`InitiateEclipseEvent()`、`EclipseEvent::Execute()` |
+| `tools/util/source/UtSun.hpp` | 太阳物理常量 | 提取 `UtSun::cMEAN_RADIUS`、`UtSun::cGRAVITATIONAL_PARAMETER`；提取 `GetSunLocationWCS()` 和 `GetSunVecNED()` 函数声明 |
+| `tools/util/source/UtEarth.hpp` | 地球椭球参数 | 提取 `UtEarth::cA`（赤道半径）、`UtEarth::cB`（极半径） |
+
+##### 提取流程
+
+1. **头文件扫描**（第一步）
+   - 打开 `WsfSolarTerminator.hpp`，提取所有 `WSF_SPACE_EXPORT` 函数声明作为算法入口点列表。
+   - 提取枚举定义（`PhaseOfDay`、`PlatformSolarIllumination`）的枚举项及其数值。
+   - 提取 `constexpr double` 常量（`cTWILIGHT_CIVIL` 等）及其数值和注释说明。
+
+2. **cpp 实现分析**（第二步）
+   - 打开 `WsfSolarTerminator.cpp`，定位匿名命名空间（Line 26-100）获取私有辅助函数和常量。
+   - 对每个函数：从 Doxygen 注释中提取功能描述，从函数体中提取算法步骤、条件分支、数学公式。
+   - 识别依赖调用链：如 `MaskedByHorizon` 调用 `EllipsoidalInnerProduct` 和 `EllipsoidalFunction`。
+
+3. **事件管理器分析**（第三步）
+   - 打开 `WsfEclipseEventManager.hpp`，提取类结构、成员变量和内部类定义。
+   - 打开 `WsfEclipseEventManager.cpp`，分析状态机逻辑：
+     - `InitiateEclipseEvent()`：预测入影/出影时间并安排事件。
+     - `EclipseEvent::Execute()`：事件触发时的状态迁移（cENTRY → cEXIT，cEXIT → cENTRY，cEVALUATE → cENTRY/cEXIT）。
+   - 识别平台生命周期回调注册（`PlatformInitialized`、`PlatformDeleted`、`OrbitalManeuverUpdated`、`OrbitalManeuverCompleted`）。
+
+4. **物理常量提取**（第四步）
+   - 从 `UtSun.hpp` 提取太阳半径常量和函数声明。
+   - 从 `UtEarth.hpp` 提取地球椭球参数。若 `UtEarth` 常量在其他头文件（如 `UtCentralBody.hpp`）中定义，则追踪引用链。
+
+5. **跨文件调用链重建**（第五步）
+   - 从 `GetPlatformSolarIllumination()` 向下追踪：`GetDisplacementToSolarLimbs()` → `UtSun::GetSunLocationWCS()` → `MaskedByHorizon()` → `EllipsoidalInnerProduct()` / `EllipsoidalFunction()`。
+   - 从 `EclipseEvent::Execute()` 向下追踪：`GetPropagator().GetEclipseTimes()` → `WsfObserver::EclipseEntry/EclipseExit()`。
+   - 将调用链整理为层次化的树状结构（见"源码使用说明"章节）。
+
+##### function-index.jsonl 覆盖情况
+
+该索引文件当前**未收录** `WsfSolarTerminator` 命名空间内的函数和 `WsfEclipseEventManager` 的方法。原因可能是索引构建时 `wsf_space` 模块尚未被完全扫描，或 solar terminator 相关函数被识别为工具函数而非核心算法。因此，本卡片的提取**完全基于直接阅读源文件**，而非依赖 function-index 的元数据。
+
+##### 提取注意事项
+
+- **匿名命名空间**：`EllipsoidalInnerProduct`、`EllipsoidalFunction`、`GetDisplacementToSolarLimbs` 三个函数位于 .cpp 文件的匿名命名空间中（`namespace {}`），是**翻译单元内部函数**，不会出现在头文件或符号导出表中。提取时必须直接阅读 .cpp 文件。
+- **const vs constexpr**：注意区分编译期常量（`cTWILIGHT_CIVIL`、`cMASKED_BY_EARTH_TOLERANCE` 等 `constexpr`）和运行期常量（`cCOS_TWILIGHT_BEGIN` 为 `const double`，因其由 `cos()` 函数计算，无法在编译期求值）。
+- **物理常量来源**：卡片中物理常量的数值注释来自源码中的 Doxygen 注释和代码内联注释（如 `UtSun.hpp` 中引用的 JPL 和 IAU 数据来源），提取时需同时记录来源文献，以便验证。
+- **Enum Class 数值**：`PhaseOfDay` 枚举值从 1 开始（cDAY=1, cTWILIGHT=2, cNIGHT=3），`PlatformSolarIllumination` 枚举值从 0 开始（cINVALID_PLATFORM=0）。提取时不宜假设起始值，而应直接记录源码中的定义。
+
 #### 可移植性评分
 
 **可移植性**：高

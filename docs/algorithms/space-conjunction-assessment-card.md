@@ -354,6 +354,113 @@ function RecomputeMinTime(aFunction, aLowRange, aHighRange):
     return UtGoldenSectionSearch(func, aLowRange, aHighRange, 1.0e-6)
 ```
 
+### 内部状态
+
+下表列出 `WsfOrbitalConjunctionAssessment` 类及其嵌套类（`Object`、`Encounter`、`State`）中跨帧持久化的成员变量。该类在构造时初始化所有内部对象，并在 `FindNext()` 的循环搜索过程中逐步更新状态。
+
+| 变量名 | 类型 | 初始值 | 物理含义 | 更新时机 |
+|--------|------|--------|----------|----------|
+| **主类成员** | | | | |
+| `mPrimary` | Object | 构造函数初始化 | 主目标的封装对象，含航迹引用、轨道外推器、尺寸信息 | 构造时创建，每次 `Propagate()` 时更新外推状态 |
+| `mSecondary` | Object | 构造函数初始化 | 次目标的封装对象，结构同 mPrimary | 构造时创建，每次 `Propagate()` 时更新外推状态 |
+| `mOptions` | Options | 由构造函数参数 `aOptions` 传入 | 评估选项：含 `mCutRadius`、`mStepRadians`、`mExclusionFactor`、`mInitialSearchTime`、`mFinalSearchTime`、`mDefaultObjectRadius`、`mDefaultVariance` | 构造时一次传入，搜索过程中不变 |
+| `mCurrent` | State | 构造时初始化为 `mNext` 的快照 | 当前步进区间的起始状态（时间、主目标动力学、次目标动力学） | 每次步进开始时 `mCurrent = mNext` |
+| `mNext` | State | `mTime = mInitialSearchTime`，位置/速度/加速度由外推器计算 | 当前步进区间的终止状态 | 每次 `PredictNextState()` 时由外推器计算新时刻的运动状态 |
+| `mStatus` | Status (enum) | 初始 `cNO_CONJUNCTION`，若 `FastFilter()` 失败则 `cREACHED_FINAL_TIME` | 搜索状态：`cNO_CONJUNCTION`（继续搜索）、`cCONJUNCTION_FOUND`（找到交会）、`cREACHED_FINAL_TIME`（到达终止时间） | 每次 `FindNext()` 迭代时更新 |
+| `mEncounter` | Encounter | 默认构造函数（哨兵值） | 当前相遇事件的封装对象，内含 `WsfOrbitalConjunctionRecord mRecord` | 每次 `FindNext()` 循环开始时 `Reset()`，每次找到极小值点时 `Compute()` |
+| **Object 类成员** | | | | |
+| `mTrack` | `WsfLocalTrack&` | 构造函数传入的引用 | 外部航迹对象的引用，提供滤波器、更新时间和平台信息 | 不在此类中修改 |
+| `mSimStartTime` | UtCalendar | 构造时从 `WsfSimulation` 获取 | 仿真起始日期时间，用于将相对时间转为绝对历元 | 构造时一次获取 |
+| `mSize` | double | 构造函数参数 `aSize` | 目标的等效半径 (m) | 构造时一次设定 |
+| `mPropPtr` | `std::unique_ptr<UtOrbitalPropagatorBase>` | `aPropPtr->Clone()` 克隆 | 目标专属的轨道外推器副本，独立外推运动状态 | 每次 `Propagate()` 时通过 `Update()` 传播到指定历元 |
+| `mConjPtr` | `const WsfOrbitalConjunctionAssessment*` | 构造时由 `SetConjunctionAssessment()` 设置 | 指向所属评估对象的回指指针，用于访问 defaultOption 值 | 构造后由外部调用 `SetConjunctionAssessment()` 设置 |
+| **Encounter::mRecord 成员** | | | | |
+| `mRecord.mMinTime` | double | -1.0 (Reset 后) | 最近点时刻 (s) | 由 `RecomputeMinTime()` 黄金分割搜索确定 |
+| `mRecord.mStartTime` | double | -1.0 (Reset 后) | 进入危险区的起始时刻 (s) | 由 `ComputeEncounterTimes()` 椭球求交确定 |
+| `mRecord.mEndTime` | double | -1.0 (Reset 后) | 离开危险区的结束时刻 (s) | 由 `ComputeEncounterTimes()` 椭球求交确定 |
+| `mRecord.mMaxProbability` | double | -1.0 (Reset 后) | 最大碰撞概率 (0-1) | 由 `ComputeProbability()` Vallado 公式计算 |
+| `mRecord.mMissDistance` | double | -1.0 (Reset 后) | 脱靶距离 (m) | 由 `RecomputeMinTime()` 后从插值路径取值 |
+| `mRecord.mRelativeVelocity` | double | -1.0 (Reset 后) | 最近点相对速度大小 (m/s) | 由 `RecomputeMinTime()` 后从插值路径导数取值 |
+| `mRecord.mPrimary` | std::string | 空字符串 | 主目标名称 | 由 `CurrentConjunction()` 输出时从 `mPrimary.GetName()` 填入 |
+| `mRecord.mSecondary` | std::string | 空字符串 | 次目标名称 | 由 `CurrentConjunction()` 输出时从 `mSecondary.GetName()` 填入 |
+
+### 变量映射表
+
+| 代码变量 | 数学符号 | 含义 |
+|----------|----------|------|
+| `mCurrent.mTime` / `mNext.mTime` | $t_1, t_2$ | 相邻预测时刻 (s) |
+| `RelativePosition()` | $\mathbf{r}_{\text{rel}} = \mathbf{r}_s - \mathbf{r}_p$ | 相对位置矢量 (m) |
+| `RelativeVelocity()` | $\mathbf{v}_{\text{rel}} = \mathbf{v}_s - \mathbf{v}_p$ | 相对速度矢量 (m/s) |
+| `RelativeAcceleration()` | $\mathbf{a}_{\text{rel}} = \mathbf{a}_s - \mathbf{a}_p$ | 相对加速度矢量 (m/s^2) |
+| `DistanceFunction()` | $D(t) = \|\mathbf{r}_{\text{rel}}\|^2$ | 平方距离函数 (m^2) |
+| `DistanceFunctionPrime()` | $D'(t) = 2 \mathbf{v}_{\text{rel}} \cdot \mathbf{r}_{\text{rel}}$ | 距离函数一阶导数 (m^2/s) |
+| `DistanceFunctionPrimePrime()` | $D''(t) = 2\|\mathbf{v}_{\text{rel}}\|^2 + 2 \mathbf{a}_{\text{rel}} \cdot \mathbf{r}_{\text{rel}}$ | 距离函数二阶导数 (m^2/s^2) |
+| `mOptions.mCutRadius` | $R_{\text{cut}}$ | 快速过滤器的距离阈值 (m) |
+| `mOptions.mStepRadians` | $\Delta\theta$ | 搜索步长角 (rad)，默认 $\pi/60$ |
+| `mOptions.mExclusionFactor` | $k_f$ | 协方差椭球缩放因子，默认 8.0 |
+| `mOptions.mDefaultVariance` | $\sigma_0^2$ | 默认位置方差 (m^2)，默认 10.0 |
+| `aCombinedRadius` | $R_{\text{comb}} = R_p + R_s$ | 组合目标半径 (m) |
+| `aCombinedCovariance` | $\Sigma$ | 组合协方差矩阵 (m^2)，等于主目标协方差 + 次目标协方差 |
+| `aScaleFactor` | $s$ | 协方差缩放系数 = `mExclusionFactor` |
+| `scaledCovariance` | $\Sigma \cdot s^2$ | 缩放后的组合协方差矩阵 |
+| `ellipsoidalFunction(t)` | $F(t) = \mathbf{s}(t)^T \Sigma^{-1} \mathbf{s}(t) - 1$ | 椭球函数，$F < 0$ 表示在危险区内部 |
+| `rScaled` | $r_s = R_{\text{comb}} / d_m$ | 组合半径与脱靶量之比（无量纲） |
+| `sqrtarg` | $-\ln((1-r_s)/(1+r_s))$ | Vallado 公式中的对数参数 |
+| `sfactor` | $s$ | Vallado 公式中的 s 因子 |
+| `erfarg` | $s / (2\sqrt{r_s})$ | Vallado 公式中 erf 函数的参数 |
+| `mRecord.mMaxProbability` | $P_{\max}$ | 最大碰撞概率 (0-1) |
+| `mRecord.mMissDistance` | $d_m$ | 脱靶距离 (m) |
+| `mRecord.mMinTime` | $t_{\min}$ | 最近点时刻 (s) |
+| `mRecord.mStartTime` | $t_{\text{start}}$ | 进入危险区时刻 (s) |
+| `mRecord.mEndTime` | $t_{\text{end}}$ | 离开危险区时刻 (s) |
+| `covarX / covarY / covarZ` | $\sigma_x^2, \sigma_y^2, \sigma_z^2$ | 对角协方差分量 (m^2) |
+
+### 边界条件
+
+下表列出算法中影响数值稳定性、输入合法性、限幅和回退行为的关键边界条件。
+
+| 条件 | 所在位置 | 处理方式 | 说明 |
+|------|----------|----------|------|
+| 轨道拱点不重叠 | `FastFilter()` | 返回 false，`mStatus` 置为 `cREACHED_FINAL_TIME` | 近地点最大值与远地点最小值之差 > `mCutRadius` 时，不可能发生交会，直接终止搜索 |
+| 相对距离过近（< 4 倍 cutRadius） | `PredictNextState()` | 每次跳增 60 秒并重新外推，循环直到距离 >= `4.0 * mCutRadius` | 防止步进过细导致效率低下，也避免在极近距离下插值失败 |
+| `mNext.mTime` 达到 `mFinalSearchTime` | `FindNext()` | 状态置为 `cREACHED_FINAL_TIME`，结束搜索循环 | 正常终止条件 |
+| `tMin > mNext.mTime` | `FindNext()` | 跳过当前相遇计算，返回循环开始继续步进 | 极小值尚未发生在当前区间内，继续推进 |
+| 目标尺寸 <= 0 | `Object::Size()` | 返回 `mConjPtr->DefaultObjectRadius()`（默认 1.0 m） | 防止组合半径为 0 或负数导致碰撞概率计算失败 |
+| 无航迹滤波器（协方差不可用） | `Object::Covariance()` | 返回对角矩阵，对角线值为 `mConjPtr->DefaultVariance() * mConjPtr->DefaultVariance()`（默认 100.0 m^2） | 默认球形不确定度，确保椭球函数始终有定义 |
+| 脱靶量 <= 组合半径 ($r_s \ge 1$) | `ComputeProbability()` | 直接返回 $P_{\max} = 1.0$，跳过 Vallado 公式 | Vallado 公式在 $r_s \ge 1$ 时数学上无定义（分母为零或对数参数为负） |
+| 脱靶量 > 组合半径 ($r_s < 1$) | `ComputeProbability()` | 使用 Vallado 公式 (11-56) 计算概率 | 正常路径，$r_s < 1$ 保证对数参数为正 |
+| 椭球函数在固定点值 >= 0 | `ContractTowardRoot()` | 直接返回 `aLimit`，不收缩 | 若最小值点本身已在椭球外，收缩无意义 |
+| 椭球插值无零点 (case 0) | `ComputeEncounterTimes()` | 检查最小距离点是否在各分量上 <= 协方差标准差；若是则整段在椭球内（`mStartTime = aCurrTime`, `mEndTime = aNextTime`），否则标记为无效（`mStartTime = +∞`, `mEndTime = -∞`） | 两个目标可能在同一轨道上（全段在椭球内），或者完全不相交 |
+| 椭球插值仅 1 个零点 (case 1) | `ComputeEncounterTimes()` | 以 `mMinTime` 为对称中心反射构造另一个零点 | 表示步长恰好使端点落在交会区边界附近 |
+| 椭球插值 2 个零点 (case 2) | `ComputeEncounterTimes()` | 通过导数符号区分进入点（导数 < 0）和离开点（导数 > 0） | 正常情况 |
+| 椭球插值 3 个零点 (case 3) | `ComputeEncounterTimes()` | `assert(0)` 断言失败 | 三次样条最多 2 零点，3 零点是异常条件 |
+| 黄金分割搜索容差 | `RecomputeMinTime()` | 收敛容差 1.0e-6 m | 距离函数的极小值搜索精度 |
+| 时间步长不超过 `mFinalSearchTime` | `ComputeNextTime()` | `std::min(mOptions.mFinalSearchTime, tNext)` | 防止步长越过搜索终止时间 |
+| 时间步长取两目标较小值 | `ComputeNextTime()` | `std::min(tNextPrimary, tNextSecondary)` | 取两目标中步长较小的，确保较快的目标不会被跳过 |
+| 轨道外推器克隆失败 | `Object::Object()` | `aPropPtr->Clone()` 若返回 nullptr，`std::unique_ptr` 的默认行为会导致后续访问空指针 | 依赖调用方确保 aPropPtr 非空 |
+
+### 提取策略
+
+该算法的信息从以下源文件按以下方式提取：
+
+| 源文件 | 提取方式 | 提取内容 |
+|--------|----------|----------|
+| `WsfOrbitalConjunctionAssessment.hpp` | 阅读头文件 | 类的完整结构定义：`Options` 结构体（7 个配置参数及其默认值的注释）、`Status` 枚举（3 种状态）、`State` 和 `Kinematics` 嵌套结构体的字段定义、`Object` 内嵌类的完整接口、`Encounter` 内嵌类的完整接口、`ContractTowardRoot` 模板函数的实现代码。主类的 private 成员变量列表（`mPrimary`, `mSecondary`, `mOptions`, `mCurrent`, `mNext`, `mStatus`, `mEncounter`）。 |
+| `WsfOrbitalConjunctionAssessment.cpp` | 逐函数分析 | 所有成员函数的完整实现。构造函数中的初始化顺序、`FastFilter()` 的一行实现、`PredictNextState()` 中的安全距离检查逻辑、`FindMinimum()` 的五次样条插值 + 二阶导数判断、`Encounter::Compute()` 的完整流程、`Encounter::ComputeProbability()` 的 Vallado 公式实现、`Encounter::ComputeEncounterTimes()` 中椭球函数构造和零点处理逻辑、`Object::Covariance()` 的默认方差回退逻辑、`Object::Size()` 的默认半径回退逻辑、`ComputeNextTime()` 的时间步估计。 |
+| `WsfOrbitalConjunctionProcessor.hpp` | 阅读头文件 | 处理器的类声明，确认调用入口和整体架构。 |
+| `WsfOrbitalConjunctionProcessor.cpp` | 阅读处理逻辑 | `Update()` 入口函数、`CategorizeLocalTracks()`、`RunPairs()`、`RunPrimaryPrimary()`、`RunPrimarySecondary()` 的调度逻辑。 |
+| `WsfOrbitalConjunctionRecord` (头文件内联定义) | 阅读结构体 | 记录输出字段的完整定义和注释。 |
+| `function-index.jsonl` | JSON 行检索 | 通过 `grep` 搜索 `ConjunctionAssessment` 和 `DetectConjunction` 确认索引条目。`DetectConjunction` 标记为 `math` 算法提示。 |
+
+**提取流程**：
+1. 从头文件的嵌套类结构出发，逐层提取 `Object`、`State`、`Encounter` 的内部成员变量。
+2. 将 `Options` 结构体的默认值（在注释中标明）作为"内部状态"的初始值来源。
+3. 从 `Object::Size()` 和 `Object::Covariance()` 中提取 `<= 0.0` 和 `nullptr` 的防御性检查作为边界条件。
+4. 从 `Encounter::Compute()` 中的 `ContractTowardRoot` 调用和 `ComputeEncounterTimes()` 中的 switch/case 多分支提取所有边界情况。
+5. 从 `ContractTowardRoot` 模板函数的实现（在头文件中内联定义）直接读取二分收缩逻辑。
+6. 从 `ComputeNextTime()` 的双 `std::min` 调用提取时间步长限制逻辑。
+7. 逐函数将 .cpp 实现中的变量名与数学公式符号建立映射。
+
 ### 源码使用说明
 
 #### 入口和调用链

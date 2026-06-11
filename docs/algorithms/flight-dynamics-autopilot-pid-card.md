@@ -492,6 +492,137 @@ PID::CalcOutputFromErrorWithLimits(error, curVal, simTime, min, max) // 同上 +
 9. **g-bias 补偿测试**：不同滚转角（0/30/60 deg）下验证 g-bias 计算值符合 $1/\cos\phi \cdot \cos\theta$。
 10. **速度前馈偏置测试**：模拟阻力=5000lb、maxThrust=10000lb、minThrust=1000lb，验证 biasThrottle = (5000-1000)/(9000) ≈ 0.444。
 
+### 内部状态
+
+状态分为两层：**PID 单回路级**（`PID` 类的 13 个私有成员变量，跨帧持久化在 20 个 PID 实例中）和 **CommonController 级**（自动驾驶仪级，管理 20 个 PID 实例及嵌套回路调度）。
+
+#### PID 单回路级内部状态
+
+每个 `PID` 实例维护以下跨帧状态：
+
+| 变量名 | 类型 | 初始值 | 物理含义 | 更新时机 |
+|--------|------|--------|----------|----------|
+| `mLastSimTime_sec` | `double` | `0.0` | 上次 PID 求值的时间戳（秒），用于计算实际帧间隔 dT 和判断是否到达更新间隔 | 每帧 `GetOutputWithLimits()` 结束时设为当前 `simTime_sec` |
+| `mUpdateInterval_sec` | `ut::optional<double>` | 未设（无值） | PID 回路的最小更新间隔（秒）。嵌套回路的外侧/中间层设为此值，内侧回路通常不设（每帧执行） | `ProcessInput()` 配置阶段设定；运行时由 `NestedFeedbackLoop` 初始化 |
+| `mSetPoint` | `double` | `0.0` | PID 设定点（目标值 SP），即期望的被控量 | `CalcOutputFromTarget()` 传入并存入 |
+| `mCurrentValue` | `double` | `0.0` | PID 过程变量（当前值 PV），即被控对象的实际测量值 | `CalcOutputFromTarget()` / `CalcOutputFromError()` 传入并存入 |
+| `mCurrentError` | `double` | `0.0` | 当前误差 e(t) = SP - PV，用于比例通道和积分累加 | `GetOutputWithLimits()` 计算并更新 |
+| `mCurrentDerivative` | `double` | `0.0` | 当前低通滤波后的过程变量变化率（导数）de/dt_filtered | `GetOutputWithLimits()` 一阶低通滤波计算 |
+| `mLastValue` | `double` | `0.0` | 上一帧的过程变量 PV(t-1)，用于计算采样导数 dPV/dt | `GetOutputWithLimits()` 末尾从 `mCurrentValue` 拷贝 |
+| `mLastError` | `double` | `0.0` | 上一帧的误差 e(t-1)，备用（当前代码主要用过程变量差而非误差差求导） | `GetOutputWithLimits()` 末尾从 `mCurrentError` 拷贝 |
+| `mLastDerivative` | `double` | `0.0` | 上一帧的滤波后导数，用于一阶低通滤波的递归项 (1-alpha) * lastD | `GetOutputWithLimits()` 末尾从 `mCurrentDerivative` 拷贝 |
+| `mErrorAccum` | `double` | `0.0` | 积分误差累积量（积分通道的 I 项），受 MaxAccum 限幅和抗积分饱和条件控制 | `GetOutputWithLimits()` 中满足累积条件时累加 `error * dT`，并受 clamp(-MaxAccum, +MaxAccum) 限幅 |
+| `mPrelimitedOutput` | `double` | `0.0` | 限幅前的 PID 输出值 = Kp*error + Ki_eff*accum + Kd*deriv + bias，用于 Kt 抗积分饱和反算 | `GetOutputWithLimits()` 在 P+I+D+bias 叠加后赋值，在限幅前 |
+| `mOutput` | `double` | `0.0` | 当前 PID 最终输出值（可能经限幅），返回给调用者 | `GetOutputWithLimits()` 中由 `mPrelimitedOutput` 经限幅后赋值；未到更新间隔时返回上一帧值 |
+| `mProportionalBiasValue` | `double` | `0.0` | 前馈偏置值（feed-forward bias），直接加到 P 通道输出，用于引入上一级回路输出的先验信息 | `SetBias()` 外部设置（如 g-bias alpha、阻力前馈），在 P+I+D 叠加时加入 |
+| `mProportionalBiasActive` | `bool` | `false` | 前馈偏置是否激活的标志位 | `SetBias()` 设为 true，清零时设为 false |
+| `mControllingValue` | `double` | `0.0` | 增益调度控制变量（如动压 q_bar），用于在增益表中线性插值得到 Kp/Ki/Kd/Alpha/MaxAccum 等参数 | `SetControllingValue()` 每帧由自动驾驶仪外部传入当前动压/Mach |
+| `mGainTables` | `vector<PidGainData>` | 空向量 | 增益调度数据表，每个 PidGainData 条目含 ControllingValue + Kp/Ki/Kd/Alpha/MaxAccum/MaxErrorZero/MinErrorZero/Kt 共 9 个浮点参数 | `ProcessInput()` 配置阶段从 XML/JSON 配置文件加载；运行时只读不写 |
+
+#### CommonController 级内部状态（20 个 PID 实例 + 调度/限幅状态）
+
+| 变量名 | 类型 | 初始值 | 物理含义 | 更新时机 |
+|--------|------|--------|----------|----------|
+| `mAlphaPID` 等 20 个 PID 实例 | `PID` | 各自默认构造 | 嵌套回路中每条 PID 回路的独立控制器实例，各自维护上述 13 个跨帧状态变量 | 每帧按嵌套回路时序由 `Update()` 分发调用 |
+| `mLastUpdateTime_nanosec` | `int64_t` | `0` | 上次自动驾驶仪更新的时间戳（纳秒），用于计算本帧真实时间间隔 | `Update()` 结束时更新 |
+| `mVerticalControlLoop` | `NestedFeedbackLoop` | 默认 | 垂直通道嵌套回路时序管理（middleLoopFactor / outerLoopFactor），控制外侧→中间→内侧的回调频率比 | 配置阶段设定；运行时只读 |
+| `mLateralControlLoop` | `NestedFeedbackLoop` | 默认 | 横向通道嵌套回路时序管理 | 配置阶段设定；运行时只读 |
+| `mSpeedControlLoop` | `NestedFeedbackLoop` | 默认 | 速度通道嵌套回路时序管理 | 配置阶段设定；运行时只读 |
+| `mControlOutputs` | `sAutopilotControls` | 全部 0.0 | 当前帧的自动驾驶仪输出结构体（12 个操纵面指令），由各回路 PID 填充后返回给飞行控制系统 | 每帧 `Update()` 中由各通道重写 |
+| `mCurrentLimitsAndSettings` | `AutopilotLimitsAndSettings` | = defaultLimits | 当前生效的自动驾驶仪限幅与设置（操纵面行程、最大速率、g-load 限制等） | 配置阶段/运行时由外部更新 |
+| `mCurrentActivityPtr` | `AutopilotAction*` | `nullptr` | 当前自动驾驶活动的指针（外部管理生命周期），含航路信息/目标值/控制模式 | `SetCurrentActivity()` 由外部设置 |
+| `mCurrentGBias_g` / `mCurrentGBiasAlpha_deg` | `double` | `1.0` / `0.0` | 当前全局 g-bias 值（考虑滚转/俯仰姿态修正后的 1g 巡航 g-load）和对应的攻角偏置 | `CalcGBiasData()` 每帧计算 |
+| `mLimitedMinAlpha_deg` / `mLimitedMaxAlpha_deg` | `double` | `0.0` | g-load 限制和直接 alpha 限制取交后的有效 alpha 上下限，用于垂直速度 PID 输出限幅 | `CalcAlphaBetaGLimits()` 每帧计算 |
+| `mLimitedBeta_deg` | `double` | `0.0` | g-load 限制和直接 beta 限制取交后的有效 beta 最大绝对值，用于偏航速率 PID 输出限幅 | `CalcAlphaBetaGLimits()` 每帧计算 |
+| `mIntegratedDeltaYaw/Pitch/Roll_deg` | `double` | `0.0` | 用于 DeltaYaw/DeltaPitch/DeltaRoll 控制模式的增量角度累计值 | `AngleDeltas()` 累加，`Reset*Angle()` 清零 |
+| `mAchievedWaypoint` | `bool` | `false` | 当前航路点是否已达到的标志 | 航路导航逻辑判断并更新 |
+| `mTurning` | `bool` | `false` | 是否正在执行协调转弯 | 航路导航逻辑判断并更新 |
+
+### 变量映射表
+
+| 代码变量 | 数学符号 | 含义 |
+|----------|----------|------|
+| `aSetPoint` (SP) | $SP$ | PID 设定点（目标值） |
+| `aCurValue` (PV) | $PV$ | 过程变量（当前实测值） |
+| `aError` / `mCurrentError` | $e(t)$ | 误差 = $SP - PV$ |
+| `mErrorAccum` | $\int e(\tau) d\tau$ | 积分误差累积量 |
+| `mCurrentDerivative` | $\frac{dPV}{dt}_{\text{filtered}}$ | 低通滤波后的过程变量变化率 |
+| `mOutput` | $u(t)$ | PID 输出（控制量） |
+| `mPrelimitedOutput` | $u_{\text{prelimited}}$ | 限幅前 PID 输出 |
+| `errorLimitedOutput` | $u_{\text{limited}} - u_{\text{prelimited}}$ | 输出限幅引入的误差，用于 Kt 反算 |
+| `Kp / Ki / Kd` | $K_p, K_i, K_d$ | 比例/积分/微分增益（通过增益调度插值得到） |
+| `effectiveKi` | $K_i^{\text{eff}}$ | 有效积分增益 = $K_i + K_t \cdot (u_{\text{limited}} - u_{\text{prelimited}})$ |
+| `Kt` | $K_t$ | 抗积分饱和反馈增益 |
+| `LowpassAlpha` | $\alpha$ | 导数通道低通滤波系数（0~1） |
+| `MaxAccum` | $A_{\max}$ | 积分误差绝对值最大累积上限 |
+| `MaxErrorZero` | $E_{\max}$ | 大误差抗积分饱和阈值：\|e\| > 此值停止积分累积 |
+| `MinErrorZero` | $E_{\min}$ | 小误差死区阈值：\|e\| < 此值停止积分累积（防止零区抖振） |
+| `mProportionalBiasValue` | $b(t)$ | 前馈偏置，直接加到 P 通道输出 |
+| `mControllingValue` | $\rho$ | 增益调度控制变量（通常为动压 q_bar） |
+| `mUpdateInterval_sec` | $T_{\text{update}}$ | PID 最小更新间隔（秒） |
+| `adjustedAlpha` | $\alpha_{\text{adjusted}}$ | 时间常数归一化后的低通滤波系数 |
+| `intendedTau` | $\tau_{\text{intended}}$ | 标称低通滤波时间常数 |
+| `KpContrib / KiContrib / KdContrib` | — | 三通道各自的贡献分量（调试用） |
+| `hdgError_deg` | $\Delta\psi$ | 归一化航向误差 [-180, +180]（度） |
+| `maxTurnRate_dps` | $\dot{\psi}_{\max}$ | 最大转弯速率（deg/s） |
+| `lateral_g` | $n_y$ | 水平升力分量（以 g 为单位） |
+| `bank_rad` / `cmdBank_deg` | $\phi_{\text{cmd}}$ | 指令滚转角（坡角） |
+| `pitchFactor` | $1/\cos\theta$ | 俯仰角修正因子 |
+| `cmdVertSpeed_fpm` | $\dot{h}_{\text{cmd}}$ | 指令垂直速率（ft/min） |
+| `cmdAlpha_deg` | $\alpha_{\text{cmd}}$ | 指令攻角（度） |
+| `cmdRollRate_dps` | $\dot{\phi}_{\text{cmd}}$ | 指令滚转速率（deg/s） |
+| `drag_lbs` | $D$ | 当前阻力（lbf） |
+| `maxThrust / minThrust` | $T_{\max}, T_{\min}$ | 最大/最小可用推力（含攻角余弦投影） |
+| `biasThrottle` | $b_{\text{speed}}$ | 速度通道前馈偏置，基于阻力与可用推力的插值 |
+| `stickBack` | — | 升降舵操纵指令（-1~+1） |
+| `stickRight` | — | 副翼操纵指令（-1~+1） |
+| `rudderRight` | — | 方向舵操纵指令（-1~+1） |
+
+### 边界条件
+
+1. **PID 更新间隔检查**：`GetOutputWithLimits()` 入口第一行 `if (dT_sec < updateInterval_sec): return mOutput`。若未到设定的更新间隔，跳过本帧 PID 求值并返回上一帧输出。嵌套回路的外侧/中间层通过此机制实现降频运行（如内侧每帧 0.01s 执行、中间每 10 帧执行 1 次、外侧每 50 帧执行 1 次）。
+
+2. **增益调度表边界处理**：`CalcPidGainsData()` 处理 4 种边界情况：
+   - 空表：全部增益清零，PID 输出为零。
+   - 单元素表：直接使用该条目，不插值。
+   - 控制值 <= 首条目的 ControllingValue：使用首条目。
+   - 控制值 >= 末条目的 ControllingValue：使用末条目。这实现了一阶外推（clamp to edge），防止超表范围时崩溃或产生异常插值结果。
+
+3. **积分抗饱和 -- 双重死区**：
+   - **大误差门槛**：`if |error| > MaxErrorZero` → 停止积分累积。防止在大偏差（通常由执行器饱和引起）下积分器持续累加导致过冲和长回程。
+   - **小误差死区**：`if |error| < MinErrorZero` → 停止积分累积。防止在稳态零误差附近因测量噪声导致积分抖振和极限环。
+   - **积分限幅**：`errorAccum = clamp(errorAccum, -MaxAccum, +MaxAccum)`。即使在累积区间内，积分总量也被绝对值上限约束，防止长时间同向误差下的积分饱和。
+
+4. **Kt 抗积分饱和反算**：`effectiveKi = Ki + Kt * (limitedOutput - prelimitedOutput)`。当输出被限幅时（`limitedOutput != prelimitedOutput`），Kt 反馈修正有效积分增益，使积分通道感知外部饱和并抑制进一步积累。Kt=0 时禁用此机制。
+
+5. **输出限幅**（操作面行程约束）：每条 PID 回路的输出均受调用者传入的 min/max 限幅：
+   - `AltitudePID` → 垂直速率限幅 `[vertSpd_Min, vertSpd_Max]`
+   - `VerticalSpeedPID` → 攻角限幅 `[limitedMinAlpha, limitedMaxAlpha]`
+   - `RollHeadingPID` → 转弯速率限幅 `[-maxTurnRate, +maxTurnRate]`
+   - `BankAnglePID` → 滚转速率限幅 `[-rollRate_Max, +rollRate_Max]`
+   - `SpeedPID` → 油门限幅 `[-1.0, 2.0]`（2.0 用于后续拆分军推+加力）
+   - `EnforceControlLimits()` 最终将 10 个操纵面+油门指令统一限幅至 `[-1, 1]` 或 `[0, 1]` 区间。
+
+6. **低通滤波时间常数归一化**：`adjustedAlpha = dT / (intendedTau + dT)`，其中 `intendedTau = T * (1-alpha)/alpha`。当 `lowpassAlpha` 接近 0（极强调制）时 `adjustedAlpha` 极小，接近 1（不滤波）时 `adjustedAlpha` 接近 dT/(0+dT)=1。当 `lowpassAlpha` 为 0（NearlyZero 判定）时直接设 `adjustedAlpha=0`（上一帧导数完全保留，即纯积分模式）。此归一化确保不同帧率下滤波特性一致。
+
+7. **极低速不做机动**：`CalcLateralNavMode_RollHeadingCore()` 中 `if (speed < minSpeed): ProcessStandardLateralNavMode_Bank(0, simTime); return`。在极低速（如地面滑行、初始阶段）下，转弯速率和坡角反算无意义，直接设坡角=0 并返回。
+
+8. **航向角归一化**：`NormalizeAngle180(hdgError_deg)` 将角度差折叠到 [-180, +180] 区间，避免 359° 和 1° 之间出现 358° 的大误差（正确值应为 -2°）。
+
+9. **攻角限幅交集**：`CalcAlphaBetaGLimits()` 中同时考虑 g-load 限制换算的 alpha 范围和直接配置的 `alpha_min`/`alpha_max` 限制，取交集得到最终 `mLimitedMinAlpha_deg` 和 `mLimitedMaxAlpha_deg`。同理处理 beta 限幅。确保无论姿态如何变化，攻角不超过结构和气动安全包线。
+
+10. **g-bias 计算保护**：`CalcGBiasData()` 中 `nz_bias = (1.0 / cos(roll)) * cos(pitch)`，经 clamp 到 `[G_min, G_max]` 后换算为 alpha 偏置。避免大滚转角（cos ~ 0）导致无穷大的 g-bias 需求。
+
+### 提取策略
+
+- **源文件**：`WsfSixDOF_PID.hpp`、`WsfSixDOF_PID.cpp`、`WsfSixDOF_CommonController.hpp`、`WsfSixDOF_CommonController.cpp`、`WsfSixDOF_VehicleData.hpp`
+- **提取方法**：
+  - **PID 核心**：从 `PID` 类中提取 `GetOutputWithLimits()` 和 `CalcPidGainsData()` 两个私有方法，前者（143 行）包含完整的增益调度→导数滤波→误差累积→抗积分饱和→三通道叠加→偏置→输出限幅流水线，后者（137 行）实现基于控制变量的多维增益线性插值。`PID` 类的 13 个私有成员变量构成控制器的完整跨帧状态。
+  - **嵌套回路架构**：从 `CommonController` 类中提取垂直（Altitude→VertSpeed→Alpha）、横向 BTT（RollHeading→BankAngle→RollRate）、横向 YTT（YawHeading→YawRate→Beta）、速度（Speed→Throttle）四条嵌套回路的连接关系。`ProcessStandard*Mode_*` 系列函数展示了如何通过前馈偏置（`SetBias`）和输出限幅（`CalcOutputFromErrorWithLimits`）将上级 PID 输出传递给下级。
+  - **增益调度与限幅**：`CalcAlphaBetaGLimits()`、`CalcGBiasData()`、`EnforceControlLimits()` 展示了 g-load→alpha/beta 转换、姿态修正 g-bias 计算、操纵面最终限幅的辅助逻辑。
+- **函数识别**：从 `function-index.jsonl` 中通过 `wsf_six_dof::CommonController`、`wsf_six_dof::PID`、`wsf_six_dof::CalcOutputFromTarget`、`wsf_six_dof::GetOutputWithLimits`、`wsf_six_dof::SetControllingValueForAllPIDs` 等函数名定位。PID 的 `GetOutputWithLimits` 在 index 中有两个条目（wsf_six_dof 和 wsf_p6dof 各一个，为不同模块的独立实现）。
+- **还原方式**：阅读 `CommonController::Update()` → `UpdateBankToTurn()` 或 `UpdateYawToTurn()` 的分发逻辑，然后追踪各 `ProcessLaternalNavChannelsBankToTurn` → `ProcessStandardLateralNavMode_RollHeading` → `ProcessStandardLateralNavMode_Bank` → `ProcessStandardLateralNavMode_RollRate` 的调用链（垂直和速度通道同理），还原完整的嵌套回路连接。PID 核心通过 `GetOutputWithLimits` 的单函数阅读还原全部控制算法。
+
 #### 可移植性评分
 
 **可移植性**：中

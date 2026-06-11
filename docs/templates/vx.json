@@ -1,0 +1,61 @@
+{
+    "created_time": "2026-06-11T15:03:24Z",
+    "files": [
+        {
+            "attachment_folder": "",
+            "created_time": "2026-06-11T15:03:24Z",
+            "id": "92",
+            "modified_time": "2026-06-11T15:03:24Z",
+            "name": "algorithm-card.md",
+            "signature": "11151577110591229500",
+            "tags": [
+            ]
+        },
+        {
+            "attachment_folder": "",
+            "created_time": "2026-06-11T15:03:24Z",
+            "id": "94",
+            "modified_time": "2026-06-11T15:03:24Z",
+            "name": "architecture-report.md",
+            "signature": "12083519799039807036",
+            "tags": [
+            ]
+        },
+        {
+            "attachment_folder": "",
+            "created_time": "2026-06-11T15:03:24Z",
+            "id": "96",
+            "modified_time": "2026-06-11T15:03:24Z",
+            "name": "migration-record.md",
+            "signature": "4670311189927611964",
+            "tags": [
+            ]
+        },
+        {
+            "attachment_folder": "",
+            "created_time": "2026-06-11T15:03:24Z",
+            "id": "98",
+            "modified_time": "2026-06-11T15:03:24Z",
+            "name": "requirement-gap.md",
+            "signature": "8427822483417779772",
+            "tags": [
+            ]
+        },
+        {
+            "attachment_folder": "",
+            "created_time": "2026-06-11T15:03:24Z",
+            "id": "100",
+            "modified_time": "2026-06-11T15:03:24Z",
+            "name": "skill-output-checklist.md",
+            "signature": "2773628785628204604",
+            "tags": [
+            ]
+        }
+    ],
+    "folders": [
+    ],
+    "id": "99",
+    "modified_time": "2026-06-11T15:03:24Z",
+    "signature": "10065297061578460732",
+    "version": 3
+}

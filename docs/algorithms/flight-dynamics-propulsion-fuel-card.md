@@ -293,6 +293,106 @@ WsfSixDOF_Integrator::CalculateFM()                                        // �
 7. **质心汇总测试**：2 个油箱各 100lb，CG 分别为 (1,0,0) 和 (-1,0,0)，验证总质心在 (0,0,0)。
 8. **百分比加油测试**：2 个油箱容量各 100lb（当前各 0lb），添加 100lb → 各油箱变为 50lb（50% 填充）。
 
+### 内部状态
+
+**PropulsionSystem（推进系统）层 -- 跨帧持久化成员变量：**
+
+| 变量名 | 类型 | 初始值 | 物理含义 | 更新时机 |
+|--------|------|--------|----------|----------|
+| `mFuelTransferList` | `vector<unique_ptr<FuelTransfer>>` | 空 | 预定义的油箱间传输链路列表（源→目标对） | 初始化时由 ProcessInput 构建；`RemoveInvalidFuelTransfers()` 动态移除失效链路 |
+| `mFuelTankMap` | `unordered_map<string, UtCloneablePtr<FuelTank>>` | 空 | 所有燃油箱的名称→对象映射表 | 初始化时添加/移除燃油箱；抛弃油箱后移除 |
+| `mLastSimTime_nanosec` | `int64_t` | 0 | 上一帧的仿真时间（ns），用于计算 dT | 每帧 `Update()` 末尾赋值 |
+| `mPropulsionSystemThrottleLeverPosition` | `double` | 0.0 | 推进系统级总油门杆位置（可覆盖各发动机） | 脚本调用设置 |
+| `mThrottleLeverPositionSet` | `bool` | false | 标记是否已设定系统级油门 | 设定时置 true |
+| `mEnableThrustVectoring` | `bool` | false | 是否启用推力矢量控制 | 初始化时配置 |
+
+**FuelTank（燃油箱）层 -- 跨帧持久化成员变量：**
+
+| 变量名 | 类型 | 初始值 | 物理含义 | 更新时机 |
+|--------|------|--------|----------|----------|
+| `mMaxFlowRate_pps` | `double` | 0.0 | 油箱向发动机供油的最大速率（lb/s） | 初始化时配置 |
+| `mMaxFillRate_pps` | `double` | 0.0 | 外部加油时油箱接受燃油的最大速率（lb/s） | 初始化时配置 |
+| `mMaxTransferRate_pps` | `double` | 0.0 | 油箱间燃油传输的最大速率（lb/s） | 初始化时配置 |
+| `mMaxQuantity_lbs` | `double` | 0.0 | 油箱最大容量（lb） | 初始化时配置 |
+| `mCurrentQuantity_lbs` | `double` | 0.0 | 当前燃油质量（lb）-- 核心状态 | 每帧 `CalculateFuelBurn`/`UpdateFuelBurn`/`Fill`/`Transfer` 更新 |
+| `mCurrentFuelFlow_pps` | `double` | 0.0 | 当前向发动机供油的流出速率（lb/s） | 每帧 `Update()` 中由临时速率提交 |
+| `mCurrentFillRate_pps` | `double` | 0.0 | 当前外部加油的流入速率（lb/s） | 每帧 `Update()` 中由临时速率提交 |
+| `mCurrentTransferRate_pps` | `double` | 0.0 | 当前传输速率（正=接收，负=移出）（lb/s） | 每帧 `Update()` 中由临时速率提交 |
+| `mTempCurrentFuelFlow_pps` | `double` | 0.0 | 本帧内累积的临时供油速率（可能多次调用 UpdateFuelBurn） | 每次 `UpdateFuelBurn` 调用时累加；`Update()` 末尾清零 |
+| `mTempCurrentFillRate_pps` | `double` | 0.0 | 本帧内累积的临时加油速率 | 每次 `UpdateFuelFill` 调用时累加；`Update()` 末尾清零 |
+| `mTempCurrentTransferRate_pps` | `double` | 0.0 | 本帧内累积的临时传输速率 | 每次 `UpdateFuelTransfer` 调用时累加；`Update()` 末尾清零 |
+| `mCurrentCgLocation_ft` | `UtVec3dX` | (0,0,0) | 当前燃油质心位置（ft），相对于父对象 | 每次油量变化后调用 `CalcCgLocation_ft()` 更新 |
+| `mFullCgLocation_ft` | `UtVec3dX` | 配置值 | 油箱满时燃油质心位置（ft），通常为油箱中心 | 初始化时配置 |
+| `mEmptyCgLocation_ft` | `UtVec3dX` | 配置值 | 油箱空时燃油质心位置（ft），通常为油箱底部 | 初始化时配置 |
+| `mCgEmptyToFullVector` | `UtVec3dX` | = fullCg - emptyCg | 空到满质心的偏移矢量（ft） | `SetFullCgLocation_ft`/`SetEmptyCgLocation_ft` 被调用时更新 |
+| `mLastSimTime_nanosec` | `int64_t` | 0 | 上一帧仿真时间（ns） | 每帧 `Update()` 末尾赋值 |
+| `mMassProperties` | `MassProperties` | 默认 | 燃油箱当前质量属性（含质量+CG） | `CalculateCurrentMassProperties()` 中更新 |
+
+### 变量映射表
+
+| 代码变量 | 数学符号 | 含义 |
+|----------|----------|------|
+| `dT_sec` | $\Delta t$ | 仿真时间步长（s） |
+| `mCurrentQuantity_lbs` | $m_{current}$ | 当前燃油质量（lb） |
+| `mMaxQuantity_lbs` | $m_{max}$ | 油箱最大容量（lb） |
+| `mCurrentCgLocation_ft` | $\mathbf{r}_{cg}$ | 当前 CG 位置矢量（ft） |
+| `mEmptyCgLocation_ft` | $\mathbf{r}_{empty}$ | 空油箱 CG 位置（ft） |
+| `mFullCgLocation_ft` | $\mathbf{r}_{full}$ | 满油箱 CG 位置（ft） |
+| `mCgEmptyToFullVector` | $\mathbf{r}_{full} - \mathbf{r}_{empty}$ | 空到满 CG 偏移矢量（ft） |
+| `fraction` (CG) | $m_{current} / m_{max}$ | 燃油充满度 [0, 1] |
+| `aFuelBurnRequest_lbs` | $\dot{m}_{request} \cdot \Delta t$ | 请求燃烧的燃油质量（lb） |
+| `mMaxFlowRate_pps` | $\dot{m}_{max\_flow}$ | 最大供油速率（lb/s） |
+| `aFuelActuallyProvided_lbs` | $m_{actual}$ | 实际供给的燃油质量（lb） |
+| `mMaxTransferRate_pps` | $\dot{m}_{max\_transfer}$ | 最大传输速率（lb/s） |
+| `maxTargetTransfer_lbs` | $m_{max\_receive}$ | 目标油箱最大接收量（lb） |
+| `totalAvailable_lbs` | $\sum m_{provided}$ | 所有源油箱可提供量之和（lb） |
+| `fraction` (传输) | $f$ | 传输比例因子，$f \in [0, 1]$ |
+| `mFuelTransferList[i].sourceTankName` | — | 传输源油箱名称 |
+| `mFuelTransferList[i].targetTankName` | — | 传输目标油箱名称 |
+| `mCurrentFuelFlow_pps` | $\dot{m}_{flow}$ | 当前供油速率（lb/s） |
+| `mCurrentFillRate_pps` | $\dot{m}_{fill}$ | 当前加油速率（lb/s） |
+| `mCurrentTransferRate_pps` | $\dot{m}_{transfer}$ | 当前传输速率（lb/s） |
+| `mLastSimTime_nanosec` | $t_{last}$ | 上一帧仿真时间（ns） |
+| `aSimTime_nanosec` | $t_{sim}$ | 当前帧仿真时间（ns） |
+| `burnRequest_lbs` | $m_{burn\_request}$ | 请求燃烧的燃油质量（lb） |
+
+### 边界条件
+
+1. **负时间步保护**：`PropulsionSystem::Update()` 中计算 `dT_nanosec = aSimTime - mLastSimTime`，若 `dT_nanosec < 0` 则直接返回（跳过本帧所有燃油操作），避免因仿真时钟回退导致异常。
+
+2. **极小时间步 / 零时间步保护**：在 `FuelTank::UpdateFuelBurn()`、`CalculateFuelBurn()`、`Transfer`、`Fill` 等函数中，当 `aDeltaT_sec < EPSILON` 时直接返回当前状态而不做任何修改，防止除零（速率 = 质量 / 时间）。
+
+3. **燃油冻结标志**：当 `parentVehicle.freezeFlags.fuelBurn == true` 时，`PropulsionSystem::Update()` 仅保存时间戳后直接返回，不处理任何传输。引擎侧的 `UpdateThrust()` 也会检查此标志，冻结时不更新 `mCurrentQuantity_lbs`（不改变油量但可执行计算）。
+
+4. **油量非负下限**：`UpdateFuelBurn()` 中油量更新为 `mCurrentQuantity_lbs = max(0.0, newMass)`，确保燃油质量永远不会为负数。同理在 `CalculateFuelBurn()` 中，如果 `remainingAfterBurn < 0`（油箱不够烧），`burnAmount = burnRequest + remainingAfterBurn`（仅烧掉剩余部分）。
+
+5. **超速率燃烧限幅**：`CalculateFuelBurn()` 中限制实际燃烧量不超过 `mMaxFlowRate_pps * dT_sec`。若请求速率超过上限，`burnAmount` 被缩至速率限幅值。并且如果 `burnAmount` 超出当前剩余油量，最终 `burnAmount` 进一步缩至剩余量。
+
+6. **油箱满度截断**：在 `CalculateFuelTransfer()` 和 `CalculateFuelFill()` 中，目标油箱的最大接收量受 `mMaxQuantity_lbs - mCurrentQuantity_lbs` 限制（即油箱空余容量）。超过空余容量的接收量被截断。同理，计算源油箱移出量时受 `mCurrentQuantity_lbs` 限制（不可移出超过当前油量的燃油）。
+
+7. **传输比例因子钳制**：
+   - 当 `|∑ provided| ≤ |maxTargetTransfer|` 时：`fraction = 1.0`（全量传输）。
+   - 当 `|∑ provided| > |maxTargetTransfer|` 时：`fraction = |maxTargetTransfer| / |∑ provided|`（等比压缩）。
+   - 当 `|maxTargetTransfer| ≤ EPSILON` 时：`fraction = 0.0`（目标无法接收任何燃油）。
+   - 当 `fraction ≤ EPSILON` 时：跳过实际传输步骤。
+
+8. **无效传输路径清理**：`RemoveInvalidFuelTransfers()` 在每帧开始前遍历 `mFuelTransferList`，检查 `sourceTank` 和 `targetTank` 指针是否仍然有效（非 null 且在 `mFuelTankMap` 中存在）。如果油箱被抛弃（`RemoveFuelTankByName`），相关传输链路被移除，避免悬空指针访问。
+
+9. **CG 位置空/满线性插值边界**：`CalcCgLocation_ft()` 中 `fraction = currentQty / maxQty` 的计算隐含了 `mMaxQuantity_lbs == 0` 时的除零风险（实际中 `maxQty` 应大于 EPSILON）。空油箱时 fraction = 0，CG = emptyCg；满油箱时 fraction = 1，CG = fullCg。建议移植时增加 `if (maxQty < EPSILON) return emptyCg` 的保护。
+
+10. **百分比加油算法保护**：`AddFuelQuantity_lbs()` 中若总容量为 0（无油箱或有油箱但容量均为 0），百分比计算会导致除零。建议移植时增加保护：`if totalCapacity < EPSILON -> return 0`。
+
+### 提取策略
+
+- **源文件**：
+  - `source_root/afsim-2_9/swdev/src/wsf_plugins/wsf_six_dof/source/WsfSixDOF_PropulsionSystem.hpp`（PropulsionSystem 类声明，含 mFuelTankMap、mFuelTransferList 等）
+  - `source_root/afsim-2_9/swdev/src/wsf_plugins/wsf_six_dof/source/WsfSixDOF_PropulsionSystem.cpp`（Update、GetMassProperties、AddFuelQuantity_lbs、FillAllTanks 等实现）
+  - `source_root/afsim-2_9/swdev/src/wsf_plugins/wsf_six_dof/source/WsfSixDOF_FuelTank.hpp`（FuelTank 类声明，含 3 种速率 + CG 插值 + 各状态变量）
+  - `source_root/afsim-2_9/swdev/src/wsf_plugins/wsf_six_dof/source/WsfSixDOF_FuelTank.cpp`（CalcCgLocation_ft、CalculateFuelBurn/UpdateFuelBurn、CalculateFuelTransfer/UpdateFuelTransfer 等实现）
+- **提取方法**：通过读取 `.hpp` 头文件获取所有成员变量的类型和默认初始值（注意 c++ 类内初始化语法 `= 0.0`）；通过阅读 `.cpp` 文件的 `Update()`、`CalculateFuelBurn()`、`UpdateFuelBurn()`、`CalculateFuelTransfer()` 等函数追踪每个变量的读写位置。
+- **函数识别**：从 `workspace/source-index/wsf_plugins/function-index.jsonl` 中可搜索 `wsf_p6dof::` 命名空间的 `PropulsionSystem` 和 `FuelTank` 相关函数。`CalcCgLocation_ft`（位置 857-864，核心 8 行）、`CalculateFuelBurn`（307-388，80 行）、`Update`（每帧主入口）是核心算法函数。
+- **还原方式**：数学公式来自源码中对 CG 线性插值和速率限制逻辑的直接提取。变量映射表覆盖公式中使用的全部关键符号。该算法的核心逻辑极其简单（线性插值+速率限制+比例分配），提取的重点在于正确追踪"临时速率→永久速率"的两阶段提交机制。
+
 #### 可移植性评分
 
 **可移植性**：高

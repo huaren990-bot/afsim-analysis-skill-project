@@ -329,6 +329,161 @@ RigidBodyAeroCoreObject::ProcessInput(aInput)                     // 解析 aero
 5. **面积缩放因子测试**：将 `aRadiusSizeFactor` 设为 2.0，验证力变为原来的 4 倍（面积随半径的平方缩放）。
 6. **参考面积 vs 机翼面积**：启用 `ref_area_sqft` 后对同一飞行条件比较两种面积模式下的力/力矩，确认缩放关系正确（力矩参考长度从 sqrt(refArea) 计算）。
 
+### 内部状态
+
+`RigidBodyAeroCoreObject` 是持有完整稳定性导数气动参数配置的持久化对象。核心计算 `CalculateCoreAeroFM()` 是纯函数（无成员变量写入），所有状态来自初始化阶段加载的查表指针和几何参数。
+
+| 变量名 | 类型 | 初始值 | 物理含义 | 更新时机 |
+|--------|------|--------|----------|----------|
+| `mRefArea_sqft`（基类） | `double` | `0.0` | 气动参考面积（ft^2）。启用 `mUseRefArea` 时用于所有力/力矩计算 | 初始化阶段由 `ref_area_sqft` 命令写入 |
+| `mCL_AlphaBetaMachTablePtr`（基类） | `UtTable::Table*` | `nullptr` | 升力系数静态 3D 表 `CL(alpha, beta, Mach)` | 初始化阶段由 `cL_alpha_beta_mach_table` 命令加载 |
+| `mCd_AlphaBetaMachTablePtr`（基类） | `UtTable::Table*` | `nullptr` | 阻力系数静态 3D 表 `Cd(alpha, beta, Mach)` | 初始化阶段由 `cd_alpha_beta_mach_table` 命令加载 |
+| `mCY_AlphaBetaMachTablePtr`（基类） | `UtTable::Table*` | `nullptr` | 侧力系数静态 3D 表 `CY(alpha, beta, Mach)` | 初始化阶段由 `cy_alpha_beta_mach_table` 命令加载 |
+| `mModeName`（基类） | `std::string` | `"DEFAULT"` | 当前气动模态名称（多构型切换标识） | 由 `SetModeName()` 在模态切换时更新 |
+| `mWingChord_ft` | `double` | `0.0` | 平均气动弦长 MAC（ft），缩放俯仰相关简化频率 | 初始化阶段由 `wing_chord_ft` 命令写入 |
+| `mWingSpan_ft` | `double` | `0.0` | 翼展（ft），缩放滚转/偏航相关简化频率 | 初始化阶段由 `wing_span_ft` 命令写入 |
+| `mWingArea_sqft` | `double` | `0.0` | 机翼参考面积（ft^2），用于所有力/力矩的有量纲化 | 初始化阶段由 `wing_area_sqft` 命令写入 |
+| `mRefLength_ft` | `double` | `0.0` | 参考长度 `sqrt(mRefArea_sqft)`，启用 `mUseRefArea` 时替代弦长/翼展 | 初始化阶段当加载 `ref_area_sqft` 时自动计算 |
+| `mUseRefArea` | `bool` | `false` | 显式参考面积开关：true 时用 `mRefArea_sqft` 和 `mRefLength_ft` 替代翼面参数 | 初始化阶段当加载 `ref_area_sqft` 时设为 `true` |
+| `mUseReducedFrequency` | `bool` | `true` | 简化频率开关：true 时用无量纲频率替代有量纲角速率（默认开启） | 初始化阶段由 `use_reduced_frequency` 命令设置 |
+| `mAeroCenter_ft` | `UtVec3dX` | `(0,0,0)` | 气动中心位置（ft），力/力矩的作用点参考 | 初始化阶段由 `aero_center_x/y/z` 命令逐分量写入 |
+| `mCLq_AlphaMachTablePtr` | `UtTable::Table*` | `nullptr` | 俯仰阻尼升力导数 2D 表 `CLq(alpha, Mach)` | 初始化阶段由 `cLq_alpha_mach_table` 命令加载 |
+| `mCL_AlphaDotAlphaMachTablePtr` | `UtTable::Table*` | `nullptr` | 攻角延迟升力导数 2D 表 `CL_adot(alpha, Mach)` | 初始化阶段由 `cL_alphadot_alpha_mach_table` 命令加载 |
+| `mCYr_BetaMachTablePtr` | `UtTable::Table*` | `nullptr` | 偏航速率侧力导数 2D 表 `CYr(beta, Mach)` | 初始化阶段由 `cyr_beta_mach_table` 命令加载 |
+| `mCY_BetaDotBetaMachTablePtr` | `UtTable::Table*` | `nullptr` | 侧滑延迟侧力导数 2D 表 `CY_betadot(beta, Mach)` | 初始化阶段由 `cy_betadot_beta_mach_table` 命令加载 |
+| `mCm_AlphaBetaMachTablePtr` | `UtTable::Table*` | `nullptr` | 俯仰力矩系数静态 3D 表 `Cm(alpha, beta, Mach)` | 初始化阶段由 `cm_alpha_beta_mach_table` 命令加载 |
+| `mCmq_MachCurvePtr` | `UtTable::Curve*` | `nullptr` | 俯仰阻尼导数 1D 曲线 `Cmq(Mach)` | 初始化阶段由 `cmq_mach_table` 命令加载 |
+| `mCmp_MachCurvePtr` | `UtTable::Curve*` | `nullptr` | 滚转-俯仰交叉导数 1D 曲线 `Cmp(Mach)` | 初始化阶段由 `cmp_mach_table` 命令加载 |
+| `mCm_AlphaDotMachCurvePtr` | `UtTable::Curve*` | `nullptr` | 攻角延迟俯仰力矩导数 1D 曲线 `Cm_adot(Mach)` | 初始化阶段由 `cm_alphadot_mach_table` 命令加载 |
+| `mCn_AlphaBetaMachTablePtr` | `UtTable::Table*` | `nullptr` | 偏航力矩系数静态 3D 表 `Cn(alpha, beta, Mach)` | 初始化阶段由 `cn_alpha_beta_mach_table` 命令加载 |
+| `mCn_BetaDotMachCurvePtr` | `UtTable::Curve*` | `nullptr` | 侧滑延迟偏航力矩导数 1D 曲线 `Cn_betadot(Mach)` | 初始化阶段由 `cn_betadot_mach_table` 命令加载 |
+| `mCnr_MachCurvePtr` | `UtTable::Curve*` | `nullptr` | 偏航阻尼导数 1D 曲线 `Cnr(Mach)` | 初始化阶段由 `cnr_mach_table` 命令加载 |
+| `mCnp_MachCurvePtr` | `UtTable::Curve*` | `nullptr` | 滚转-偏航交叉导数 1D 曲线 `Cnp(Mach)` | 初始化阶段由 `cnp_mach_table` 命令加载 |
+| `mCl_AlphaBetaMachTablePtr` | `UtTable::Table*` | `nullptr` | 滚转力矩系数静态 3D 表 `Cl(alpha, beta, Mach)` | 初始化阶段由 `cl_alpha_beta_mach_table` 命令加载 |
+| `mClp_MachCurvePtr` | `UtTable::Curve*` | `nullptr` | 滚转阻尼导数 1D 曲线 `Clp(Mach)` | 初始化阶段由 `clp_mach_table` 命令加载 |
+| `mCl_AlphaDotMachCurvePtr` | `UtTable::Curve*` | `nullptr` | 攻角延迟滚转力矩导数 1D 曲线 `Cl_adot(Mach)` | 初始化阶段由 `cl_alphadot_mach_table` 命令加载 |
+| `mCl_BetaDotMachCurvePtr` | `UtTable::Curve*` | `nullptr` | 侧滑延迟滚转力矩导数 1D 曲线 `Cl_betadot(Mach)` | 初始化阶段由 `cl_betadot_mach_table` 命令加载 |
+| `mClr_MachCurvePtr` | `UtTable::Curve*` | `nullptr` | 偏航-滚转交叉导数 1D 曲线 `Clr(Mach)` | 初始化阶段由 `clr_mach_table` 命令加载 |
+| `mClq_MachCurvePtr` | `UtTable::Curve*` | `nullptr` | 俯仰-滚转交叉导数 1D 曲线 `Clq(Mach)` | 初始化阶段由 `clq_mach_table` 命令加载 |
+| `mSubModesList` | `list<CloneablePtr>` | 空 list | 子模态列表（多构型气动参数集） | 初始化阶段由 `aero_mode` 子块创建 |
+
+**注意**：`CalculateCoreAeroFM()` 内部的所有变量（`kq`/`kr`/`kp`/`ka`/`kb`/`CL`/`Cm`/`Cn`/`Cl` 等）均为局部临时变量，不在帧间保留。14 个查表函数均为无副作用的纯查表函数。
+
+### 变量映射表
+
+| 代码变量 | 数学符号 | 含义 |
+|----------|----------|------|
+| `aDynPress_lbsqft` | $\bar{q}$ | 自由流动压（lb/ft^2） |
+| `aMach` | $M$ | 飞行马赫数（无量纲） |
+| `aSpeed_fps` | $V$ | 真空速（ft/s） |
+| `aAlpha_rad` | $\alpha$ | 攻角（rad） |
+| `aBeta_rad` | $\beta$ | 侧滑角（rad） |
+| `aAlphaDot_rps` | $\dot{\alpha}$ | 攻角变化率（rad/s） |
+| `aBetaDot_rps` | $\dot{\beta}$ | 侧滑角变化率（rad/s） |
+| `aAngularRates_rps` | $\vec{\omega} = [p, q, r]$ | 体轴角速率矢量（rad/s） |
+| `rollRate_rps` / `pitchRate_rps` / `yawRate_rps` | $p$ / $q$ / $r$ | 滚转/俯仰/偏航角速率分量（rad/s） |
+| `speedSafe_fps` | $V_{safe}$ | 保护后的真空速 `max(V, 1.0)`（ft/s），防止除零 |
+| `kq` | $k_q$ | 基础俯仰无量纲速率 `q/(2*V)` |
+| `kr` | $k_r$ | 基础偏航无量纲速率 `r/(2*V)` |
+| `kp` | $k_p$ | 基础滚转无量纲速率 `p/(2*V)` |
+| `ka` | $k_{\dot{\alpha}}$ | 基础攻角变化率无量纲速率 `alpha_dot/(2*V)` |
+| `kb` | $k_{\dot{\beta}}$ | 基础侧滑角变化率无量纲速率 `beta_dot/(2*V)` |
+| `kLq` / `kLa` / `kYr` / `kYb` | — | 按参考长度缩放后的力分量简化频率 |
+| `kmq` / `kma` / `kmp` | — | 按参考长度缩放后的俯仰力矩简化频率 |
+| `klq` / `kla` / `klr` / `klb` / `klp` | — | 按参考长度缩放后的滚转力矩简化频率 |
+| `knr` / `knb` / `knp` | — | 按参考长度缩放后的偏航力矩简化频率 |
+| `mWingChord_ft` | $c_{ref}$（弦长模式） | 平均气动弦长（ft） |
+| `mWingSpan_ft` | $b$（翼展模式） | 翼展长度（ft） |
+| `mWingArea_sqft` | $S_{wing}$ | 机翼面积（ft^2） |
+| `mRefArea_sqft` | $S_{ref}$ | 显式参考面积（ft^2），启用 `mUseRefArea` 时替代机翼面积 |
+| `mRefLength_ft` | $l_{ref}$ | 显式参考长度 `sqrt(S_ref)`（ft） |
+| `aRadiusSizeFactor` | $R$ | 几何尺度因子（线性缩放比，默认 1.0） |
+| `areaMultiplier` | $R^2$ | 面积缩放因子 |
+| `CL` | $C_L(\alpha,\beta,M)$ | 升力系数静态 3D 表项 |
+| `CLq` | $C_{L_q}(\alpha,M)$ | 俯仰阻尼升力导数 2D 表项 |
+| `CL_alphadot` | $C_{L_{\dot{\alpha}}}(\alpha,M)$ | 攻角延迟升力导数 2D 表项 |
+| `Cd` | $C_d(\alpha,\beta,M)$ | 阻力系数静态 3D 表项（无动态项） |
+| `CY` | $C_Y(\alpha,\beta,M)$ | 侧力系数静态 3D 表项 |
+| `CYr` | $C_{Y_r}(\beta,M)$ | 偏航速率侧力导数 2D 表项 |
+| `CY_betadot` | $C_{Y_{\dot{\beta}}}(\beta,M)$ | 侧滑延迟侧力导数 2D 表项 |
+| `Cm` | $C_m(\alpha,\beta,M)$ | 俯仰力矩系数静态 3D 表项 |
+| `Cmq` / `CmQ` | $C_{m_q}(M)$ | 俯仰阻尼导数 1D 曲线 |
+| `Cmp` / `CmP` | $C_{m_p}(M)$ | 滚转-俯仰交叉导数 1D 曲线 |
+| `CmAlphaDot` / `Cm_alphadot` | $C_{m_{\dot{\alpha}}}(M)$ | 攻角延迟俯仰力矩导数 1D 曲线 |
+| `Cn` | $C_n(\alpha,\beta,M)$ | 偏航力矩系数静态 3D 表项 |
+| `Cnr` / `CnR` | $C_{n_r}(M)$ | 偏航阻尼导数 1D 曲线 |
+| `Cnp` / `CnP` | $C_{n_p}(M)$ | 滚转-偏航交叉导数 1D 曲线 |
+| `CnBetaDot` / `Cn_betadot` | $C_{n_{\dot{\beta}}}(M)$ | 侧滑延迟偏航力矩导数 1D 曲线 |
+| `Cl` | $C_l(\alpha,\beta,M)$ | 滚转力矩系数静态 3D 表项 |
+| `Clp` / `ClP` | $C_{l_p}(M)$ | 滚转阻尼导数 1D 曲线 |
+| `Clr` / `ClR` | $C_{l_r}(M)$ | 偏航-滚转交叉导数 1D 曲线 |
+| `Clq` / `ClQ` | $C_{l_q}(M)$ | 俯仰-滚转交叉导数 1D 曲线 |
+| `Cl_AlphaDot` / `Cl_alphadot` | $C_{l_{\dot{\alpha}}}(M)$ | 攻角延迟滚转力矩导数 1D 曲线 |
+| `Cl_BetaDot` / `Cl_betadot` | $C_{l_{\dot{\beta}}}(M)$ | 侧滑延迟滚转力矩导数 1D 曲线 |
+| `aLift_lbs` | $L$ | 有量纲升力（lb） |
+| `aDrag_lbs` | $D$ | 有量纲阻力（lb） |
+| `aSideForce_lbs` | $Y$ | 有量纲侧力（lb） |
+| `aMoment_ftlbs` | $\vec{M} = [M_x, M_y, M_z]$ | 有量纲力矩矢量（ft-lb） |
+| `roll_moment` | $M_x$ | 滚转力矩（ft-lb） |
+| `pitch_moment` | $M_y$ | 俯仰力矩（ft-lb） |
+| `yaw_moment` | $M_z$ | 偏航力矩（ft-lb） |
+| `mUseReducedFrequency` | — | 布尔标志：true 时使用无量纲简化频率；false 时直接使用有量纲角速率（已弃用模式） |
+
+### 边界条件
+
+1. **空表保护（nullptr 检查）**：所有 14 个查表函数在查表前检查指针是否为 `nullptr`，若为空则返回 `0.0`。这意味着未配置的导数默认为零，不贡献力/力矩增量。整个计算流程不会因缺少某张表而崩溃。
+
+2. **速度除零保护**：`speedSafe_fps = std::max(aSpeed_fps, 1.0)` 确保在速度为零或为负时使用 `1.0 ft/s` 作为分母，防止简化频率 `k = rate/(2*V)` 除零。
+
+3. **简化频率失效切换**：当 `mUseReducedFrequency = false`（已弃用模式）时，所有简化频率被替换为原始有量纲角速率值（`kLq = pitchRate_rps` 等）。此时导数不再具有物理无量纲含义，仅用于向后兼容。正常使用时此开关保持默认 `true`。
+
+4. **参考面积 vs 机翼面积选择**：`mUseRefArea` 标志控制两种面积模式：
+   - `false`（默认）：力用 `wingArea * areaMultiplier`，力矩用 `wingArea * wingChord/wingSpan`
+   - `true`：力用 `refArea * areaMultiplier`，力矩用 `refArea * refLength`
+   两种模式互斥切换，不会同时生效。
+
+5. **参考面积零值保护**：无显式检查。若 `mRefArea_sqft = 0` 且 `mUseRefArea = true`，所有力/力矩输出为零。同样，若 `wingArea = 0` 且 `mUseRefArea = false`，输出为零。
+
+6. **操纵面无增量**：与 PointMass 气动模型不同，RigidBody 气动系数模型不支持操纵面（减速板/襟翼/扰流板）的叠加增量。阻力和侧力仅来自静态 3D 表和动态导数。
+
+7. **除零保护**：简化频率计算中唯一的分母是 `2 * speedSafe_fps`，通过 `max(speed, 1.0)` 保护后 ≥ 2.0，无除零风险。
+
+8. **NaN/Inf 保护**：代码中无显式 `isnan()`/`isinf()` 检查。若查表引擎返回 NaN，会直接传播到输出。几何参数（弦长/翼展/面积）为 0 时力/力矩输出为 0（因乘以零面积），不会产生 Inf。
+
+9. **参数域限制（初始化阶段）**：物理参数通过 `UtTable::ValueGE(0.0)`（Mach >= 0）、`UtTable::ValueGE_LE(-PI_OVER_2, PI_OVER_2)`（侧滑角 ±90 度）、`UtTable::ValueGE_LE(-PI, PI)`（攻角 ±180 度）设置合法范围。查表引擎对越界值的处理取决于引擎实现（外推或边界值）。
+
+10. **角度单位一致性**：`CLq_AlphaMach` / `CL_AlphaDotAlphaMach` 等 14 个查表函数的 alpha/beta 参数始终以 rad（弧度）传入，与配置文件中角度域定义的单位一致（`UtInput::cANGLE` 标识）。初始化时配置文件角度值会被框架自动转换为弧度。
+
+### 提取策略
+
+- **源文件**：
+  - `WsfRigidBodySixDOF_AeroCoreObject.hpp`（类声明，185 行）-- 全部 20+ 张表的指针成员 + 14 个查表函数声明 + `CalculateCoreAeroFM()` 声明 + 几何参数 `mWingChord_ft`/`mWingSpan_ft`/`mWingArea_sqft`/`mRefLength_ft` + 开关 `mUseRefArea`/`mUseReducedFrequency`
+  - `WsfRigidBodySixDOF_AeroCoreObject.cpp`（全量实现，1005 行）-- `CalculateCoreAeroFM()`（行 747-951，约 200 行）+ 14 个查表函数（行 469-671）+ 配置解析 `ProcessInput()` + `ProcessCommonInput()`（行 27-432）+ 辅助函数（`CalculateAeroCmArea`/`CalculateAeroCLArea`/`CalculateAeroCdArea`）
+  - `WsfSixDOF_AeroCoreObject.hpp`（基类声明，83 行）-- 参考面积 `mRefArea_sqft` + 3 张静态 3D 表 `CL/Cd/CY` + 模态名称 `mModeName`
+
+- **提取方法**：核心计算集中在 `CalculateCoreAeroFM()` 一个函数（约 200 行），分五段：
+  1. 简化频率计算（行 762-802）：`k = rate/(2*V)` + 参考长度缩放 + `mUseReducedFrequency` 分支
+  2. 升力/阻力/侧力系数叠加（行 804-810）：静态 3D 表 + 动态导数 2D 表 * 简化频率
+  3. 有量纲力（行 814-827）：`q_bar * totalCoefficient * area * areaMultiplier`，分支 `mUseRefArea`
+  4. 力矩简化频率（行 849-912）：各力矩分量独立缩放 + `mUseReducedFrequency` 分支
+  5. 有量纲力矩系数叠加 + 转换为力矩（行 916-950）：静态 3D 表 + 动态导数 * 简化频率，分支 `mUseRefArea`
+  14 个查表函数的模板相同（空表返回 0 + 查表），各约 10-15 行。
+
+- **函数识别**：从 `function-index.jsonl` 中搜索所有 `qualified_name = "wsf_six_dof::*"` 且 `path` 包含 `RigidBodySixDOF_AeroCoreObject` 的条目。`CalculateCoreAeroFM()` 为 `math` 标记（气动系数 + 力矩全量计算）；`ProcessInput()` 为 `io` 角色（配置解析）；其余 14 个查表函数为 `unknown` 角色（纯查表，无副作用）。
+
+- **还原方式**：`CalculateCoreAeroFM()` 含大量查表 + 算术运算，可整体移植。还原时关键处理：
+  1. **简化频率**：`k = rate / (2 * max(V, 1.0))` + 乘以参考长度（弦长或翼展）。这是标准航空工程公式，直接保留
+  2. **查表引擎替换**：3 张静态 3D 表（`CL/Cd/CY` + `Cm/Cn/Cl`）替换为自定义 3D 线性插值；6 张动态导数 2D 表（`CLq/CL_adot/CYr/CY_bdot`）替换为自定义 2D 线性插值；8 张动态导数 1D 曲线（`Cmq/Cmp/Cnr/Cnp/Clp/Clr/Clq/CmAlphaDot/CnBetaDot/Cl_AlphaDot/Cl_BetaDot`）替换为自定义 1D 插值
+  3. **面积模式开关**：`mUseRefArea` 和 `mUseReducedFrequency` 两个布尔分支需保留，默认使用简化频率 + 翼面面积模式
+  4. **面积缩放因子**：`R^2`（`radiusFactor^2`）
+  5. **力矩参考长度**：俯仰力矩用弦长 `wingChord`（或 `refLength`），偏航/滚转力矩用翼展 `wingSpan`（或 `refLength`）
+  6. **有量纲力** = 动压 * 总系数 * 面积 * R^2
+  7. **有量纲力矩** = 动压 * 总系数 * 面积 * 参考长度（力矩不再乘 R^2）
+  8. **坐标系**：代码中 `Set(roll_moment, pitch_moment, yaw_moment)` 对应 `[X, Y, Z]` 体轴系（前-右-下）
+  9. 单位统一建议在移植时全部转为 SI（N、m、m^2 替代 lb、ft、ft^2）
+
+- **已知从属**：RigidBody 气动系数模型是刚体积分器的力/力矩来源。查表引擎（`UtTable::Table` / `UtTable::Curve`）为 AFSIM 框架类，移植时需替换。所有导数数据表为飞行器特有数据（来自风洞试验或 CFD），不能直接搬运，需用户自行提供。
+
 #### 可移植性评分
 
 **可移植性**：中

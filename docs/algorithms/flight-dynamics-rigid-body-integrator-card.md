@@ -472,6 +472,80 @@ WsfSimulation::Update()                                                         
 5. **四元数归一化验证**：长时间积分（> 10,000 帧）后检查四元数模长是否保持在 $1 \pm 10^{-6}$ 范围内。
 6. **旋转地球效应测试**：在高纬度/高速条件下，对比开启/关闭旋转地球的轨迹差异，验证离心和科里奥利加速度符号正确。
 
+### 内部状态
+
+| 变量名 | 类型 | 初始值 | 物理含义 | 更新时机 |
+|--------|------|--------|----------|----------|
+| `mVehicle` | `RigidBodyMover*` | `nullptr` | 指向父运动器的指针（通过它获取质量特性、气动模型、起落架状态等） | `SetParentVehicle()` 一次性设置；积分过程中不修改 |
+| `initialState`（局部变量） | `KinematicState`（深拷贝） | = 当前 kinematicState | 帧起始时刻运动学状态的完整快照，用于校正步（第九步）回退到原始状态 | 每帧 `Update()` 第二步保存 |
+| `tempState`（局部变量） | `KinematicState`（拷贝构造） | = initialState | 临时运动学状态，在 Heun 预测步（第三~六步）中承受两次 `PropagateUsingFM` 推进，用于 T1 时刻气动力重新评估 | 每帧 `Update()` 第二步拷贝，第三~六步两次推进 |
+| `FM_RP_T0 / FM_CM_T0`（局部变量） | `ForceAndMomentsObject` | 空容器（清零力/力矩） | T0 时刻（帧起始）分别在参考点(RP)和质心(CM)处计算的力/力矩集合 | 每帧 `Update()` 第三步 `CalculateFM()` 填充 |
+| `FM_RP_T1 / FM_CM_T1`（局部变量） | `ForceAndMomentsObject` | 空容器 | T1 时刻（预测态）分别在 RP 和 CM 处重新计算的力/力矩集合 | 每帧 `Update()` 第五步 `CalculateFM()` 填充 |
+| `FM_RP_avg / FM_CM_avg`（局部变量） | `ForceAndMomentsObject` | 空容器 | T0 和 T1 两步 F&M 的算术平均值，用于校正步推进；用平均值替代单端导数使积分达到二阶精度 | 每帧 `Update()` 第七步 `CalcAverageWith()` 生成 |
+| `ForceAndMomentsObject.mForceVec_lbs` | `UtVec3dX` | (0,0,0) | F&M 容器内部的体轴合力矢量（lbf），维护于内部参考点处 | `AddForceAtReferencePoint()` 追加；`LimitMaxForceMagnitude_lbs()` 限幅；`ClearForcesAndMoments()` 清零 |
+| `ForceAndMomentsObject.mMomentVec_ftlbs` | `UtVec3dX` | (0,0,0) | F&M 容器内部的体轴合力矩矢量（ft-lbf），维护于内部参考点处 | `AddForceAndMomentAtReferencePoint()` 追加；`LimitMomentMagnitude_ftlbs()` 限幅；`ClearForcesAndMoments()` 清零 |
+| `ForceAndMomentsObject.mRefPoint_ft` | `UtVec3dX` | (0,0,0) | F&M 容器的内部参考点坐标（ft），`operator+=` 通过此点与源参考点之差自动计算附加力矩 | `MoveRefPoint_ft()` 设定；`operator+=` 读取 |
+| `kinematicState.weightOnWheels`（隐含在 KinematicState） | `bool` | 由起落架决定 | 飞行器是否处于地面轮载状态，控制偏航阻尼器是否激活（仅离地时） | 每帧从起落架状态同步 |
+
+### 变量映射表
+
+| 代码变量 | 数学符号 | 含义 |
+|----------|----------|------|
+| `aSimTime_nanosec` | $t$ | 当前仿真时间（纳秒） |
+| `aDeltaT_sec` | $\Delta t$ | 积分步长（秒） |
+| `currentMass_lbm` | $m$ | 当前飞行器质量（lbm） |
+| `cMaxG` | $G_{\max}$ | 最大过载限制常数（1000，无量纲） |
+| `cMaxOmegaDot_rps` | $\dot{\omega}_{\max}$ | 最大角加速度限制常数（~62832 rad/s²） |
+| `cGravitationAccel_mps2` | $g_0$ | 标准重力加速度（9.80665 m/s²），lbf→N 换算因子 |
+| `Ixx / Iyy / Izz` | $I_{xx}, I_{yy}, I_{zz}$ | 绕体轴三轴的主转动惯量（slug-ft²） |
+| `FM_RP_T0 / FM_CM_T0` | $\mathbf{FM}^0_{\text{RP}}, \mathbf{FM}^0_{\text{CM}}$ | T0 时刻参考点/质心的力/力矩 |
+| `FM_RP_T1 / FM_CM_T1` | $\mathbf{FM}^1_{\text{RP}}, \mathbf{FM}^1_{\text{CM}}$ | T1 时刻预测态的力/力矩 |
+| `FM_RP_avg / FM_CM_avg` | $\mathbf{FM}^{\text{avg}}_{\text{RP}}, \mathbf{FM}^{\text{avg}}_{\text{CM}}$ | T0 与 T1 的平均力/力矩 |
+| `totalNonGravityForce` | $\mathbf{F}_{\text{non-G}}$ | 体轴非重力合力（气动+推进+起落架，不含重力） |
+| `totalBodyForce` | $\mathbf{F}_{\text{total}}$ | 体轴总合力（含重力），作用于质心 |
+| `totalMoment` | $\mathbf{M}_{\text{total}}$ | 体轴总合力矩，作用于质心 |
+| `bodyAccel_mps2` | $\mathbf{a}_{\text{body}}$ | 体轴加速度（m/s²） |
+| `accelWCS` | $\mathbf{a}_{\text{WCS}}$ | 世界坐标系加速度（m/s²），由体轴加速度经 DCM 旋转得到 |
+| `omegaDot_rps` | $\dot{\boldsymbol{\omega}}$ | 体轴角加速度 [pDot, qDot, rDot]（rad/s²） |
+| `omega` | $\boldsymbol{\omega}$ | 体轴角速率 [p, q, r]（rad/s） |
+| `q_att` | $\mathbf{q}$ | 姿态四元数 |
+| `q_rate` | $\dot{\mathbf{q}}$ | 角速率对应的速率四元数 |
+| `beta_rad` | $\beta$ | 侧滑角（rad），用于简单偏航阻尼器 |
+| `nx_g / ny_g / nz_g` | $N_x, N_y, N_z$ | 体轴过载分量（以 g 为单位） |
+| `lift / drag / sideforce` | $L, D, Y$ | 升力/阻力/侧力幅值（lbf） |
+| `thrust` | $T$ | 推力幅值（lbf） |
+| `wgt` | $W$ | 当前重量（lbf） |
+| `moment_cg` | $\mathbf{M}_{\text{CG}}$ | 质心处的总力矩（ft-lbf） |
+
+### 边界条件
+
+1. **空指针保护**（mVehicle）：`Update()` 入口第一行 `if (mVehicle == nullptr): return`。若积分器未绑定运动器，整个积分过程被跳过，不执行任何状态更新。同样在 `CalculateFM`、`PropagateUsingFM`、`UpdateUsingFM`、`PropagateRotation` 中均做空指针保护。
+
+2. **零质量/负质量保护**：`PropagateUsingFM` 中若 `currentMass_lbm <= 0`，直接 `return` 跳过推进，避免除零崩溃。该条件确保即使质量数据异常也不会产生 NaN 加速度。
+
+3. **力/力矩限幅**：`PropagateUsingFM` 推进前施加硬限幅：
+   - **力限幅**：\`maxForce_lbs = currentMass_lbm * 1000\`，调用 `LimitMaxForceMagnitude_lbs()` 通过矢量缩放将合力幅值钳位到上限。防止碰撞/爆炸瞬间的天文数字级力尖峰导致速度/位置 NaN。
+   - **力矩限幅**：\`maxMoment_ftlbs = max(Ixx, Iyy, Izz) * (100 * 360 * PI / 180)\`，调用 `LimitMomentMagnitude_ftlbs()` 同样通过矢量缩放限幅。取三轴惯量最大值，确保对任何方向施加统一上限。
+
+4. **起落架摩擦保持静止**：`Update()` 第八步在平均 F&M 后，检查 `gear->FrictionHoldingStill()`。若为 true，跳过最终状态更新（第九步）直接返回。这避免了地面静止飞行器因微小残余力累积导致的位置漂移和地面抖动。
+
+5. **简单偏航阻尼器除零保护**：只在 `aDeltaT_sec > utils::cEPSILON_SIMTIME_SEC` 时计算 `yawRate_rps = beta / aDeltaT_sec`。防止 dt 极小（如仿真初始化或时间冻结）时产生无穷大偏航速率。
+
+6. **真空速除零保护**（基类 PropagateTranslation）：体轴加速度转换到世界坐标系时，若涉及真空速归一化的旋转地球效应计算，对真空速做下限保护（通常取 max(V, 1.0)）。
+
+7. **四元数归一化**：每次转动推进后对姿态四元数执行 `Normalize()`，防止长时间积分导致四元数模长漂移（即使理论模长为 1，浮点误差会使其逐渐偏离）。这是关键的数值稳定性步骤，缺失会导致姿态逐渐失真。
+
+8. **冻结标志**（FreezeFlags）：基类 `PropagateRotation` 中检查冻结标志——若 `freezeRoll/pitch/yaw` 为 true，对应轴的角加速度和角速率强制清零，使该自由度在本帧内不发生变化。
+
+9. **燃油消耗已自动更新**：`UpdateUsingFM` 调用 `UpdateFuelBurn` 在推进前更新燃油质量，确保同一帧内的质量变化反映在后续速度和位置积分中。
+
+### 提取策略
+
+- **源文件**：`WsfRigidBodySixDOF_Integrator.hpp`、`WsfRigidBodySixDOF_Integrator.cpp`、`WsfSixDOF_Integrator.hpp`、`WsfSixDOF_Integrator.cpp`、`WsfSixDOF_ForceAndMomentsObject.hpp`
+- **提取方法**：从 `RigidBodyIntegrator` 类（继承自 `Integrator` 基类）中识别 Heun 预测-校正积分流程。核心计算逻辑分布在 5 个成员函数中：`Update()` 为总控入口，`CalculateFM()` 聚合四项力/力矩，`PropagateUsingFM()` 执行力/力矩→加速度→状态推进，`UpdateUsingFM()` 在最终校正步组合燃油更新和状态推进，`PropagateRotation()` 实现转动积分和偏航阻尼器。`ForceAndMomentsObject` 提供 F&M 容器的基础运算（叠加、参考点转换、限幅、平均）。
+- **函数识别**：从 `function-index.jsonl` 中定位 `wsf_six_dof::PropagateRotation`（两个版本：基类 `Integrator` 和派生类 `RigidBodyIntegrator`）、`wsf_six_dof::GetOutputWithLimits`（与 PID 卡片共享命名空间）。`CalculateFM`、`PropagateUsingFM`、`UpdateUsingFM` 为派生类特有方法，在 index 中通过 `RigidBodyIntegrator` 路径识别。
+- **还原方式**：阅读 `RigidBodyIntegrator::Update()` 中的主控流程（保存初始状态 → 预测步 T0 → 推进 → 预测步 T1 → 再次推进 → 平均 F&M → 起落架摩擦检查 → 最终校正步），还原 Heun 预测-校正框架。结合 `CalculateFM` 理解力/力矩聚合顺序，结合 `PropagateUsingFM` 理解限幅→加速度转换→平动推进→转动推进的管道化推进流程，结合基类 `PropagateRotation` 理解四元数姿态积分和冻结标志处理。
+
 #### 可移植性评分
 
 **可移植性**：中

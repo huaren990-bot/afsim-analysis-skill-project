@@ -369,6 +369,101 @@ JetEngine::ProcessInput(aInput, aTypeManager)
 7. **TSFC 计算测试**：Idle=1000lb@0.5pph, Mil=5000lb@0.8pph，验证有效 Mil TSFC = (4000-500)/(4000)/3600=0.000243 pps。
 8. **燃油箱分离测试**：模拟抛弃外部油箱后，验证 engine dead 且 thrust=-deadEngineDrag。
 
+### 内部状态
+
+| 变量名 | 类型 | 初始值 | 物理含义 | 更新时机 |
+|--------|------|--------|----------|----------|
+| `mThrottleLeverPosition` | `double` | 0.0 | 直接设定的油门杆位（0=Idle/1=Mil/2=全AB），由脚本或父对象设定 | `SetThrottlePosition()` 调用时写入 |
+| `mThrottleLeverPositionSet` | `bool` | false | 标记 mThrottleLeverPosition 是否被直接设定 | `SetThrottlePosition()` 中设为 true |
+| `mInjectFuel` | `bool` | true | 供油开关，false=停止供油（熄火/停机） | `InjectFuel()` 调用时写入 |
+| `mLastThrottleLeverPosition` | `double` | 0.0 | 上一帧的有效油门位置，是 spool dynamics 的初始状态 | 每帧 `CalculateThrust(aUpdateData=true)` 末尾赋值 |
+| `mEnginePercentRPM` | `double` | 0.0 | 简化的发动机转速百分比（= 100.0 * throttleMil） | 每帧 `CalculateThrust(aUpdateData=true)` 末尾赋值 |
+| `mNozzlePosition` | `double` | 0.0 | 简化的喷口位置指示（= throttleAB） | 每帧 `CalculateThrust(aUpdateData=true)` 末尾赋值 |
+| `mCurrentFuelBurnRate_pph` | `double` | 0.0 | 当前燃油消耗率（lb/hr） | 每帧 `CalculateThrust()` 末尾赋值 |
+| `mEngineMaySmoke` | `bool` | false | 发动机是否可能冒烟的开关 | `ProcessInput()` 中配置 |
+| `mEngineSmokesAboveLevel` | `double` | 1.0 | 冒烟门限：有效油门超过此值且非AB时冒烟 | `ProcessInput()` 中配置 |
+
+注：继承自基类 `Engine` 的跨帧状态变量：
+
+| 变量名 | 类型 | 初始值 | 物理含义 | 更新时机 |
+|--------|------|--------|----------|----------|
+| `mCurrentFuelTank` | `FuelTank*` | nullptr | 指向当前供油油箱的指针 | 初始化或 `SetFuelTank()` 时赋值，熄火后置空 |
+| `mCurrentThrust_lbs` | `double` | 0.0 | 当前推力值（lb），供 `GetThrust_lbs()` 查询 | 每帧 `CalculateThrust()` 末尾赋值 |
+| `mEngineOperating` | `bool` | false | 发动机是否正在运转并燃烧燃油 | 每帧 `CalculateThrust()` 中根据供油状态设位 |
+| `mAfterburnerPresent` | `bool` | false | 是否有加力燃烧室 | `DetermineIfAfterburnerIsPresent()` 中确定 |
+| `mAfterburnerOn` | `bool` | false | 加力燃烧室是否正在工作（AB分量>0） | 每帧 `CalculateThrust()` 中设位 |
+| `mContrailing` | `bool` | false | 是否产生凝结尾迹 | 每帧根据高度层和运转状态设位 |
+| `mEngineSmoking` | `bool` | false | 是否有限冒烟（非烟迹） | 每帧 `CalculateThrust()` 中设位 |
+| `mProducingSmokeTrail` | `bool` | false | 是否产生持久烟迹（涡喷涡扇固定为 false） | 每帧 `CalculateThrust()` 开头清零 |
+| `mEngineDamageSmokeActivated` | `bool` | false | 外部迫冒烟（如战斗损伤） | `MakeEngineSmoke()` 调用时设定 |
+| `mShutdownInProgress` | `bool` | false | 是否正在执行停机流程 | `Shutdown()` 调用时设为 true |
+| `mShutdownFraction_nanosec` | `int64_t` | 0 | 停机发生时刻在本帧内的偏移（ns） | `Shutdown()` 调用时设定 |
+| `mIgniteTimeInFrame_nanosec` | `int64_t` | 0 | 点火时刻在本帧内的偏移（ns） | `Ignite()` 调用时设定 |
+
+### 变量映射表
+
+| 代码变量 | 数学符号 | 含义 |
+|----------|----------|------|
+| `aDeltaT_sec` | $\Delta t$ | 仿真时间步长（s） |
+| `aAlt_ft` | $h$ | MSL 海拔高度（ft） |
+| `aDynPress_lbsqft` | $\bar{q}$ | 自由流动压（lb/ft²），用于熄火阻力 |
+| `aMach` | $M$ | 飞行马赫数 |
+| `mThrottleLeverPosition` | $\delta_{cmd}$ | 指令油门（直设值） |
+| `mLastThrottleLeverPosition` | $\delta_{eff}(t)$ | 上一帧有效油门 / spool dynamics 初值 |
+| `effectiveThrottle` | $\delta_{eff}$ | 当前帧计算的有效油门（经速率限制） |
+| `throttleMil` | $\delta_{mil}$ | Mil 段油门分量 [0, 1] |
+| `throttleAB` | $\delta_{ab}$ | AB 段油门分量 [0, 1] |
+| `mSpinUpMil_per_sec` / `mSpinDownMil_per_sec` | $\dot{\delta}_{up}^{mil}, \dot{\delta}_{down}^{mil}$ | Mil 段油门最大加/减速率（1/s） |
+| `mSpinUpAB_per_sec` / `mSpinDownAB_per_sec` | $\dot{\delta}_{up}^{ab}, \dot{\delta}_{down}^{ab}$ | AB 段油门最大加/减速率（1/s） |
+| `idleThrust` | $T_{idle\_base}$ | 慢车工况基准推力（lb） |
+| `milThrust` | $T_{mil\_base} - T_{idle\_base}$ | 军推增量（lb） |
+| `abThrust` | $T_{ab\_base} - T_{mil\_base}$ | 加力增量（lb） |
+| `totalThrust` | $T$ | 未考虑熄火的总推力（lb） |
+| `mTSFC_Idle_pph` | $SFC_{idle}$ | 慢车工况名义推力比油耗（lb/lb/hr） |
+| `mRatedThrustIdle_lbs` | $T_{rated\_idle}$ | 设计点慢车推力（lb） |
+| `mEffectiveTSFC_Idle_pps` | $SFC_{idle}^{eff}$ | 慢车有效 TSFC（lb/lb/s） = SFC_idle / 3600 |
+| `mEffectiveTSFC_Mil_pps` | $SFC_{mil}^{eff}$ | 军推增量化有效 TSFC（lb/lb/s） |
+| `mEffectiveTSFC_AB_pps` | $SFC_{ab}^{eff}$ | 加力增量化有效 TSFC（lb/lb/s） |
+| `fuelRequest_lbs` | $m_{fuel\_request}$ | 本帧请求的燃油质量（lb） |
+| `actualBurned` | $m_{burned}$ | 实际燃烧/可用的燃油质量（lb） |
+| `deadEngineDrag` | $D_{dead}$ | 熄机进气口阻力（lb） = dragArea * q_bar |
+| `burnRatio` | $m_{burned} / m_{request}$ | 燃油供给比例（flame-out 场景） |
+| `effectiveThrust` | $T_{eff}$ | 最终输出推力（lb，正推力/负阻力） |
+| `mEnginePercentRPM` | $N_{rpm}$ | 简化发动机转速 (%rpm = 100 * delta_mil) |
+| `mAfterburnerPresent` | — | 加力燃烧室是否存在 |
+
+### 边界条件
+
+1. **极小时间步保护**：当 `aDeltaT_sec < EPSILON`（即近乎零的时间步长）时，跳过 spool dynamics 和推力计算，直接返回上一帧的推力值 `mCurrentThrust_lbs`，避免除零和无效计算。
+
+2. **有效油门限幅**：`effectiveThrottle` 在经过 spool dynamics 增量累加后，通过 `clampThrottleLimits()` 进行二次限幅。无加力发动机限幅到 [0, 1]，有加力发动机限幅到 [0, 1 + clamp(AB 油门, 0, 1)]。
+
+3. **加减速率保护**：当 `mSpinUpMilTable` 等查表指针不为 null 时，优先用查表结果（查表参数为 `mLastThrottle`），如果表返回 0 则用标量值。如果标量值也未配置（默认 0），加减速率限幅为 0，意味着有效油门不发生变化（发动机卡在当前位置）。
+
+4. **推力非负保护**：`idleThrust`、`milThrust`、`abThrust` 三个推力基准查表后可能为负值（插值外推），最终推力公式中 `totalThrust` 的中间量不做额外限幅，但 `GetMaximumPotentialThrust_lbs()` 和 `GetMinimumPotentialThrust_lbs()` 查询时分别取AB/Mil和Idle表值，有降级逻辑（无AB表则查Mil表）。
+
+5. **熄火保护（缺油/断油）**：以下任一条件触发 deadEngine：(a) `mCurrentFuelTank == nullptr`（无油箱）；(b) `mInjectFuel == false`（主动断油）；(c) `fuelRequest_lbs <= 0`（请求燃油量非正）。触发后推力=0，额外叠加 `deadEngineDrag = A_drag_area * q_bar`。
+
+6. **燃油路径完整性检查**：即使油箱存在，还需要 `FuelFlowPathIntact(parentPropSystem)` 确认燃油输送路径未被切断（如油箱被抛弃或阀门关闭）。如果路径中断，`mCurrentFuelTank` 被置空，进入 deadEngine 状态。
+
+7. **Flame-out 部分燃油平滑处理**：当燃油箱 `UpdateFuelBurn` 或 `CalculateFuelBurn` 返回 `ableToBurnAllFuel = false` 时，采用比例缩比：`T_eff = T * burnRatio - D_dead * (1 - burnRatio)`。这意味着推力按可用燃油比例减少，同时阻力按缺油比例增加，实现平滑过渡。此时 `mEngineOperating` 设为 false（发动机视为不运转）。
+
+8. **AB 分量安全分解**：当 `effectiveThrottle > 1.0` 时 `throttleAB = effectiveThrottle - 1.0`，其余情况下 `throttleAB = 0.0`。无加力发动机 `throttleAB` 始终为 0。
+
+9. **查表模式优先级**：简单曲线表模式（`mMilThrustTable` 非空）优先于改进 2D 表模式。两个改进 2D 表（MachAlt 和 AltMach）中，如果前一个查值非零则使用前一个，否则尝试后一个，确保至少有一种查表结果可用。
+
+10. **测试模式 bypass**：当 `testNoLag` 标志为 true 时，spool dynamics 被跳过，`effectiveThrottle = throttleCmd` 直接跟随指令，用于测试场景。
+
+### 提取策略
+
+- **源文件**：
+  - `source_root/afsim-2_9/swdev/src/wsf_plugins/wsf_six_dof/source/WsfSixDOF_JetEngine.hpp`（JetEngine 类声明，含全部成员变量）
+  - `source_root/afsim-2_9/swdev/src/wsf_plugins/wsf_six_dof/source/WsfSixDOF_JetEngine.cpp`（CalculateThrust、ProcessInput、Initialize、GetMax/MinPotentialThrust 等实现）
+  - `source_root/afsim-2_9/swdev/src/wsf_plugins/wsf_six_dof/source/WsfSixDOF_Engine.hpp`（Engine 基类声明，含 mCurrentFuelTank、mCurrentThrust_lbs 等通用状态）
+- **提取方法**：通过读取 `.hpp` 头文件获取所有成员变量（内部状态）及其类型和默认初始值；通过阅读 `.cpp` 实现文件追踪 `CalculateThrust()` 函数内的变量读写位置确认更新时机和边界条件。
+- **函数识别**：从 `workspace/source-index/wsf_plugins/function-index.jsonl`（含 `wsf_p6dof::` 命名空间的 JetEngine 函数）和 `workspace/source-index/core/function-index.jsonl`（含 `wsf_space::` 依赖函数）中定位调用链。`CalculateThrust()`、`ProcessInput()`、`Initialize()` 是核心算法函数。
+- **还原方式**：数学公式来自源码中"算法流程"章节描述的三层查表+spool dynamics 逻辑的还原（`CalculateThrust` 函数 436 行代码的直接翻译），变量映射表通过将代码变量名一一映射到公式中使用的数学符号构建。
+
 #### 可移植性评分
 
 **可移植性**：中

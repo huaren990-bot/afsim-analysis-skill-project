@@ -285,6 +285,123 @@ WsfSimulation::Update()                                          // AFSIM 仿真
 5. **边界测试**：零质量、零步长、反向积分、最大步长限制、最小步长限制。
 6. **FSAL 验证**：确认每步的函数评估次数 = 12（而非 13）。
 
+### 内部状态
+
+**WsfIntegratingPropagator（传播器外层）-- 跨帧持久化成员变量：**
+
+| 变量名 | 类型 | 初始值 | 物理含义 | 更新时机 |
+|--------|------|--------|----------|----------|
+| `mIntegratorPtr` | `UtCloneablePtr<WsfOrbitalIntegrator>` | null | 数值积分器实例（如 PD78），负责执行积分步进 | 初始化时通过 `SetOrbitalIntegrator()` 或配置创建 |
+| `mDynamicsPtr` | `UtCloneablePtr<WsfOrbitalDynamics>` | null | 轨道动力学模型实例，聚合所有力模型（引力、J2、太阳、月球等） | 初始化时通过 `SetOrbitalDynamics()` 或配置创建 |
+| `mMassProvider` | `unique_ptr<MassProvider>` | null | 质量提供者接口，返回航天器当前质量 | 初始化时配置 |
+| `mPropagatedOrbitalState` | `ut::OrbitalState` | 由初始轨道状态复制 | 当前帧传播后的轨道状态 (pos/vel/acc/epoch) | 每帧 `Propagate()` → `UpdateOrbitalState()` 中写回 |
+| `mAccelerationValid` | `bool` | false | 当前加速度是否有效（标志位） | 传播后设置 |
+| `mKinematicInput` | `bool` | false | 是否使用运动学模式（从外部输入位置/速度而不通过数值积分） | 初始化时配置 |
+| `mAdvancing` | `bool` | false | 是否正在执行传播（重入保护标志） | `AdvancingHandle` RAII 对象在构造时设为 true，析构时恢复 false |
+
+**WsfRungeKuttaOrbitalIntegrator（积分器内层）-- 跨步持久化成员变量：**
+
+| 变量名 | 类型 | 初始值 | 物理含义 | 更新时机 |
+|--------|------|--------|----------|----------|
+| `mStepSize` | `double` | -1.0（首次使用 `mInitialStepSize`） | 当前积分步长（s），有符号以支持正反方向 | 每步 `AdjustTimeStep()` 更新；首次传播时由 `mInitialStepSize` 赋值 |
+| `mTolerance` | `double` | 1.0e-10 | 局部截断误差容差（m 或 m/s，取决于范数类型） | 初始化时配置，用户可通过脚本覆盖 |
+| `mMaxStepSize` | `double` | `numeric_limits<double>::max()` | 步长绝对值的硬上限（s） | 初始化时配置 |
+| `mMinStepSize` | `double` | 0.0 | 步长绝对值的硬下限（s），0 表示无下限 | 初始化时配置 |
+| `mInitialStepSize` | `double` | 0.1 | 首次积分时使用的初始步长（s） | 初始化时配置 |
+| `mMaxAdjustmentAttempts` | `unsigned int` | 50 | 单步中因误差超标而重试的最大次数 | 初始化时配置；超过后强制接受当前步并警告 |
+| `mErrorCriterion` | `ErrorCriterion` | `cL_TWO_NORM` | 误差范数类型：L_2（默认，相对误差归一化）或 L_infinity（最大分量绝对值） | 初始化时配置 |
+| `mRHS_Position` | `array<UtVec3d, 13>` | 全零 | 各 RK 阶段的位置分量（右端函数 = 阶段速度） | 每步 `TakeStep()` 中填充 13 个阶段 |
+| `mRHS_Velocity` | `array<UtVec3d, 13>` | 全零 | 各 RK 阶段的速度分量（右端函数 = 阶段加速度） | 每步 `TakeStep()` 中填充 13 个阶段 |
+| `mY_Position` | `UtVec3d` | (0,0,0) | 当前阶段的预测位置（中间工作变量） | 每阶段在 `TakeStep()` 中写入 |
+| `mY_Velocity` | `UtVec3d` | (0,0,0) | 当前阶段的预测速度（中间工作变量） | 每阶段在 `TakeStep()` 中写入 |
+| `mPredictedPosition` | `UtVec3d` | (0,0,0) | 当前步的 8 阶预测位置（m，用于误差估计比对） | 每步 `TakeStep()` 末尾赋值 |
+| `mPredictedVelocity` | `UtVec3d` | (0,0,0) | 当前步的 8 阶预测速度（m/s） | 每步 `TakeStep()` 末尾赋值 |
+| `mPosDiff` | `UtVec3d` | (0,0,0) | 8 阶与 7 阶嵌入解的位置差异（m，误差估计用） | 每步 `TakeStep()` 末尾由误差权重加权赋值 |
+| `mVelDiff` | `UtVec3d` | (0,0,0) | 8 阶与 7 阶嵌入解的速度差异（m/s） | 每步 `TakeStep()` 末尾由误差权重加权赋值 |
+| `mWarned` | `bool` | false | 是否已对当前积分过程发出过警告（步长/误差/调整次数超标时仅警告一次） | 超出调整次数限制或步长被最小步长限幅时设为 true |
+
+*注：Butcher 表系数（`cCVALUES`、`cBVALUES`、`cERRORVALUES`、`cAVALUES`）为编译时常量（`static constexpr`），不随帧变化。*
+
+### 变量映射表
+
+| 代码变量 | 数学符号 | 含义 |
+|----------|----------|------|
+| `mStepSize` | $h$ | 当前积分步长（s），有符号 |
+| `mTolerance` | $tol$ / $\epsilon$ | 局部截断误差容差 |
+| `mMaxStepSize` | $h_{max}$ | 最大步长（s） |
+| `mMinStepSize` | $h_{min}$ | 最小步长（s） |
+| `mInitialStepSize` | $h_0$ | 初始步长（s） |
+| `mMaxAdjustmentAttempts` | $N_{max}$ | 最大调整尝试次数 |
+| `cORDER` | $p = 8$ | 主格式阶数 |
+| `cSTEPCOUNT` | $s = 13$ | RK 阶段数 |
+| `aInitialState` / `y_0` | $\mathbf{y}_0$ | 初始状态 $(\mathbf{r}_0, \mathbf{v}_0)$ |
+| `mRHS_Position[i]` | $\mathbf{k}_i^{(pos)}$ | 第 i 阶段的位置右端函数（即各阶段的速度） |
+| `mRHS_Velocity[i]` | $\mathbf{k}_i^{(vel)}$ | 第 i 阶段的速度右端函数（即各阶段的加速度） |
+| `mY_Position` | $\mathbf{r}_i$ | 第 i 阶段的预测位置（m） |
+| `mY_Velocity` | $\mathbf{v}_i$ | 第 i 阶段的预测速度（m/s） |
+| `cCVALUES[i]` | $c_i$ | Butcher 表 C 节点（阶段时间点，0 到 1） |
+| `cAVALUES[i][j]` | $a_{ij}$ | Butcher 表 A 系数（阶段间依赖矩阵，严格下三角） |
+| `cBVALUES[i]` | $b_i$ | 8 阶权重系数 |
+| `cERRORVALUES[i]` | $b_i - \hat{b}_i$ | 8 阶与 7 阶权重之差（误差估计系数） |
+| `mPredictedPosition` | $\mathbf{r}_{n+1}^{(8)}$ | 8 阶预测位置（m） |
+| `mPredictedVelocity` | $\mathbf{v}_{n+1}^{(8)}$ | 8 阶预测速度（m/s） |
+| `mPosDiff` | $\Delta \mathbf{r}$ | 8 阶与 7 阶位置差异（m） |
+| `mVelDiff` | $\Delta \mathbf{v}$ | 8 阶与 7 阶速度差异（m/s） |
+| `aDynamics` | $\sum \mathbf{F}_k$ | 轨道动力学模型（聚合所有力项产生的加速度） |
+| `ComputeAcceleration(mass, t, r, v)` | $\mathbf{a}_{ECI}(t, \mathbf{r}, \mathbf{v})$ | 在当前时刻和状态下的总加速度（m/s²） |
+| `currentTime` | $t_c$ | 当前已积分到的时间（s，相对初始时刻的偏移） |
+| `finalTime` | $t_{final}$ | 目标时间（s，相对初始时刻的偏移） |
+| `error` (ComputeError 返回值) | $err$ | 局部截断误差估计值 |
+
+### 边界条件
+
+1. **首次步长初始化**：当 `mStepSize < 0.0` 时（初始值 -1.0 或反向积分后复位），`AdvanceToTime()` 自动使用 `mInitialStepSize`（默认 0.1 s）作为首次步长。这确保了积分器从有效状态开始。
+
+2. **积分方向检测**：检测 `finalTime` 与当前步长符号的一致性。当 `(finalTime < 0 && mStepSize > 0)` 或 `(finalTime > 0 && mStepSize < 0)` 时，步长符号翻转：`mStepSize = -mStepSize`。支持正向和反向时间积分。
+
+3. **最后一步截断**：当 `|mStepSize + currentTime| > |finalTime|` 时（剩余时间小于当前步长），步长被截断为 `mStepSize = finalTime - currentTime`，确保精确到达目标时刻而不越过。
+
+4. **步长调整安全因子**：步长缩放乘以 0.9 的安全因子，避免步长因误差估计的统计波动而产生过大的振荡。
+
+5. **步长钳制**：
+   - 调整后的步长被钳制在 `[mMinStepSize, mMaxStepSize]` 范围内。
+   - 当 `mMinStepSize = 0`（默认）时，步长无下限，可以任意缩小（直到误差通过或达到最大重试次数）。
+   - 当 `fabs(mStepSize) > mMaxStepSize` 时，步长被限制到 `mMaxStepSize`（保持符号）。
+   - 当 `fabs(mStepSize) < mMinStepSize` 且 `mMinStepSize > 0` 时，步长被限制到 `mMinStepSize`，同时触发一次性警告（"Timestep limited by minimum step size"）。
+
+6. **最大重试保护**：当单步误差超标且重试次数超过 `mMaxAdjustmentAttempts`（默认 50 次）时，强制接受当前步（即使误差超标），并触发一次性警告（"Unable to find acceptable step size"）。这避免了在奇点附近或力模型刚性问题时无限循环。`mWarned` 标志确保相同问题的重复步骤不会重复打印日志。
+
+7. **步长调整指数**：
+   - 误差未通过（拒绝步）：$h_{new} = 0.9 \cdot h \cdot (tol / error)^{1/7}$（指数为 $1/(p-1)$，即 $1/7$，偏保守，快速缩小）。
+   - 误差已通过（接受步）：$h_{new} = 0.9 \cdot h \cdot (tol / error)^{1/8}$（指数为 $1/p$，即 $1/8$，偏激进，缓慢放大）。
+   - 当 `error == 0` 时（理论上不会出现），分母为零会导致异常。实际中浮点截断误差 `error` 极小但为正，`(tol/error)` 极大，但步长上限 `mMaxStepSize` 会防止步长过大。
+
+8. **L_2 范数归一化保护**：当使用默认的 L_2 范数时，位置和速度误差各自除以当前步的最大变化量：
+   - `posError = |Δr|₂ / max(|r_step|₂, 0.1)`：位置误差按步内变化量归一化，最小值 0.1 米的保护避免在极小位移时除零放大误差。
+   - `velError = |Δv|₂ / max(|v_step|₂, 0.1)`：速度误差同理，最小值 0.1 m/s 的保护。
+   - 最终误差取 `max(posError, velError)`。
+
+9. **L_infinity 范数**：取 `|Δr|_∞` 和 `|Δv|_∞` 的最大值（三维分量中绝对值最大者），不使用归一化。此模式下误差直接是位置的绝对值（m），需要与 `mTolerance` 的单位一致。
+
+10. **FSAL（First Same As Last）优化**：第 0 阶段（i=0）的 RHS 直接复用上一步保存的最后阶段加速度（`aCurrentState.GetAccelerationInertial()`），省去一次 `ComputeAcceleration()` 调用。每次接受步后，第 12 阶段（i=12）的加速度被保存到 `aCurrentState.SetAccelerationInertial(mRHS_Velocity[12])` 供下一步复用。这保证了每步仅需 12 次函数评估（而非 13 次）。
+
+11. **重入保护**：`mAdvancing` 标志通过 `AdvancingHandle` RAII 对象管理。在 `Propagate()` 调用期间设为 true，防止递归重入（如动力学加速度计算过程中意外触发了传播）。
+
+12. **零质量保护**：如果 `mMassProvider` 返回 0 或极小质量，`ComputeAcceleration()` 中的 `1/mass` 因子会导致加速度无穷大或 NaN。原始代码未显式保护，但建议移植时增加 `if (mass < EPSILON) return zeroAcceleration`。
+
+### 提取策略
+
+- **源文件**：
+  - `source_root/afsim-2_9/swdev/src/core/wsf_space/source/WsfIntegratingPropagator.hpp`（传播器主类声明，第 36-102 行，含 mIntegratorPtr、mDynamicsPtr、mPropagatedOrbitalState 等）
+  - `source_root/afsim-2_9/swdev/src/core/wsf_space/source/WsfIntegratingPropagator.cpp`（Propagate、Initialize、InitializeDynamics 等实现）
+  - `source_root/afsim-2_9/swdev/src/core/wsf_space/source/WsfRungeKuttaOrbitalIntegrator.hpp`（积分器核心模板类，第 29-395 行，含 AdvanceToTime、TakeStep、ComputeError、AdjustTimeStep、AdvanceState 完整实现及全部内部状态变量）
+  - `source_root/afsim-2_9/swdev/src/core/wsf_space/source/WsfPrinceDormand78OrbitalIntegrator.hpp`（PD 8(7)13M 的完整 Butcher 表系数：cBVALUES、cERRORVALUES、cAVALUES，第 26-269 行）
+  - `source_root/afsim-2_9/swdev/src/core/wsf_space/source/WsfOrbitalDynamics.hpp`（轨道动力学模型，第 31-101 行，聚合多个 WsfOrbitalDynamicsTerm）
+  - `source_root/afsim-2_9/swdev/src/core/wsf_space/source/WsfOrbitalIntegrator.hpp`（积分器抽象接口，第 23-52 行，纯虚函数 AdvanceToTime）
+- **提取方法**：通过 `.hpp` 头文件获取成员变量声明及类内初始化值。核心积分算法（`AdvanceToTime`、`TakeStep`、`ComputeError`、`AdjustTimeStep`）全部实现为 C++ 模板（`WsfRungeKuttaOrbitalIntegrator`），代码高度集中在一份头文件中。Butcher 系数来自 Prince & Dormand (1981) 论文，可直接抄录。
+- **函数识别**：从 `workspace/source-index/core/function-index.jsonl` 中可搜索 `wsf_space::` 命名空间的相关函数：`GetDynamicalMass`、`Initialize`、`InitializeDynamics`、`HyperbolicPropagationAllowed`、`IsAdvancing`、`Propagate`（HEL/DirectedEnergyWeapon 等不同模块各有同名 Propagate 函数，注意区分命名空间）。积分器核心函数（`AdvanceToTime`、`TakeStep` 等）为模板成员函数，不在 jsonl 中单独列出。
+- **还原方式**：Butcher 表系数从 `WsfPrinceDormand78OrbitalIntegrator.hpp` 直接复制（含 13 个 c、b、e 值和 13x12 三角矩阵 A）。自适应步长控制公式为标准方法（`h_new = 0.9 * h * (tol/err)^(1/p)` 或 `^(1/(p-1))`）。分离关注点：传播器外层（WsfIntegratingPropagator）管理积分器和动力学模型的组合，积分器内层（WsfRungeKuttaOrbitalIntegrator）执行纯数值积分——移植时可将两者合并或保持分离。
+
 #### 可移植性评分
 
 **可移植性**：高

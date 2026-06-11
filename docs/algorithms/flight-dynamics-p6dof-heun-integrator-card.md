@@ -383,6 +383,89 @@ WsfSimulation::Update()                                        // AFSIM 仿真�
 7. **起落架静止摩擦测试**：在地面静止条件（WeightOnWheels + FrictionHoldingStill）下，验证滚转/偏航角速率归零。
 8. **简单偏航阻尼器测试**：启用简单偏航阻尼器 + 非零侧滑角，验证偏航速率 = beta/dt。
 
+### 内部状态
+
+`P6DofIntegrator` 类的所有方法均为 **static**（无成员变量），自身不维护跨帧持久化状态。积分过程中使用的所有临时状态均作为局部变量或函数参数传递：
+
+| 变量名 | 类型 | 初始值 | 物理含义 | 更新时机 |
+|--------|------|--------|----------|----------|
+| `tempState`（局部变量） | `P6DofKinematicState`（拷贝构造） | = kinematicState | 帧起始时刻运动学状态的深拷贝，在 Heun 预测步中承受两次推进（T0→T1），用于 T1 时刻重新评估气动力/力矩。校正步用原始状态（`kinematicState`）推进而非 tempState | 每帧 `Update()` 第三步拷贝，第四~六步两次推进 |
+| `F0_RP / F0_CM`（局部变量） | `P6DofForceAndMomentsObject` | 空容器（构造函数清零力/力矩） | T0 时刻（帧起始 t=t_last）分别在参考点(RP)和质心(CM)处计算的力/力矩集合 | 每帧 `Update()` 第四步 `CalculateFM()` 填充 |
+| `F1_RP / F1_CM`（局部变量） | `P6DofForceAndMomentsObject` | 空容器 | T1 时刻（预测态 t=t1）重新计算的力/力矩集合 | 每帧 `Update()` 第六步 `CalculateFM()` 填充 |
+| `F_avg_RP / F_avg_CM`（局部变量） | `P6DofForceAndMomentsObject` | 空容器 | T0 和 T1 两步 F&M 的算术平均值，用于校正步推进；用平均值使积分达到二阶精度 | 每帧 `Update()` 第七步生成 |
+| `P6DofForceAndMomentsObject.mForceVec_lbs` | `UtVec3dX` | (0,0,0) | F&M 容器内部的体轴合力矢量（lbf），保存于内部参考点处 | `AddForceAtReferencePoint()` 追加；`LimitMaxForceMagnitude_lbs()` 限幅；`ClearForcesAndMoments()` 清零 |
+| `P6DofForceAndMomentsObject.mMomentVec_ftlbs` | `UtVec3dX` | (0,0,0) | F&M 容器内部的体轴合力矩矢量（ft-lbf），保存于内部参考点处 | `AddForceAndMomentAtReferencePoint()` 追加；`LimitMomentMagnitude_ftlbs()` 限幅；`ClearForcesAndMoments()` 清零 |
+| `P6DofForceAndMomentsObject.mRefPoint_ft` | `UtVec3dX` | (0,0,0) | F&M 容器的内部参考点坐标（ft），`operator+=` 通过参考点差自动计算附加力矩 | `MoveRefPoint_ft()` 设定；`operator+=` 读取 |
+
+**要点**：由于 P6DofIntegrator 所有方法都是静态的，没有类实例级别的内部状态。帧间状态的持久化完全由 `P6DofKinematicState`（飞行器运动学状态容器）承担——位置、速度、DCM、角速率、攻角、侧滑角等均在运动学状态对象中跨帧保持。积分器本身每次调用都是无状态的纯函数变换。
+
+### 变量映射表
+
+| 代码变量 | 数学符号 | 含义 |
+|----------|----------|------|
+| `aObject` | — | 飞行器对象指针（P6DofVehicle），提供质量/气动/推进/起落架子系统的查询接口 |
+| `aSimTime_nanosec` | $t$ | 当前仿真时间（纳秒） |
+| `aDeltaT_sec` | $\Delta t$ | 积分步长（秒） |
+| `currentMass_lbm` | $m$ | 当前飞行器质量（lbm） |
+| `cMaxG` | $G_{\max}$ | 最大过载限制常数（1000，无量纲） |
+| `cMaxOmegaDot_rps` | $\dot{\omega}_{\max}$ | 最大角加速度限制常数（~62832 rad/s²） |
+| `cGravitationAccel_mps2` | $g_0$ | 标准重力加速度（9.80665 m/s²），用作 lbf→N 的单位换算因子 |
+| `cEPSILON_SIMTIME_SEC` | $\epsilon$ | 极小仿真时间阈值（~1e-12 s），防止气动状态求值时 dt=0 导致除零 |
+| `Ixx_slugft2 / Iyy_slugft2 / Izz_slugft2` | $I_{xx}, I_{yy}, I_{zz}$ | 绕体轴三轴的主转动惯量（slug-ft²） |
+| `F0_RP / F0_CM` | $\mathbf{FM}^0_{\text{RP}}, \mathbf{FM}^0_{\text{CM}}$ | T0 时刻参考点/质心的力/力矩 |
+| `F1_RP / F1_CM` | $\mathbf{FM}^1_{\text{RP}}, \mathbf{FM}^1_{\text{CM}}$ | T1 时刻预测态的力/力矩 |
+| `F_avg_RP / F_avg_CM` | $\mathbf{FM}^{\text{avg}}_{\text{RP}}, \mathbf{FM}^{\text{avg}}_{\text{CM}}$ | T0 与 T1 的平均力/力矩 |
+| `nonGravityForce` | $\mathbf{F}_{\text{non-G}}$ | 体轴非重力合力（气动+推进+起落架，不含重力） |
+| `totalBodyForce` | $\mathbf{F}_{\text{total}}$ | 体轴总合力（含重力），作用于质心 |
+| `totalMoment` | $\mathbf{M}_{\text{total}}$ | 体轴总合力矩，作用于质心 |
+| `inertialAccel` | $\mathbf{a}_{\text{inertial}}$ | 惯性系加速度矢量（m/s²） |
+| `totalInertialForce` | $\mathbf{F}_{\text{inertial}}$ | 惯性系总力矢量（lbf），由体轴力经 DCM 旋转得到 |
+| `nx_g / ny_g / nz_g` | $N_x, N_y, N_z$ | 体轴过载分量（以 g 为单位） |
+| `omegaX_dot / omegaY_dot / omegaZ_dot` | $\dot{p}, \dot{q}, \dot{r}$ | 体轴角加速度分量（rad/s²） |
+| `omegaBody` | $\boldsymbol{\omega}$ | 体轴角速率 [p, q, r]（rad/s） |
+| `delAng` | $\Delta\boldsymbol{\theta}$ | 本帧内的角增量矢量（rad），用于诊断 |
+| `attitudeQ` | $\mathbf{q}$ | 从 DCM 提取的当前姿态四元数 |
+| `rateQ` | $\dot{\mathbf{q}}$ | 角速率对应的速率四元数变化率 |
+| `newAttitudeQ` | $\mathbf{q}_{\text{new}}$ | 推进后的新姿态四元数（经 Normalize） |
+| `aeroLift / aeroDrag / aeroSide` | $L, D, Y$ | 体轴气动力分量（lbf） |
+| `aeroMoment` | $\mathbf{M}_{\text{aero}}$ | 体轴气动力矩（ft-lbf） |
+| `propBodyForce` | $\mathbf{F}_{\text{prop}}$ | 体轴推进力（lbf） |
+| `gearBodyForce` | $\mathbf{F}_{\text{gear}}$ | 体轴起落架力（lbf） |
+| `gravityBodyForce` | $\mathbf{F}_{\text{grav}}$ | 体轴重力（lbf），仅作用于质心 |
+| `cmRef_ft` | $\mathbf{r}_{\text{CM}} - \mathbf{r}_{\text{RP}}$ | 质心相对参考点的偏移矢量（ft） |
+| `beta_rad` | $\beta$ | 侧滑角（rad），用于简单偏航阻尼器 |
+| `radiusFactor` | $R$ | 几何尺度因子，用于缩放气动面面积（如降落伞/气球） |
+
+### 边界条件
+
+1. **空表/空指针保护**：`CalculateFM()` 中通过 `aObject->CalculateAeroBodyFM()` 调用的气动表可能为空——气动核心对象内部查表函数在空表时返回 0.0，不会崩溃。
+
+2. **零质量保护**：`PropagateUsingFM()` 中 `if (currentMass_lbm > 0)` 保护过载计算和力→加速度转换。质量 <= 0 时过载 NaN 被规避。
+
+3. **力/力矩限幅**：与 wsf_six_dof 版的限幅逻辑一致：
+   - **力限幅**：`maxForce_lbs = currentMass_lbs * 1000.0`，调用 `LimitMaxForceMagnitude_lbs()` 进行矢量缩放限幅。
+   - **力矩限幅**：`maxMoment = max(Ixx, Iyy, Izz) * (100.0 * 360.0 * DEG_PER_RAD)`，调用 `LimitMomentMagnitude_ftlbs()` 进行矢量缩放限幅。取三轴惯量最大值统一限幅阈值。
+
+4. **真空速除零保护**：在简化频率计算（`UpdateAeroState`）和平动转换中，真空速 V 取值下限保护为 1 ft/s（或通过气动核心对象内部保证），防止 v=0 时出现除零。
+
+5. **时间步长除零保护**：`Update()` 第四步用 `EPSILON`（~1e-12 s）替代零时间步长传给 `CalculateFM`，避免气动状态求取衍生量（如 alpha_dot = (alpha_new - alpha_old) / dt）时除零。
+   - 简单偏航阻尼器：`yawRate = beta_rad / aDeltaT_sec` 仅在 dt > 0 时计算（命题等价于 dt > 极小值）。
+
+6. **起落架静止摩擦**：`PropagateRotation` 中若 `gear->FrictionHoldingStill()`，强制将滚转和偏航角速率清零（`omegaBody.roll = 0.0; omegaBody.yaw = 0.0`），防止地面静止飞行器的姿态漂移。
+
+7. **冻结标志**（P6DofFreezeFlags）：在 `PropagateRotation` 和 `PropagateTranslation` 中检查冻结标志——若 `freezeYaw/pitch/roll` 为 true，对应轴的角加速度和角速率清零；若 `freezeLocation/altitude/speed`，跳过对应的位置/速度更新。
+
+8. **四元数归一化（关键稳定性）**：每次姿态推进后必须调用 `newAttitudeQ.Normalize()`，防止浮点累积误差导致四元数模长偏离 1.0。不归一化则姿态逐渐失真。
+
+9. **地球模型切换**：`PropagateTranslation` 根据 `aObject->UseSphericalEarth()` 标志分发到 `PropagateTranslationSphericalEarth` 或 `PropagateTranslationWGSEarth`。两个地球模型采用不同的坐标变换算法，但均需在平动推进后正确更新位置和速度。
+
+### 提取策略
+
+- **源文件**：`P6DofIntegrator.hpp`、`P6DofIntegrator.cpp`、`P6DofForceAndMomentsObject.hpp`
+- **提取方法**：P6DofIntegrator 所有方法均为静态函数，无类实例状态。从 `P6DofIntegrator::Update()` 主入口识别 Heun 预测-校正全流程：质量更新→状态拷贝→T0 力/力矩（用 EPSILON 替代零 dt）→预测步推进→T1 力/力矩→算术平均→校正步推进（用原始状态 + 平均 F&M）→后处理（气动速率 + 辅助参数）。`CalculateFM()` 识别力/力矩聚合顺序（气动→推进→起落架→重力），`PropagateUsingFM()` 识别限幅→加速度转换→平动推进→转动推进的管道化流程，`PropagateTranslation` 识别地球模型分派，`PropagateRotation` 识别四元数姿态积分+偏航阻尼器+起落架摩擦逻辑。
+- **函数识别**：从 `function-index.jsonl` 中通过 `wsf_plugins::p6dof_mover_class`（模块级）、`P6DofIntegrator` 路径（`P6DofIntegrator.hpp`）定位。`Update()`、`CalculateFM()`、`PropagateUsingFM()`、`PropagateRotation()`、`PropagateTranslation()` 等在 index 中以 source-cited 标记。
+- **还原方式**：阅读 `P6DofIntegrator::Update()` 的主控流程，对比其与 wsf_six_dof 版 `RigidBodyIntegrator::Update()` 的差异（P6DofIntegrator 用 EPSILON 替代 dt、无 `operator+=` 隐式参考点转换、使用球面/WGS84 双地球模型）。核心 Heun 预测-校正框架两者等价，但 P6DofIntegrator 的实现更底层——直接操作 `P6DofKinematicState` 而非通过 `ForceAndMomentsObject` 的 `operator+=`。
+
 #### 可移植性评分
 
 **可移植性**：中

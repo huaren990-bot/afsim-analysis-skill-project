@@ -37,8 +37,8 @@
 | Agent 名称                                | 作用                                                   | 主要产物                                 | 状态 |
 | --------------------------------------- | ---------------------------------------------------- | ------------------------------------ | --- |
 | `afsim-analyst`                         | 总控入口，判断任务类型并协调其他 skill                               | 阶段计划、路由决策、综合报告                       | ✅ SKILL.md + references 就绪 |
-| `afsim-source-cognition`(源码分析 Agent)    | 快速学习 AFSIM 源码，总结架构，提取函数、类、数据流                        | 源码索引、架构报告、模块依赖                       | ✅ 已执行首轮（P0 core/ 全 14 模块） |
-| `afsim-algorithm-extractor`(数学解析 Agent) | 识别并解释源码中的算法、公式、变量映射，转化为标准数学表示和伪代码                    | 算法卡片、伪代码、接口规格                        | ⏳ SKILL.md 就绪，待执行 |
+| `afsim-source-cognition`(源码分析 Agent)    | 快速学习 AFSIM 源码，总结架构，提取函数、类、数据流                        | 源码索引、架构报告、模块依赖                       | ✅ 已执行两轮基线（core/ 14模块 + wsf_plugins/ 16模块） |
+| `afsim-algorithm-extractor`(数学解析 Agent) | 识别并解释源码中的算法、公式、变量映射，转化为标准数学表示和伪代码                    | 算法卡片、伪代码、接口规格                        | ✅ 已执行，产出 23 张算法卡片 + 24 份接口规格 |
 | `afsim-requirement-mapper`(需求分析 Agent)  | 阅读规范需求文档，推断自有仿真器缺少的功能，生成待补充功能列表                      | 需求缺口报告、功能映射矩阵                        | ⏳ SKILL.md 就绪，待执行 |
 | `afsim-migration-builder`(代码迁移 Agent)   | 在 AFSIM 源码中定位所需功能，进行代码切片、简化、适配，生成迁移方案、适配接口、代码原型和测试计划 | 迁移记录、适配方案、测试计划                       | ⏳ SKILL.md 就绪，待执行 |
 | `afsim-knowledge-curator`(知识记录 Agent)   | 整理知识库、追溯矩阵、决策记录和后续任务，全程记录每一步的输入、思考链、决策、输出，生成阶段性文档    | 知识地图、追溯矩阵、过程记录、文档模板、Markdown 生成、版本快照 | ⏳ SKILL.md 就绪，待执行 |
@@ -49,21 +49,27 @@
 
 ### 当前进展
 
-首轮分析已完成 **阶段 1（AFSIM 源码结构化分析）** 的 P0 核心部分：
+首轮分析已完成 **阶段 1（AFSIM 源码结构化分析）** 和 **阶段 2（算法提取）**：
 
-| 维度 | 产出 |
-|------|------|
-| **分析范围** | `source_root/afsim-2_9/swdev/src/core/` 全部 14 个模块，4,997 个源文件 |
-| **文件索引** | `workspace/source-index/file-index.jsonl` — 4,997 行，含 2,413 文件的 includes |
-| **符号索引** | `workspace/source-index/symbol-index.jsonl` — 3,255 个去重符号（class/struct/enum/typedef/using） |
-| **函数索引** | `workspace/source-index/function-index.jsonl` — 4,099 个函数/方法（24.4% 已分类生命周期角色） |
-| **依赖索引** | `workspace/source-index/dependency-index.jsonl` — 1,113 条依赖（inheritance/composition/call/build/include/registration） |
-| **架构报告** | `docs/architecture/afsim-architecture.md` — 完整 8 章架构报告 |
-| **依赖说明** | `docs/architecture/module-dependency.md` — 构建依赖图 + 继承/组合关系 |
-| **目录树** | `docs/architecture/directroy_structure.md` — AFSIM 2.9.0 完整目录结构 |
-| **功能体系** | `docs/architecture/x-level-capabilities.md` — 四层功能分解 |
+### 阶段 1 — 源码认知
 
-后续待执行：P1-P4 深度展开、阶段 2（算法提取）、阶段 3（需求映射）、阶段 4（迁移生成）、阶段 5（知识沉淀）。
+| 基线 | 分析范围 | 文件数 | 产出 |
+|------|---------|--------|------|
+| 基线 1 | `core/` 全 14 模块 | 4,997 | 4 份 JSONL 索引 + 2 份架构报告 |
+| 基线 2 | `wsf_plugins/` 全 16 模块 | 11,666 | 4 份 JSONL 索引 + 3 份架构报告（含 x-level-capabilities） |
+| **合计** | **30 模块** | **16,663** | **8 份索引（76,844 行）+ 5 份架构报告** |
+
+### 阶段 2 — 算法提取
+
+| 领域 | 算法数 | 卡片产出 | 接口规格 |
+|------|--------|---------|---------|
+| 飞行动力学 (wsf_p6dof + wsf_six_dof) | 10 | 10 张算法卡片（平均 ~440 行） | 10 份 interface-spec.md |
+| 空间/轨道力学 (wsf_space) | 13 | 13 张算法卡片（平均 ~340 行） | 14 份 interface-spec.md（含已有） |
+| **合计** | **23** | **23 张卡片（9,307 行）** | **24 份接口规格** |
+
+**最新质量补全**（2026-06-12）：全部 23 张卡片已通过结构性自检，覆盖 output-contracts.md 要求的 14 个必填章节（含新增的内部状态、变量映射表、边界条件、提取策略）。详见 `docs/records/12-algorithm-extraction-quality-supplement.md`。
+
+后续待执行：阶段 3（需求映射）、阶段 4（迁移生成）、阶段 5（知识沉淀）。
 
 ### 项目结构
 
@@ -112,17 +118,25 @@ afsim-analysis-skill-project/
 ├── docs/                                       # ═══════════ 人工可读、可审查的分析产物 ═══════════
 │   ├── architecture/                           # 架构分析结果
 │   │   ├── .gitkeep
-│   │   ├── afsim-architecture.md               #   ✅ AFSIM 总体架构报告（2026-06-09）：模块总览、生命周期、数据流、配置流、扩展点
-│   │   ├── module-dependency.md                #   ✅ 模块依赖说明（2026-06-09）：构建依赖图 + 继承/组合/调用关系 + 子系统依赖
-│   │   ├── directroy_structure.md              #   ✅ AFSIM 2.9.0 源码目录树（afsim_2.9.0_src_linux/ 完整结构说明）
-│   │   └── x-level-capabilities.md             #   🔴 四层功能体系说明（系统级/模块级/类级/方法级）草稿
+│   │   ├── core/                                #   core/ 基线 1 架构报告
+│   │   │   ├── afsim-architecture.md            #     AFSIM 总体架构报告（模块总览、生命周期、数据流、配置流、扩展点）
+│   │   │   ├── module-dependency.md             #     模块依赖说明（构建依赖图 + 继承/组合/调用关系 + 子系统依赖）
+│   │   │   ├── directroy_structure.md           #     AFSIM 2.9.0 源码目录树
+│   │   │   └── x-level-capabilities.md          #     四层功能体系说明（系统级/模块级/类级/方法级）
+│   │   └── wsf_plugins/                         #   wsf_plugins 基线 2 架构报告
+│   │       ├── afsim-architecture.md            #     插件架构报告（16 模块总览、4 大子系统）
+│   │       ├── module-dependency.md             #     插件依赖说明（构建依赖 + 继承/组合 + 子系统间依赖）
+│   │       └── x-level-capabilities.md          #     插件功能层次（13 系统级 → 34+ 模块级 → 60+ 类级）
 │   │
 │   ├── baseline/                               # AFSIM 官方基线文档（作为分析参考输入）
 │   │   ├── WsfSimulation_Design_Document.md    #   WSF 子系统完整软件设计文档（111KB，12 章）
 │   │   └── WsfSimulation_Core_Design_Document.md # WSF 仿真核心控制类设计文档（66KB）
 │   │
-│   ├── algorithms/                             # 算法提取结果（当前为空，待后续分析产出）
-│   │   └── .gitkeep
+│   ├── algorithms/                             # 算法提取结果（23 张算法卡片 + 1 份汇总文档）
+│   │   ├── .gitkeep
+│   │   ├── CompendiumofAlgorithms.md            #   算法汇总文档（23 个算法的分类目录 + 可移植性总览）
+│   │   ├── flight-dynamics-*.md                 #   飞行动力学算法卡片 × 10（积分器/气动/SAS/推进/发动机/PID）
+│   │   └── space-*.md                           #   空间/轨道力学算法卡片 × 13（传播器/大气/碎片/机动/交会/地影）
 │   │
 │   ├── requirements/                           # 需求映射结果（当前为空，待后续分析产出）
 │   │   └── .gitkeep
@@ -132,13 +146,18 @@ afsim-analysis-skill-project/
 │   │
 │   ├── records/                                # 过程记录、决策记录和进度跟踪
 │   │   ├── .gitkeep
+│   │   ├── vx.json                             #   记录文件元数据索引（JSON，含文件 ID、签名/哈希、时间戳、版本号），由知识库管理工具自动维护，用于追踪 records/ 下文档的变更
 │   │   ├── 01-scope-boundary.md                #   ✅ 分析边界确认（P0-P4 分级表，~17,190 文件）
 │   │   ├── 01-scope-decision.md                #   ✅ 范围决策记录（代码库规模、模块数）
 │   │   ├── 02-module-inventory.md              #   ✅ 模块清单（P0 核心 ~1,113 文件详细 + P1-P3 概览）
 │   │   ├── 03-batch-plan.md                    #   ✅ 分批分析计划（15 个批次，按依赖顺序）
 │   │   ├── 04-analysis-progress.md             #   ✅ 分析进度跟踪（首轮 P0 核心分析完成）
 │   │   ├── 05-architecture-decisions.md        #   ✅ 架构推导决策（子系统划分依据、数据流推导、初始化顺序）
-│   │   └── 08-analysis-plan-v3.md              #   ✅ 认知分析计划 v3（基于 2026-06-09 修订版提示词）
+│   │   ├── 08-analysis-plan-v3.md              #   ✅ 认知分析计划 v3（基于 2026-06-09 修订版提示词）
+│   │   ├── 09-algorithm-extraction-kickoff.md  #   ✅ 算法提取首轮记录（运动学积分器，3 张卡片 + 2 份支撑文件）
+│   │   ├── 10-wsf-space-algorithm-extraction.md #  ✅ wsf_space 模块算法提取记录（12 张卡片 + 7 份接口规格）
+│   │   ├── 11-skill-improvement-from-algorithm-extraction.md # ✅ Skill 完善记录（算法提取中发现的 6 类高频错误及预防规则）
+│   │   └── 12-algorithm-extraction-quality-supplement.md     # ✅ 阶段 2 全面质量补全记录（23 张卡片补全 + 16 份接口规格 + 依赖索引增强）
 │   │
 │   └── templates/                              # 输出文档模板（统一格式，保证一致性）
 │       ├── architecture-report.md              #   架构报告模板（10 个必填章节）
@@ -150,16 +169,25 @@ afsim-analysis-skill-project/
 ├── workspace/                                  # ═══════════ 机器生成或中间产物 ═══════════
 │   ├── source-index/                           # 源码索引（JSONL 格式，每行一条记录）
 │   │   ├── .gitkeep
-│   │   ├── file-index.jsonl                    #   文件级索引（4,997 行）：路径、语言、类型、模块、职责、includes
-│   │   ├── symbol-index.jsonl                  #   符号索引（3,255 行）：class/struct/enum/typedef/using，含继承关系
-│   │   ├── function-index.jsonl                #   函数索引（4,099 行）：返回类型、参数、调用关系、生命周期角色、算法提示
-│   │   └── dependency-index.jsonl              #   依赖索引（1,113 行）：6 种依赖类型(inheritance/composition/call/build/include/registration)
+│   │   ├── core/                                #   core/ 基线 1：file(4,997行) + symbol(3,255) + function(4,099) + dependency(1,113)
+│   │   │   ├── file-index.jsonl
+│   │   │   ├── symbol-index.jsonl
+│   │   │   ├── function-index.jsonl
+│   │   │   └── dependency-index.jsonl
+│   │   └── wsf_plugins/                         #   wsf_plugins 基线 2：file(11,666) + symbol(14,565) + function(36,939) + dependency(456)
+│   │       ├── file-index.jsonl
+│   │       ├── symbol-index.jsonl
+│   │       ├── function-index.jsonl
+│   │       └── dependency-index.jsonl
 │   │
 │   ├── analysis-cache/                         # 分析缓存（当前为空）
 │   │   └── .gitkeep
 │   │
-│   ├── extracted-algorithms/                   # 提取的算法产物（当前为空）
-│   │   └── .gitkeep
+│   ├── extracted-algorithms/                   # 提取的算法产物（24 个算法目录，各含 interface-spec.md）
+│   │   ├── .gitkeep
+│   │   ├── flight-dynamics-*/                   #   飞行力学接口规格 × 10
+│   │   ├── space-*/                             #   空间力学接口规格 × 13
+│   │   └── kinematics-integration/              #   运动学积分器接口规格（早期产出）
 │   │
 │   └── own-kernel-adapters/                    # 适配代码草稿（当前为空）
 │       └── .gitkeep
@@ -312,8 +340,8 @@ afsim-analysis-skill-project/
 ## 推荐落地顺序
 
 1. ~~先完善 `tools/indexers/`，实现 C/C++ 源码扫描和 JSONL 索引输出。~~ → 首轮分析已通过 Agent 直接扫描完成
-2. ~~用 `afsim-source-cognition` 生成第一版 AFSIM 架构报告。~~ → ✅ 已完成（P0 core/ 全 14 模块）
-3. 选择一个小功能，用 `afsim-algorithm-extractor` 生成算法卡片。
+2. ~~用 `afsim-source-cognition` 生成第一版 AFSIM 架构报告。~~ → ✅ 已完成（core/ + wsf_plugins/ 两轮基线）
+3. ~~选择一个小功能，用 `afsim-algorithm-extractor` 生成算法卡片。~~ → ✅ 已完成（23 张算法卡片 + 24 份接口规格，经全面质量补全）
 4. 输入一个自有项目需求，用 `afsim-requirement-mapper` 做缺口分析。
 5. 用 `afsim-migration-builder` 生成迁移方案和最小代码原型。
 6. 用 `afsim-knowledge-curator` 更新追溯矩阵和知识地图。

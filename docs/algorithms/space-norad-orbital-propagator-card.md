@@ -391,6 +391,93 @@ WsfSimulation::Update()                                            // AFSIM 仿�
    - 地球同步轨道（$n_0''$ 在同步范围内）
 4. **数值精度验证**：检查 Kepler 方程迭代次数（应 ≤ 10），验证 FMod2p 角度归一化正确性。
 
+### 内部状态
+
+| 变量名 | 类型 | 初始值 | 物理含义 | 更新时机 |
+|--------|------|--------|----------|----------|
+| `tle` | `unique_ptr<WsfNORAD_Util::tle_t>` | nullptr | TLE（双行轨道根数）数据的完整拷贝，含 epoch、xno、eo、xincl、xnodeo、omegao、xmo、bstar 等 9 个标准要素 | `Initialize()` 中从基类复制 |
+| `mEphem` | `int` | 1 (cSGP4) | 星历类型选择：0=SGP/1=SGP4/2=SGP8/3=SDP4/4=SDP8 | `Initialize()` 中由 `SelectEphemeris()` 确定，必要时自动修正（近地↔深空） |
+| `mSimpleFlag` | `bool` | false | 简化计算标志：当近地点高度低于 220 km 时设为 true，跳过部分高阶修正 | `sxpx_common_init()` 中根据近地点高度设定 |
+| `params[N_SAT_PARAMS]` | `double[98]` | 全 0 | NORAD 传播器的核心参数数组（11 个通用参数 + 87 个深空专用参数），包含所有长期/周期摄动系数、提前计算的中间量 | `Initialize()` 中由 SGP4/SGP8/SDP4/SDP8_init() 填充；`Propagate()` 中读取 |
+| `mPos[3]` | `double[3]` | {0.0, 0.0, 0.0} | TEME 坐标系中的卫星位置（km），内部存储，传播后输出 | 每个 `Propagate()` 调用中由 `sxpx_posn_vel()` 填充 |
+| `mVel[3]` | `double[3]` | {0.0, 0.0, 0.0} | TEME 坐标系中的卫星速度（km/min），内部存储 | 每个 `Propagate()` 调用中由 `sxpx_posn_vel()` 填充 |
+| `mPropagatedOrbitalState` | `ut::OrbitalState` | 由初始轨道状态复制 | 传播后的完整轨道状态对象，以 SI 单位（m, m/s）存储位置/速度 | `PostPropagate()` 中写入 km→m、km/min→m/s 转换后的值 |
+
+*注：`params` 数组中的 87 个深空参数对应 `deep_arg_t` 结构体（定义于 `WsfNORAD_Util.hpp` 第 91-121 行），包含 `xll`、`omgadf`、`xnode`、`em`、`xinc`、`xn` 等深空摄动中间量，仅在 SDP4/SDP8 时有效。*
+
+### 变量映射表
+
+| 代码变量 | 数学符号 | 含义 |
+|----------|----------|------|
+| `tle->xno` | $n_0$ | TLE 平运动（rad/min），输入值 |
+| `tle->eo` | $e_0$ | TLE 偏心率（无量纲） |
+| `tle->xincl` | $i_0$ | TLE 轨道倾角（rad） |
+| `tle->xnodeo` | $\Omega_0$ | TLE 升交点赤经 RAAN（rad） |
+| `tle->omegao` | $\omega_0$ | TLE 近地点幅角（rad） |
+| `tle->xmo` | $M_0$ | TLE 平近点角（rad） |
+| `tle->bstar` | $B^*$ | TLE 弹道系数修正项（1/地球半径） |
+| `tle->xndt2o` | $\ddot{n}_0$ | TLE 平运动一阶导数（rad/min²） |
+| `tle->xndd6o` | $\dddot{n}_0 / 6$ | TLE 平运动二阶导数除以 6（rad/min³） |
+| `tle->epoch` | $t_{epoch}$ | TLE 历元时刻（儒略日 JD） |
+| `tsince` | $t_{since}$ | 距 TLE 历元的时间差（min） |
+| `mEphem` | — | 星历类型索引（0=SGP/1=SGP4/2=SGP8/3=SDP4/4=SDP8） |
+| `mSimpleFlag` | — | 简化模式标志（近地点<220 km 时 true） |
+| `xke` | $\sqrt{GM}$ | 开普勒常数 = 0.074366916133173408（地球半径³/²/min） |
+| `ck2` | $J_2/2$ | J2 摄动系数的一半 = 5.413079E-4 |
+| `ck4` | $J_4$ | J4 摄动系数 = 6.2098875E-7 |
+| `xj3` | $J_3$ | J3 摄动系数 = -2.53881E-6 |
+| `xkmper` | $R_E$ | 地球赤道半径 = 6378.135 km（WGS72） |
+| `beta0` / `beta0²` | $\beta_0 = \sqrt{1 - e_0^2}$ | 辅助量 |
+| `p0` | $p_0 = a_0'' \cdot \beta_0^2$ | 半通径（地球半径） |
+| `a0dp` / `a0"` | $a_0''$ | 恢复的原始半长轴（地球半径） |
+| `xn0dp` / `n0"` | $n_0''$ | 恢复的原始平运动（rad/min） |
+| `C1`、`C4` | $C_1, C_4$ | 大气阻力项系数 |
+| `mPos[0..2]` | $\mathbf{r}_{TEME}$ | TEME 坐标系位置（km） |
+| `mVel[0..2]` | $\mathbf{v}_{TEME}$ | TEME 坐标系速度（km/min） |
+| `mPropagatedOrbitalState` | — | 传播后的轨道状态对象（SI 单位 m, m/s） |
+
+### 边界条件
+
+1. **近地点高度保护 -- S 参数切换**：当近地点高度 < 98 km 时，卫星已在大气层内，使用 $s^* = a_{perigee}/R_E$ 替代默认的 s 参数（1.01222928），以适应极低轨道的大气阻力计算。
+
+2. **近地点高度保护 -- QOMS2T 切换**：当近地点高度 < 156 km 时，使用 $q_0^* = s^*$（即 $q_0 - s = 0$），置 `qoms2t = 0`。这避免了 $(q_0 - s)^4$ 项对极低轨道产生不正确的小量修正。
+
+3. **简化标志（Simple Flag）触发**：当近地点高度 < 220 km 时，`mSimpleFlag = true`。在简化模式下，`SGP4()` 函数跳过部分高阶长期项修正（如 `xmcof`、`omgcof` 相关的高阶平近点角修正），避免在大气阻力主导的轨道上产生不正确的长期预测。
+
+4. **Kepler 方程迭代保护**：
+   - 牛顿迭代法求解 Kepler 方程 $M = E - e \sin E$ 时，初始猜测 `E0 = M`。
+   - 收敛容差 $|E_{k+1} - E_k| \leq 10^{-6}$（`e6a`）。
+   - 最大迭代次数 10 次。若超过仍不收敛，使用最后一次迭代结果，不抛出异常。
+   
+5. **偏心率边界**：
+   - $e = 0$（圆轨道）时，β = 1，Kepler 方程退化为 $E = M$，无迭代问题。
+   - $e \to 1$（近抛物线）时，公式中 $(1 - e)^{-3}$ 类项会放大摄动系数，但 NORAD 传播器不处理 $e \geq 1$ 的情况（`HyperbolicPropagationAllowed()` 返回 false）。
+   - 在大气阻力长期影响下 $e$ 可能变为负值（衰减过零），此时 $a \leq 0$ 表示卫星再入，位置不可靠。
+
+6. **半长轴/近地点高度衰减保护**：当 $a \leq 0$（半长轴非正）或 $q \leq 0$（近地点高度非正）时，卫星理论上已再入大气层。`sxpx_posn_vel()` 中有逻辑处理这些异常情况（检查近地点是否合理）。
+
+7. **零倾角轨道保护**：当 $\sin i = 0$（赤道轨道）时，RAAN 进动公式中含 $\cos i$ 的项不会出问题，但 Lyddane 修正（SDP4 深空周期摄动中的低倾角修正）在 $i < 0.2$ rad 时自动激活，使用替代的角度变换避免奇点。
+
+8. **星历类型选择边界**：
+   - 轨道周期 > 225 分钟（即每天 < 6.4 圈）：判定为深空轨道，使用 SDP4/SDP8。
+   - 轨道周期 <= 225 分钟：判定为近地轨道，使用 SGP4/SGP8。
+   - 如果用户指定的 `mEphem` 与自动判别的星历类型不一致（如指定 SGP4 但实际为深空轨道），`Initialize()` 会自动修正：`mEphem += 2` 切换到对应的 SD 版本，或 `mEphem -= 2` 切换到 SG 版本。
+
+9. **深空共振轨道处理**：SDP4/SDP8 对轨道周期接近 12 小时（$e > 0.5$ 时触发）或 24 小时（同步轨道）的共振轨道，使用特殊的半步积分法（`Deep_dpsec`），最大半步积分步长为 720 分钟。这避免了大时间跨度下日月引力摄动的数值误差。
+
+10. **角度归一化**：所有角度量（平近点角、近地点幅角、升交点赤经、纬度幅角等）在传播后通过 `FMod2p()` 函数归一化到 $[0, 2\pi)$ 范围，避免浮点累积导致的角度溢出。
+
+### 提取策略
+
+- **源文件**：
+  - `source_root/afsim-2_9/swdev/src/core/wsf_space/source/WsfNORAD_OrbitalPropagator.hpp`（传播器类声明，第 34-110 行，含 mEphem、mSimpleFlag、params、mPos、mVel 等全部成员变量）
+  - `source_root/afsim-2_9/swdev/src/core/wsf_space/source/WsfNORAD_OrbitalPropagator.cpp`（Initialize、SelectEphemeris、SGP4_init、SGP4、SDP4_init、SDP4、SGP8、SDP8、PostPropagate 等实现）
+  - `source_root/afsim-2_9/swdev/src/core/wsf_space/source/WsfNORAD_Util.hpp`（tle_t 结构体第 55-89 行，deep_arg_t 结构体第 91-121 行）
+  - `source_root/afsim-2_9/swdev/src/core/wsf_space/source/WsfNORAD_Util.cpp`（sxpx_common_init 第 49-130 行，sxpx_posn_vel 第 132-260 行，Deep_dpinit 第 294-608 行，Deep_dpsec 第 611-758 行，Deep_dpper 第 761-882 行，ThetaG 第 896-914 行）
+- **提取方法**：通过头文件获取成员变量及类型。SGP4/SDP4 的核心数学公式参考 Spacetrack Report #3（Hoots & Roehrich, 1980），源码是 Project Pluto 的 C 语言实现的 C++ 封装。提取时对应的初始化函数（`_init`）和传播函数（`SGP4`/`SDP4` 等）为成对关系。
+- **函数识别**：从 `workspace/source-index/core/function-index.jsonl` 中可搜索 `wsf_space::` 命名空间的相关函数：`sxpx_common_init`、`sxpx_posn_vel`、`Deep_dpinit`、`Deep_dpsec`、`Deep_dpper`、`ThetaG`、`FMod2p`、`SelectEphemeris` 等。`Initialize()` 中调用各星历类型的 `_init` 函数；`Propagate()` 中调用对应的 `SGP4`/`SDP4`/`SGP8`/`SDP8`。
+- **还原方式**：所有物理常数（xke、ck2、ck4、xj3、xkmper、s、qoms2t、rho 等）和 Butcher 型系数均来自 Spacetrack Report #3 标准，直接复制。核心流程为"恢复半长轴 → 长期项 → Kepler 求解 → 短周期项 → TEME 输出"，可参考 Vallado 的《Fundamentals of Astrodynamics and Applications》中的 SGP4 教科书写法。
+
 #### 可移植性评分
 
 **可移植性**：中

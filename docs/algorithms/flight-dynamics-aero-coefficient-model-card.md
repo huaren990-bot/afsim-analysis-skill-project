@@ -339,6 +339,109 @@ P6DofAeroCoreObject::ProcessInput(aInput)                     // 解析 aero_dat
 7. **面积缩放因子测试**：将 `aRadiusSizeFactor` 设为 2.0，验证力变为原来的 4 倍（面积随半径的平方缩放）。
 8. **空表保护测试**：不加载任何气动表（所有表指针为 null），验证返回零力/力矩而不崩溃。
 
+### 内部状态
+
+`P6DofAeroCoreObject` 的核心计算函数 `CalculateCoreAeroFM()` 是**纯函数**（无副作用，不修改成员变量），所有输入来自参数、所有输出通过引用返回。气动系数模型本质上是一个高维函数 $(\alpha, \beta, \text{Mach}, \omega, \dot{\alpha}, \dot{\beta}) \to (L, D, Y, \mathbf{M})$。跨帧持久化状态集中于数据表指针和几何参数（配置加载一次，运行时只读）：
+
+| 变量名 | 类型 | 初始值 | 物理含义 | 更新时机 |
+|--------|------|--------|----------|----------|
+| `mCL_AlphaBetaMachTablePtr` | `UtCloneablePtr<UtTable::Table>` | `nullptr` | 升力系数 CL 的 3D 静态表 (Mach, Beta, Alpha) 指针。表维度为 (Mach 行 × Beta 行 × Alpha 行)，内部使用双线性/三线性插值 | `ProcessInput()` 配置阶段加载；运行时只读 |
+| `mCLq_AlphaMachTablePtr` | `UtCloneablePtr<UtTable::Table>` | `nullptr` | 俯仰阻尼升力导数 CLq 的 2D 表 (Mach, Alpha) | 同上 |
+| `mCL_AlphaDotAlphaMachTablePtr` | `UtCloneablePtr<UtTable::Table>` | `nullptr` | 攻角延迟升力导数 CL_adot 的 2D 表 (Mach, Alpha) | 同上 |
+| `mCd_AlphaBetaMachTablePtr` | `UtCloneablePtr<UtTable::Table>` | `nullptr` | 阻力系数 Cd 的 3D 静态表 (Mach, Beta, Alpha) | 同上 |
+| `mCY_AlphaBetaMachTablePtr` | `UtCloneablePtr<UtTable::Table>` | `nullptr` | 侧力系数 CY 的 3D 静态表 (Mach, Beta, Alpha) | 同上 |
+| `mCYr_BetaMachTablePtr` | `UtCloneablePtr<UtTable::Table>` | `nullptr` | 偏航速率侧力导数 CYr 的 2D 表 (Mach, Beta) | 同上 |
+| `mCY_BetaDotBetaMachTablePtr` | `UtCloneablePtr<UtTable::Table>` | `nullptr` | 侧滑延迟侧力导数 CY_bdot 的 2D 表 (Mach, Beta) | 同上 |
+| `mCm_AlphaBetaMachTablePtr` | `UtCloneablePtr<UtTable::Table>` | `nullptr` | 俯仰力矩系数 Cm 的 3D 静态表 (Mach, Beta, Alpha) | 同上 |
+| `mCmq_MachCurvePtr` | `UtCloneablePtr<UtTable::Curve>` | `nullptr` | 俯仰阻尼力矩导数 Cmq 的 1D 曲线 (Mach) | 同上 |
+| `mCmp_MachCurvePtr` | `UtCloneablePtr<UtTable::Curve>` | `nullptr` | 滚转-俯仰交叉力矩导数 Cmp 的 1D 曲线 (Mach) | 同上 |
+| `mCm_AlphaDotMachCurvePtr` | `UtCloneablePtr<UtTable::Curve>` | `nullptr` | 攻角延迟俯仰力矩导数 Cm_adot 的 1D 曲线 (Mach) | 同上 |
+| `mCn_AlphaBetaMachTablePtr` | `UtCloneablePtr<UtTable::Table>` | `nullptr` | 偏航力矩系数 Cn 的 3D 静态表 (Mach, Beta, Alpha) | 同上 |
+| `mCnr_MachCurvePtr` | `UtCloneablePtr<UtTable::Curve>` | `nullptr` | 偏航阻尼力矩导数 Cnr 的 1D 曲线 (Mach) | 同上 |
+| `mCnp_MachCurvePtr` | `UtCloneablePtr<UtTable::Curve>` | `nullptr` | 滚转-偏航交叉力矩导数 Cnp 的 1D 曲线 (Mach) | 同上 |
+| `mCn_BetaDotMachCurvePtr` | `UtCloneablePtr<UtTable::Curve>` | `nullptr` | 侧滑延迟偏航力矩导数 Cn_bdot 的 1D 曲线 (Mach) | 同上 |
+| `mCl_AlphaBetaMachTablePtr` | `UtCloneablePtr<UtTable::Table>` | `nullptr` | 滚转力矩系数 Cl 的 3D 静态表 (Mach, Beta, Alpha) | 同上 |
+| `mClp_MachCurvePtr` | `UtCloneablePtr<UtTable::Curve>` | `nullptr` | 滚转阻尼力矩导数 Clp 的 1D 曲线 (Mach) | 同上 |
+| `mClr_MachCurvePtr` | `UtCloneablePtr<UtTable::Curve>` | `nullptr` | 偏航-滚转交叉力矩导数 Clr 的 1D 曲线 (Mach) | 同上 |
+| `mClq_MachCurvePtr` | `UtCloneablePtr<UtTable::Curve>` | `nullptr` | 俯仰-滚转交叉力矩导数 Clq 的 1D 曲线 (Mach) | 同上 |
+| `mCl_AlphaDotMachCurvePtr` | `UtCloneablePtr<UtTable::Curve>` | `nullptr` | 攻角延迟滚转力矩导数 Cl_adot 的 1D 曲线 (Mach) | 同上 |
+| `mCl_BetaDotMachCurvePtr` | `UtCloneablePtr<UtTable::Curve>` | `nullptr` | 侧滑延迟滚转力矩导数 Cl_bdot 的 1D 曲线 (Mach) | 同上 |
+| `mWingChord_ft` | `double` | `0.0` | 机翼平均气动弦长（ft），用于俯仰相关无量纲速率缩放 | `ProcessInput()` 配置阶段加载；运行时只读 |
+| `mWingSpan_ft` | `double` | `0.0` | 翼展（ft），用于滚转/偏航相关无量纲速率缩放 | 同上 |
+| `mWingArea_sqft` | `double` | `0.0` | 机翼参考面积（ft²），用于力/力矩有量纲化 | 同上 |
+| `mRefArea_sqft` | `double` | `0.0` | 显式参考面积（ft²），当 `mUseRefArea=true` 时替代 mWingArea_sqft | 同上 |
+| `mRefLength_ft` | `double` | `0.0` | sqrt(mRefArea_sqft)，替代弦长/翼展用于无量纲化 | 同上 |
+| `mUseRefArea` | `bool` | `false` | 是否使用显式参考面积（true=使用 mRefArea_sqft/mRefLength_ft，false=使用翼面参数） | 同上 |
+| `mUseReducedFrequency` | `bool` | `true` | 是否使用简化频率（无量纲化角速率），true 为默认；false 时使用有量纲角速率（已弃用） | 同上 |
+| `mUseLegacy` | `bool` | `false` | 是否启用已弃用的 alpha-only / beta-only 旧版导数表 | 同上 |
+| `mAeroCenter_ft` | `UtVec3dX` | (0,0,0) | 气动中心相对参考点的偏移（ft），影响力/力矩的参考点位置 | `ProcessInput()` 加载 |
+| `mModeName` | `string` | `"DEFAULT"` | 当前激活的气动构型模态名称 | `SetModeName()` 切换 |
+| `mSubModesList` | `list<UtCloneablePtr<P6DofAeroCoreObject>>` | 空列表 | 多构型气动参数表列表（如挂弹/空载/襟翼位置），每个子模态有独立的全套导数表 | `ProcessInput()` 加载各模态配置 |
+
+**关键特性**：`P6DofAeroCoreObject` 的所有成员均为配置期一次性加载、运行时只读，严格来说是一个参数化函数而非有状态的对象。构型模态切换（`SetModeName()`）通过遍历 `mSubModesList` 找到对应名称的子模态，并将后续所有气动力计算委托给该子模态完成——这实现了运行时"热切换"气动模型，但从框架角度看也是查询而非状态修改。
+
+### 变量映射表
+
+| 代码变量 | 数学符号 | 含义 |
+|----------|----------|------|
+| `aDynPress_lbsqft` | $\bar{q}$ | 动压（lb/ft²），$\bar{q} = \frac{1}{2} \rho V^2$ |
+| `aMach` | $M$ | 马赫数（无量纲），用于气动表查表 |
+| `aSpeed_fps` | $V$ | 真空速（ft/s），用于简化频率和动压计算 |
+| `aAlpha_rad` | $\alpha$ | 攻角（rad），体轴 x 与相对气流夹角 |
+| `aBeta_rad` | $\beta$ | 侧滑角（rad），体轴 y 与相对气流夹角 |
+| `aAlphaDot_rps` | $\dot{\alpha}$ | 攻角变化率（rad/s） |
+| `aBetaDot_rps` | $\dot{\beta}$ | 侧滑角变化率（rad/s） |
+| `aAngularRates_rps` | $\boldsymbol{\omega} = [p, q, r]$ | 体轴角速率（rad/s） |
+| `aRadiusSizeFactor` | $R$ | 几何尺度因子（无量纲），有量纲力/力矩中乘以 $R^2$ |
+| `aLift_lbs` | $L$ | 有量纲升力（lbf） |
+| `aDrag_lbs` | $D$ | 有量纲阻力（lbf） |
+| `aSideForce_lbs` | $Y$ | 有量纲侧力（lbf） |
+| `aMoment_ftlbs` | $\mathbf{M} = [M_x, M_y, M_z]$ | 有量纲气动力矩（ft-lbf） |
+| `kq / kr / kp` | $k_q, k_r, k_p$ | 无量纲化俯仰/偏航/滚转角速率（简化频率） |
+| `kLq / kYr` 等 | — | 乘以参考长度后的无量纲速率，用于与导数查表值相乘 |
+| `kLa / kYb / kma / kla / kna / klb / kba` | $k_{\dot{\alpha}}, k_{\dot{\beta}}$ 等 | 角速率变化率 × 参考长度的无量纲化值 |
+| `speedSafe` | $V_{\text{safe}}$ | 真空速下限保护值 = max(V, 1.0)，防止除零 |
+| `CL / Cd / CY` | $C_L, C_d, C_Y$ | 升力/阻力/侧力系数（静态 3D 表 + 动态增量叠加后） |
+| `CLq / CL_adot` | $C_{L_q}, C_{L_{\dot{\alpha}}}$ | 俯仰阻尼/攻角延迟对升力系数的动态导数贡献 |
+| `CYr / CY_bdot` | $C_{Y_r}, C_{Y_{\dot{\beta}}}$ | 偏航速率/侧滑延迟对侧力系数的动态导数贡献 |
+| `Cm / CmQ / CmP / Cm_adot` | $C_m, C_{m_q}, C_{m_p}, C_{m_{\dot{\alpha}}}$ | 俯仰力矩静态系数 + 俯仰阻尼 + 滚转交叉 + 攻角延迟增量 |
+| `Cn / CnR / CnP / Cn_bdot` | $C_n, C_{n_r}, C_{n_p}, C_{n_{\dot{\beta}}}$ | 偏航力矩静态系数 + 偏航阻尼 + 滚转交叉 + 侧滑延迟增量 |
+| `Cl / ClP / ClR / ClQ / Cl_adot / Cl_bdot` | $C_l, C_{l_p}, C_{l_r}, C_{l_q}, C_{l_{\dot{\alpha}}}, C_{l_{\dot{\beta}}}$ | 滚转力矩静态系数 + 滚转阻尼 + 偏航交叉 + 俯仰交叉 + 攻角延迟 + 侧滑延迟增量 |
+| `areaFactor` | $R^2$ | 半径因子的平方，用于面积缩放（降落伞/气球等非翼面气动体） |
+| `wingChord / refLength` | $c_{\text{ref}}$ | 参考弦长（ft），用于俯仰力矩无量纲化 |
+| `wingSpan / refLength` | $b$ | 参考翼展（ft），用于滚转/偏航力矩无量纲化 |
+| `wingArea / refArea` | $S_{\text{ref}}$ | 参考面积（ft²），用于所有力/力矩的有量纲化 |
+
+### 边界条件
+
+1. **空表保护（关键）**：所有 20+ 个查表函数（`CL_AlphaBetaMach()` 等）在空表指针（`nullptr`）时直接返回 `0.0`。这意味着加载不完整的气动数据（如仅配置升力和阻力表而不配置力矩表）时，缺项被静默设为零，飞行器仅受部分气动力并保持姿态不变化。不会崩溃或产生 NaN。
+
+2. **真空速除零保护**：`speedSafe = max(aSpeed_fps, 1.0)`。当 V=0 时（地面静止或初始化），所有无量纲化除以 1 ft/s 而非 0，避免除零崩溃。此时简化频率 k= 角速率 / 2，值偏大但有限。
+
+3. **动压为零时的力/力矩**：若 `aDynPress_lbsqft = 0`（如真空环境），所有有量纲力/力矩为 0（系数 × 0 → 0），飞行器不受气动力/力矩影响，仅受推力、重力和起落架力支配。
+
+4. **表格边界外推**：`UtTable::Lookup` 引擎在超表范围时默认线性外推到最近边界值（clamp to edge），而非插值到边界外。因此配置超范围（如 alpha=30° 但表只到 20°）时，导数按 alpha=20° 的值计算，不会异常跳变或返回 NaN。
+
+5. **Legacy 模式兼容保护**：
+   - Legacy 导数表使用 deg/s 为单位，代码中乘以 `DEG_PER_RAD` 将 rad/s 输入转换为 deg/s 后再查表。
+   - Legacy 模式未配置导数表（指针为 null）时，对应查表函数返回 0（受空表保护覆盖），增量项为零。
+   - Legacy 模式默认为 `false`，仅在显式配置 `use_legacy = true` 时启用。
+
+6. **简化频率开关**：`mUseReducedFrequency` 默认为 `true`。当设为 `false` 时，跳过除以 2V 和乘以参考长度的步骤，直接用有量纲角速率（rad/s）乘以导数。这是已弃用的模式，但保留向后兼容。两种模式的选择由 `Initialize()` 传播到所有子模态。
+
+7. **几何尺度因子**：`aRadiusSizeFactor` 默认为 1.0。有量纲力中乘以 `radiusFactor * radiusFactor`（即 $R^2$），有量纲力矩中乘以对应的面积和长度缩放。当 $R \neq 1$ 时（如降落伞面积缩放），力和力矩按面积缩放（$R^2$），力矩额外按长度缩放。
+
+8. **多模态切换**：`SetModeName()` 遍历 `mSubModesList` 查找匹配模态名。若未找到匹配模态，保持当前模态不变（无报错，静默忽略）。每个子模态通过 `Initialize()` 从父模态继承 `mUseReducedFrequency`、`mUseLegacy` 等控制设置。
+
+9. **导数表完整性**：并非所有导数表都必须加载。实际使用中可能仅加载静态 3D 表（CL/Cd/CY/Cm/Cn/Cl）而不加载动态导数表（CLq/CYr/Cmq 等），此时动态增量全部为 0，即仅使用准稳态气动模型。
+
+### 提取策略
+
+- **源文件**：`P6DofAeroCoreObject.hpp`、`P6DofAeroCoreObject.cpp`
+- **提取方法**：从 `P6DofAeroCoreObject` 类中识别 `CalculateCoreAeroFM()` 函数（280 行），该函数是完整的稳定性导数法气动模型计算核心。逻辑清晰分为 7 个阶段：角速率拆解→基础无量纲化（除以 2V）→参考长度缩放→升力+阻力+侧力查表与叠加→力矩各分量的独立简化频率计算→力矩系数查表与叠加→总系数 × 动压 × 面积 × 参考长度→有量纲力/力矩输出。20+ 个查表函数（`CL_AlphaBetaMach`、`Cm_AlphaBetaMach` 等）是薄封装，内部仅做空表检查和 `UtTable::Lookup` 调用。
+- **函数识别**：从 `function-index.jsonl` 中通过 `wsf_plugins::p6dof_module`（模块级）、`wsf_p6dof::ProcessInput`（配置解析）、`wsf_p6dof::Initialize`（初始化传播）、`wsf_p6dof::SetModeName`（模态切换）等函数名定位。`CalculateCoreAeroFM` 在 index 中通过 `P6DofAeroCoreObject.hpp` 路径标记。
+- **还原方式**：阅读 `CalculateCoreAeroFM()` 的函数体，按照角速率拆解→简化频率→静态项查表→动态导数乘以无量纲速率→叠加→有量纲化的顺序提取全部数学公式。`ProcessCommonInput()` 提供了 25+ 种气动数据命令的解析逻辑（每张表如何从输入流加载），`Initialize()` 展示了控制设置如何从父模态传播到所有子模态。`SetModeName()` 展示了模态查找与切换。
+
 #### 可移植性评分
 
 **可移植性**：中
