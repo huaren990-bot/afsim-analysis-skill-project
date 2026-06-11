@@ -121,6 +121,7 @@ metadata:
 
 ## 输出文件
 
+- 把每一步的决策依据和执行计划生成文档进行记录归档，放在目录docs/records里面，方便追溯。
 - 每解析一个`extract_root`，就创建新目录`docs/architecure/extract_root`和`workspace/source-index/extract_root`，如果目录存在则不用新建。
 - 在`docs/architecure/extract_root`下放置所有输出的`.md`文件，`.md`文件中所有英文标识、英文别称都应说明其中文翻译，保证中文可读性。
 - 在`workspace/source-index/extract_root`下放置所有输出的`.jsonl`文件。
@@ -144,21 +145,41 @@ x-level-capabilities.md是afsim功能的功能说明文件。
 
 文件中的方法级功能必须能追溯到`function-index.jsonl`。
 
+- 文件中每一层的功能必须能通过 `qualified_name` 追溯到 `function-index.jsonl` 中的对应条目。
+- 文档标题必须为 `# AFSIM 仿真框架架构文档`，不可擅自修改。
+- 方法级功能表格中必须使用个体的 `qualified_name`（如 WsfP6DOF_Mover::Initialize），不可写成抽象群组（如"生命周期方法"）。
+- 每个功能层级必须包含"功能对应条目"段落，明确写出对应 function-index.jsonl 中 level=xxx 的条目 qualified_name。
+- 表格列必须与模板完全一致，不可增删列、不可修改表头文字。
+
 ### `file-index.jsonl`
 
 格式应当严格遵循模板skill/afsim-source-cognition/template_list/template_file-index.md
+
+- `source`/`header` 文件的 `includes` 数组必须解析 `#include` 指令并填充，不可全部为 `[]`。
 
 ### `symbol-index.jsonl`
 
 格式应当严格遵循模板skill/afsim-source-cognition/template_list/template_symbol-index.md
 
+- `kind` 为 `macro` 的符号只包含 `#define` 定义的宏常量；`__declspec(dllexport)` 生成的 `*_EXPORT` 宏不纳入符号索引。
+- 前向声明（仅 `class X;` 而无后续定义的）不纳入符号索引。
+
 ### `function-index.jsonl`
 
 格式应当严格遵循模板skill/afsim-source-cognition/template_list/template_function-index.md
 
+- 必须同时包含 System-level、Module-level、Class-level、Method-level 四层条目，不可只有 Method-level 一层。
+- Method-level 条目的 `parameters` 必须填写参数信息，不可全部为 `[]`。至少包含 `name` 和 `type`；若有默认值必须记录 `default_value`。
+- 如果无法解析所有函数的参数，必须在对应条目的 `notes` 字段中标记"待AST解析"，而不可保持空数组了事。
+- System/Module/Class 级条目的 `brief` 不可为空。
+- `qualified_name` 必须在全文件中唯一。
+
 ### `dependency-index.jsonl`
 
 格式应当严格遵循模板skill/afsim-source-cognition/template_list/template_dependency-index.md
+
+- 依赖关系条目数应不少于 200 条（覆盖 build + inheritance + composition + include + call + registration 六种 relation）。
+- 对于 1 万文件以上的分析范围，仅 60+ 条是不够的。
 
 ## 证据等级
 
@@ -174,17 +195,45 @@ x-level-capabilities.md是afsim功能的功能说明文件。
 
 ## 质量门槛
 
-交付前检查：
+交付前逐项检查，全部通过方可标记为"完成"。
 
-- 四个 JSONL 索引文件存在，且每行都能被 JSON parser 解析。
-- 每个 JSON object 都包含对应文件的必填字段和 `schema_version`。
-- 枚举字段只使用本 skill 规定的值。
-- 文件路径相对 `source_root` 可定位；行号使用 1-based 编号。
-- 架构报告包含模板要求的全部章节。
-- 模块职责、生命周期、数据流、配置流和扩展点都有证据等级。
-- 不把文件名相似、路径相近或命名相近当作功能等价证据。
-- 未阅读、无法解析或证据不足的内容标记为 `unknown` 或 `inferred`。
-- 输出只记录可审查的证据、假设、决策、结论和风险，不记录隐藏推理过程。
+### 通用检查
+1. 四个 JSONL 索引文件存在，且每行都能被 JSON parser 解析。
+2. 每个 JSON object 都包含对应模板的全部必填字段和 `schema_version`。
+3. 枚举字段只使用本 skill 规定的值。
+4. 文件路径相对 `source_root` 可定位；行号使用 1-based 编号。
+5. 不把文件名相似、路径相近或命名相近当作功能等价证据。
+6. 未阅读、无法解析或证据不足的内容标记为 `unknown` 或 `inferred`。
+7. 输出之间用词统一，`qualified_name`、模块名、符号名在所有文件中保持一致。
+8. 不能使用省略号省略列举内容；如果列举条目多于30条，新建独立文件将完整内容列出。
+
+### file-index.jsonl 专项检查
+9. `source`/`header` 类型文件的 `includes` 数组已解析填充，不可全部为 `[]`。
+
+### symbol-index.jsonl 专项检查
+10. `kind=macro` 仅包含 `#define` 宏常量，不含 `*_EXPORT` 导出宏。
+11. 不含前向声明（`class X;` 形式）条目。
+
+### function-index.jsonl 专项检查
+12. 包含 System-level、Module-level、Class-level、Method-level 四层条目。
+13. System/Module/Class 级条目的 `brief` 非空。
+14. Method-level 条目的 `parameters` 数组已填写参数信息（至少 name + type）。无法解析的条目在 `notes` 中标明"待AST解析"。
+15. `qualified_name` 全文件唯一。
+
+### dependency-index.jsonl 专项检查
+16. 条目数 ≥ 200。至少覆盖 build、inheritance、composition、include、call、registration 六种 relation。
+
+### x-level-capabilities.md 专项检查
+17. 文档标题为 `# AFSIM 仿真框架架构文档`。
+18. 表格列与模板 `template_x-level-capabilities.md` 完全一致，无增删改。
+19. 每个功能层级包含"功能对应条目：见 function-index.jsonl 中 ..."段落。
+20. 方法级功能表格中的 `qualified_name` 可在 function-index.jsonl 中查到。
+
+### afsim-architecture.md 专项检查
+21. 包含模板要求的全部章节：目录结构总览、模块总览、仿真生命周期、数据流、配置流、扩展点、关键符号、未知项、源码证据。
+
+### module-dependency.md 专项检查
+22. Mermaid 图中的每一条边可追溯到 dependency-index.jsonl 或源码位置。
 
 ## 已完成的基线记录
 

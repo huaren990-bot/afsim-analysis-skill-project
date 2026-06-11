@@ -1,4 +1,4 @@
-# AFSIM wsf_plugins 功能层次说明
+# AFSIM 仿真框架架构文档
 
 > **状态**：完成
 > **日期**：2026-06-10
@@ -14,31 +14,33 @@ wsf_plugins（插件系统）承载了 AFSIM 仿真框架中除核心引擎外�
 
 **功能划分**：功能按四层体系组织：
 
-| 层级 | 英文 | 定义 | 边界范围 |
-|------|------|------|----------|
-| **系统级** | System-level | 跨框架/域/插件层，组合多个模块完成的端到端业务能力 | 跨目录、跨子系统 |
-| **模块级** | Module-level | 在单一子系统/模块内，通过策略模式实现多变体的功能 | 同一目录或相邻目录 |
-| **类级** | Class-level | 单个类（class）封装的职责集合 | 单个 .hpp + .cpp |
-| **方法级** | Method-level | 单个函数/方法的具体算法实现 | 单个文件内的函数 |
+| 层级 | 英文 | 定义 | 边界范围 | 对应索引 |
+|------|------|------|----------|----------|
+| **系统级** | System-level | 跨框架/域/插件层，组合多个模块完成的端到端业务能力 | 跨目录、跨子系统 | function-index level=System-level |
+| **模块级** | Module-level | 在单一子系统/模块内，通过策略模式实现多变体的功能 | 同一目录或相邻目录 | function-index level=Module-level |
+| **类级** | Class-level | 单个类（class）封装的职责集合 | 单个 .hpp + .cpp | function-index level=Class-level |
+| **方法级** | Method-level | 单个函数/方法的具体算法实现 | 单个文件内的函数 | function-index level=Method-level |
 
 ---
 ## 1. 系统级功能总览
 
-| # | 系统级功能 | 核心职责 | 涉及模块 |
-|----|------|----------|----------|
-| 1 | 飞行器多保真度运动学仿真 | 为空中平台/导弹提供点质、拟6DOF、刚体6DOF、外部ARGO8等多级运动学模型 | wsf_p6dof, wsf_six_dof, wsf_argo8 |
-| 2 | 大尺度空战仿真 | 基于BRAWLER引擎的大规模多对多空战仿真 | wsf_brawler, wsf_air_combat |
-| 3 | 空战态势感知（SA） | 多传感器数据融合、目标识别、威胁评估、交战决策支持 | wsf_air_combat |
-| 4 | 综合防空系统指挥控制（IADS C2） | 防空资产调度、武器-目标匹配、拦截计算、C2网络分发 | wsf_iads_c2_lib |
-| 5 | 覆盖性分析（Coverage Analysis） | 基于网格的效能度量计算（MOE）、传感器/通信覆盖评估 | wsf_coverage |
-| 6 | 多分辨率建模 | 保真度驱动的自适应模型选择和多轮次参数扫描 | wsf_multiresolution |
-| 7 | 场景验证与合规性检查 | 自动化场景配置检查（19项SAT检查） | wsf_scenario_analyzer, wsf_scenario_analyzer_iads_c2 |
-| 8 | 非制导弹药弹道计算 | 火炮/迫击炮弹道表查询和弹道仿真 | wsf_fires |
-| 9 | 光谱光学传感器建模 | SOSM传感器接口集成和红外/光电传感器仿真 | wsf_sosm |
-| 10 | SIMDIS 3D可视化 | 仿真数据的SIMDIS ASI格式输出（平台/航迹/武器事件） | wsf_simdis |
-| 11 | OMS/UCI标准化消息通信 | 基于ASB中间件的UCI标准化消息收发 | wsf_oms_uci |
-| 12 | 场景标注 | POI、范围环、装饰等场景标注信息的处理 | wsf_annotation |
-| 13 | 备用位置管理 | 平台备用位置信息的仿真扩展 | wsf_alternate_locations |
+2.**功能对应条目**：见 `function-index.jsonl` 中 `level=System-level` 的 13 条条目（qualified_name 以 `wsf_plugins::` 开头）。
+
+| # | 系统级功能 | 核心职责 |
+|----|------|----------|
+| 1 | 飞行器多保真度运动学仿真 | 为空中平台/导弹提供点质、拟6DOF、刚体6DOF、外部ARGO8等多级运动学模型 |
+| 2 | 大尺度空战仿真 | 基于BRAWLER引擎的大规模多对多空战仿真 |
+| 3 | 空战态势感知（SA） | 多传感器数据融合、目标识别、威胁评估、交战决策支持 |
+| 4 | 综合防空系统指挥控制（IADS C2） | 防空资产调度、武器-目标匹配、拦截计算、C2网络分发 |
+| 5 | 覆盖性分析（Coverage Analysis） | 基于网格的效能度量计算（MOE）、传感器/通信覆盖评估 |
+| 6 | 多分辨率建模 | 保真度驱动的自适应模型选择和多轮次参数扫描 |
+| 7 | 场景验证与合规性检查 | 自动化场景配置检查（19项SAT检查） |
+| 8 | 非制导弹药弹道计算 | 火炮/迫击炮弹道表查询和弹道仿真 |
+| 9 | 光谱光学传感器建模 | SOSM传感器接口集成和红外/光电传感器仿真 |
+| 10 | SIMDIS 3D可视化 | 仿真数据的SIMDIS ASI格式输出（平台/航迹/武器事件） |
+| 11 | OMS/UCI标准化消息通信 | 基于ASB中间件的UCI标准化消息收发 |
+| 12 | 场景标注 | POI、范围环、装饰等场景标注信息的处理 |
+| 13 | 备用位置管理 | 平台备用位置信息的仿真扩展 |
 
 ---
 ## 2. 飞行器多保真度运动学仿真系统功能
@@ -71,24 +73,24 @@ wsf_plugins（插件系统）承载了 AFSIM 仿真框架中除核心引擎外�
 
 #### 2.1.1 WsfP6DOF_Mover 类级功能
 
-1.**类概述**：WsfP6DOF_Mover 是 P6DOF 模块的核心类，继承自 `WsfMover`，拥有 ~3000 行代码。提供以下方法级功能群组：
+1.**类概述**：WsfP6DOF_Mover 是 P6DOF 模块的核心类，继承自 `WsfMover`，拥有 ~3000 行代码。提供以下方法级功能组：
 
 2.**方法级功能细览**：
 
-| 类级功能 | 方法级功能群 | 核心职责 |
+| 类级功能 | 方法级功能 | 核心职责 |
 |------|----------|----------|
-| WsfP6DOF_Mover | 生命周期方法 (Initialize, Update, Clone, ProcessInput) | 框架集成：初始化、更新循环、克隆、输入处理 |
-| WsfP6DOF_Mover | 状态获取方法 (GetStateData, GetSpeed, GetAltitude, GetHeading, GetPitch, GetRoll, ...) | 丰富状态查询：80+ getter 方法获取飞行器姿态/速度/质量/力/力矩 |
-| WsfP6DOF_Mover | 自动驾驶方法 (SetAutopilotPitchAngle, SetAutopilotRollAngle, SetAutopilotSpeed, GoToLocation, ...) | 自动驾驶控制：横向/纵向/速度三通道模式 |
-| WsfP6DOF_Mover | 控制界面方法 (SetDirectControlInputs, GetControlSurfaceAngle, ...) | 舵面/控制界面状态查询和控制 |
-| WsfP6DOF_Mover | 燃油管理方法 (AddFuel, GetFuelRemaining, SetJokerFuel, SetBingoFuel, ...) | 燃油系统：加油、查询、Joker/Bingo状态 |
-| WsfP6DOF_Mover | 推力管理方法 (GetThrust, GetEngineThrust, StartupEngines, ShutdownEngines, ...) | 推力/发动机管理 |
-| WsfP6DOF_Mover | 航路管理方法 (GoToWaypoint, SetRoute, ReturnToRoute, FollowRoute, ...) | 航路/航点管理 |
-| WsfP6DOF_Mover | 机动/编队方法 (ExecuteManeuver, ExecuteManeuverSequence, CancelManeuvers, ...) | 机动动作和编队执行 |
-| WsfP6DOF_Mover | 损伤/破坏方法 (SetDamageFactor, SetDestroyed, GetIsDestroyed, ...) | 损伤状态管理 |
-| WsfP6DOF_Mover | 外观效果方法 (GetContrailTrailingEffect, MakeEnginesSmoke, SetFlamesArePresent, ...) | 视觉外观效果控制 |
-| WsfP6DOF_Mover | 起落架/刹车方法 (RetractLandingGear, LowerLandingGear, SetParkingBrake, ...) | 地面操作管理 |
-| WsfP6DOF_Mover | 测试支持方法 (SetTestingIgnoreAllCrashes, GetTestSupportObject, ...) | 测试辅助 |
+| WsfP6DOF_Mover | WsfP6DOF_Mover::Initialize, WsfP6DOF_Mover::Update, WsfP6DOF_Mover::Clone, WsfP6DOF_Mover::ProcessInput | 框架集成：初始化、更新循环、克隆、输入处理 |
+| WsfP6DOF_Mover | WsfP6DOF_Mover::GetStateData, WsfP6DOF_Mover::GetSpeed_fps, WsfP6DOF_Mover::GetAlt_m, WsfP6DOF_Mover::GetHeading, WsfP6DOF_Mover::GetPitch, WsfP6DOF_Mover::GetRoll 等80+个getter方法 | 丰富状态查询：80+ getter 方法获取飞行器姿态/速度/质量/力/力矩 |
+| WsfP6DOF_Mover | WsfP6DOF_Mover::SetAutopilotPitchAngle, WsfP6DOF_Mover::SetAutopilotRollAngle, WsfP6DOF_Mover::GoToLocation, WsfP6DOF_Mover::TurnToHeading | 自动驾驶控制：横向/纵向/速度三通道模式 |
+| WsfP6DOF_Mover | WsfP6DOF_Mover::SetDirectControlInputs, WsfP6DOF_Mover::GetAngleOfControlSurface, WsfP6DOF_Mover::GetListOfControlSurfaceNames, WsfP6DOF_Mover::GetAileronsBothPosition, WsfP6DOF_Mover::GetStabilatorLeftPosition, WsfP6DOF_Mover::GetStabilatorRightPosition, WsfP6DOF_Mover::GetRudderPosition, WsfP6DOF_Mover::GetFlapsPosition, WsfP6DOF_Mover::GetSpoilersPosition, WsfP6DOF_Mover::GetSpeedBrakePosition, WsfP6DOF_Mover::GetNormalizedAileronLeft, WsfP6DOF_Mover::GetNormalizedAileronRight | 舵面/控制界面状态查询和控制 |
+| WsfP6DOF_Mover | WsfP6DOF_Mover::AddFuel, WsfP6DOF_Mover::GetTotalFuelRemaining, WsfP6DOF_Mover::SetJokerFuelState, WsfP6DOF_Mover::SetBingoFuelState | 燃油系统：加油、查询、Joker/Bingo状态 |
+| WsfP6DOF_Mover | WsfP6DOF_Mover::GetTotalThrust, WsfP6DOF_Mover::GetEngineThrust, WsfP6DOF_Mover::StartupEngines, WsfP6DOF_Mover::ShutdownEngines, WsfP6DOF_Mover::GetTotalFuelFlowRate, WsfP6DOF_Mover::GetEngineFuelFlowRate, WsfP6DOF_Mover::GetAfterburnerOn, WsfP6DOF_Mover::GetEngineAfterburnerOn | 推力/发动机管理 |
+| WsfP6DOF_Mover | WsfP6DOF_Mover::GoToWaypoint, WsfP6DOF_Mover::SetRoute, WsfP6DOF_Mover::ReturnToRoute | 航路/航点管理 |
+| WsfP6DOF_Mover | WsfP6DOF_Mover::ExecuteManeuver, WsfP6DOF_Mover::ExecuteManeuverSequence, WsfP6DOF_Mover::CancelManeuvers | 机动动作和编队执行 |
+| WsfP6DOF_Mover | WsfP6DOF_Mover::SetDamageFactor, WsfP6DOF_Mover::SetDestroyed, WsfP6DOF_Mover::GetIsDestroyed | 损伤状态管理 |
+| WsfP6DOF_Mover | WsfP6DOF_Mover::GetContrailTrailingEffect, WsfP6DOF_Mover::MakeEnginesSmoke, WsfP6DOF_Mover::SetFlamesArePresent, WsfP6DOF_Mover::SetDamageSmokeTrailingEffect, WsfP6DOF_Mover::SetRisingSmokePlumeIsPresent, WsfP6DOF_Mover::SetLaunchFlashSmokeIsPresent | 视觉外观效果控制 |
+| WsfP6DOF_Mover | WsfP6DOF_Mover::RetractLandingGear, WsfP6DOF_Mover::LowerLandingGear, WsfP6DOF_Mover::SetParkingBrake, WsfP6DOF_Mover::ApplyLeftGearBrake, WsfP6DOF_Mover::ApplyRightGearBrake, WsfP6DOF_Mover::ReleaseWheelBrakes | 地面操作管理 |
+| WsfP6DOF_Mover | WsfP6DOF_Mover::SetTestingIgnoreAllCrashes, WsfP6DOF_Mover::GetTestingIgnoreAllCrashes, WsfP6DOF_Mover::SetTestingClampToSealLevelMinAlt, WsfP6DOF_Mover::GetTestingClampToSealLevelMinAlt, WsfP6DOF_Mover::GetTestSupportObject | 测试辅助 |
 
 ### 2.2 6自由度（Six-DOF）运动学模块级功能
 
