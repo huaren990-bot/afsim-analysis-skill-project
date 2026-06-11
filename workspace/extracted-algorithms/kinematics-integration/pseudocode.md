@@ -2,7 +2,7 @@
 
 > **日期:** 2026-06-10
 > **状态:** draft
-> **对应算法卡:** pointmass-integration-sas-card.md, p6dof-heun-integrator-card.md, p6dof-aero-coefficient-model-card.md
+> **对应算法卡:** flight-dynamics-pointmass-sas-card.md, flight-dynamics-p6dof-heun-integrator-card.md, flight-dynamics-aero-coefficient-model-card.md
 
 ## 1. Heun 修正欧拉积分（P6DOF / PointMass 共用框架）
 
