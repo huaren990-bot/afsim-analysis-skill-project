@@ -32,16 +32,63 @@
 
 ## 二、Agent 体系设计（1个总体Agent + 5 个专职 Agent）
 
+### Agent-Skill 双层架构
+
+```mermaid
+flowchart TB
+    subgraph Analyst["afsim-analyst（总控 Agent）"]
+        direction LR
+        TO["task-orchestration<br/>（任务编排 Skill）"]
+        PV["plan-validation<br/>（计划校验 Skill）"]
+    end
+
+    Analyst --> Cognition
+    Analyst --> AlgoExtract
+    Analyst --> ReqMap
+    Analyst --> MigBuild
+    Analyst --> KnowledgeCurator
+
+    subgraph Cognition["afsim-source-cognition（源码认知 Agent）"]
+        direction LR
+        SI["source-indexing<br/>（产出 Skill）"]
+        IV["index-verification<br/>（检验 Skill）"]
+    end
+
+    subgraph AlgoExtract["afsim-algorithm-extractor（算法提取 Agent）"]
+        direction LR
+        AE["algorithm-extraction<br/>（产出 Skill）"]
+        AV["algorithm-verification<br/>（检验 Skill）"]
+    end
+
+    subgraph ReqMap["afsim-requirement-mapper（需求映射 Agent）"]
+        direction LR
+        RM["requirement-mapping<br/>（产出 Skill）"]
+        RV["requirement-verification<br/>（检验 Skill）"]
+    end
+
+    subgraph MigBuild["afsim-migration-builder（迁移构建 Agent）"]
+        direction LR
+        MG["migration-generation<br/>（产出 Skill）"]
+        MV["migration-verification<br/>（检验 Skill）"]
+    end
+
+    subgraph KnowledgeCurator["afsim-knowledge-curator（知识策展 Agent）"]
+        direction LR
+        KC["knowledge-curation<br/>（产出 Skill）"]
+        KV["knowledge-verification<br/>（检验 Skill）"]
+    end
+```
+
 基于大模型（如 GPT-4/Claude 3.5 级别）搭建 Agent，每个 Agent 有明确的角色、输入、输出和可调用的工具。
 
-| Agent 名称                                | 作用                                                   | 主要产物                                 | 状态 |
-| --------------------------------------- | ---------------------------------------------------- | ------------------------------------ | --- |
-| `afsim-analyst`                         | 总控入口，判断任务类型并协调其他 skill                               | 阶段计划、路由决策、综合报告                       | ✅ SKILL.md + references 就绪 |
+| Agent 名称                                | 作用                                                   | 主要产物                                 | 状态                                        |
+| --------------------------------------- | ---------------------------------------------------- | ------------------------------------ | ----------------------------------------- |
+| `afsim-analyst`                         | 总控入口，判断任务类型并协调其他 skill                               | 阶段计划、路由决策、综合报告                       | ✅ SKILL.md + references 就绪                |
 | `afsim-source-cognition`(源码分析 Agent)    | 快速学习 AFSIM 源码，总结架构，提取函数、类、数据流                        | 源码索引、架构报告、模块依赖                       | ✅ 已执行两轮基线（core/ 14模块 + wsf_plugins/ 16模块） |
-| `afsim-algorithm-extractor`(数学解析 Agent) | 识别并解释源码中的算法、公式、变量映射，转化为标准数学表示和伪代码                    | 算法卡片、伪代码、接口规格                        | ✅ 已执行，产出 23 张算法卡片 + 24 份接口规格 |
-| `afsim-requirement-mapper`(需求分析 Agent)  | 阅读规范需求文档，推断自有仿真器缺少的功能，生成待补充功能列表                      | 需求缺口报告、功能映射矩阵                        | ⏳ SKILL.md 就绪，待执行 |
-| `afsim-migration-builder`(代码迁移 Agent)   | 在 AFSIM 源码中定位所需功能，进行代码切片、简化、适配，生成迁移方案、适配接口、代码原型和测试计划 | 迁移记录、适配方案、测试计划                       | ⏳ SKILL.md 就绪，待执行 |
-| `afsim-knowledge-curator`(知识记录 Agent)   | 整理知识库、追溯矩阵、决策记录和后续任务，全程记录每一步的输入、思考链、决策、输出，生成阶段性文档    | 知识地图、追溯矩阵、过程记录、文档模板、Markdown 生成、版本快照 | ⏳ SKILL.md 就绪，待执行 |
+| `afsim-algorithm-extractor`(数学解析 Agent) | 识别并解释源码中的算法、公式、变量映射，转化为标准数学表示和伪代码                    | 算法卡片、伪代码、接口规格                        | ✅ 已执行，产出 23 张算法卡片 + 24 份接口规格              |
+| `afsim-requirement-mapper`(需求分析 Agent)  | 阅读规范需求文档，推断自有仿真器缺少的功能，生成待补充功能列表                      | 需求缺口报告、功能映射矩阵                        | ⏳ SKILL.md 就绪，待执行                         |
+| `afsim-migration-builder`(代码迁移 Agent)   | 在 AFSIM 源码中定位所需功能，进行代码切片、简化、适配，生成迁移方案、适配接口、代码原型和测试计划 | 迁移记录、适配方案、测试计划                       | ⏳ SKILL.md 就绪，待执行                         |
+| `afsim-knowledge-curator`(知识记录 Agent)   | 整理知识库、追溯矩阵、决策记录和后续任务，全程记录每一步的输入、思考链、决策、输出，生成阶段性文档    | 知识地图、追溯矩阵、过程记录、文档模板、Markdown 生成、版本快照 | ⏳ SKILL.md 就绪，待执行                         |
 
 ---
 
@@ -53,19 +100,19 @@
 
 ### 阶段 1 — 源码认知
 
-| 基线 | 分析范围 | 文件数 | 产出 |
-|------|---------|--------|------|
-| 基线 1 | `core/` 全 14 模块 | 4,997 | 4 份 JSONL 索引 + 2 份架构报告 |
-| 基线 2 | `wsf_plugins/` 全 16 模块 | 11,666 | 4 份 JSONL 索引 + 3 份架构报告（含 x-level-capabilities） |
-| **合计** | **30 模块** | **16,663** | **8 份索引（76,844 行）+ 5 份架构报告** |
+| 基线     | 分析范围                   | 文件数        | 产出                                             |
+| ------ | ---------------------- | ---------- | ---------------------------------------------- |
+| 基线 1   | `core/` 全 14 模块        | 4,997      | 4 份 JSONL 索引 + 2 份架构报告                         |
+| 基线 2   | `wsf_plugins/` 全 16 模块 | 11,666     | 4 份 JSONL 索引 + 3 份架构报告（含 x-level-capabilities） |
+| **合计** | **30 模块**              | **16,663** | **8 份索引（76,844 行）+ 5 份架构报告**                   |
 
 ### 阶段 2 — 算法提取
 
-| 领域 | 算法数 | 卡片产出 | 接口规格 |
-|------|--------|---------|---------|
-| 飞行动力学 (wsf_p6dof + wsf_six_dof) | 10 | 10 张算法卡片（平均 ~440 行） | 10 份 interface-spec.md |
-| 空间/轨道力学 (wsf_space) | 13 | 13 张算法卡片（平均 ~340 行） | 14 份 interface-spec.md（含已有） |
-| **合计** | **23** | **23 张卡片（9,307 行）** | **24 份接口规格** |
+| 领域                              | 算法数    | 卡片产出                | 接口规格                        |
+| ------------------------------- | ------ | ------------------- | --------------------------- |
+| 飞行动力学 (wsf_p6dof + wsf_six_dof) | 10     | 10 张算法卡片（平均 ~440 行） | 10 份 interface-spec.md      |
+| 空间/轨道力学 (wsf_space)             | 13     | 13 张算法卡片（平均 ~340 行） | 14 份 interface-spec.md（含已有） |
+| **合计**                          | **23** | **23 张卡片（9,307 行）** | **24 份接口规格**                |
 
 **最新质量补全**（2026-06-12）：全部 23 张卡片已通过结构性自检，覆盖 output-contracts.md 要求的 14 个必填章节（含新增的内部状态、变量映射表、边界条件、提取策略）。详见 `docs/records/12-algorithm-extraction-quality-supplement.md`。
 

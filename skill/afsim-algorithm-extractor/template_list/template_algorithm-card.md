@@ -2,6 +2,7 @@
 
 1. **中文注释全覆盖**：算法卡片应当是可供只会中文的新手开发人员阅读和理解的产物，本文所有章节都必须添加中文注释，且避免复杂高深的表述。
 2. **语言统一**：文档中不同章节在表示相同内容时使用的标识符和名称应当统一，语言风格应当保持严谨准确。
+3. **格式标准化**：算法卡片模板的格式，尤其是章节结构、表格表头、非必要不允许擅自修改，如需要修改，请询问人工。
 
 --- 
 
@@ -13,6 +14,7 @@
 > **日期**：
 > **索引证据**：
 > **关联文档**：
+> **关联源文件**：`xxx.hpp`、`yyy.cpp`...
 
 ### 基础资料
 
@@ -36,23 +38,40 @@ flowchart TD
 ```
 其中，第一步为.....，第二步为....，第三步.......(解释图中标识，并用语言描述整个算法流程，注意语言描述要清楚明确)。
 
-### 算法变量和常量
-(所属函数(Method) 必须为function-index.josnl中的函数)
+### 算法变量和常量映射表
+(所属函数(Method) 必须与`function-index.josnl`中函数的`qualified_name`保持一致)
+(代码标识(Symbol)必须为代码中的变量名称，与`Symbol-index.jsonl`中的`symbol_name`保持一致)
+(算法没有的变量类型可以省略不写)
 
-1. 输入(input)：
+1. 输入变量(input)：
    
-    | 英文标识符(Symbol) | 中文名称(Name) | 数据类型(Type) | 含义(Meaning) | 单位(Units) | 所属函数(Method) |
-    | ---- | ---- | ---- | --- | ---- | --- |
+    | # | 中文名称(Name) | 代码标识(Symbol) | 数学符号(Math-sym) | 数据类型(Type) | 含义(Meaning) | 单位(Units) | 所属函数(Method) |
+    |---| ---- | ---- | ---- | --- | ---- | --- |
+    | 1 | xxx | `xxx` | $xxx$ | `xxx` | xxx | xxx | `xxx` |
 
-2. 输出(output)：
+2. 输出变量(output)：
       
-    英文标识符(Symbol) | 中文名称(Name) | 数据类型(Type) | 含义(Meaning) | 单位(Units) | 所属函数(Method) |
-    | ---- | ---- | ---- | --- | ---- | --- | 
+    | # | 中文名称(Name) | 代码标识(Symbol) | 数学符号(Math-sym) | 数据类型(Type) | 含义(Meaning) | 单位(Units) | 所属函数(Method) |
+    |---| ---- | ---- | ---- | --- | ---- | --- |
+    | 1 | xxx | `xxx` | $xxx$ | `xxx` | xxx | xxx | `xxx` |
 
-3. 常量(contant):
+3. 参数变量(parameters)：
+      
+    | # | 中文名称(Name) | 代码标识(Symbol) | 数学符号(Math-sym) | 数据类型(Type) | 含义(Meaning) | 单位(Units) | 所属函数(Method) |
+    |---| ---- | ---- | ---- | --- | ---- | --- |
+    | 1 | xxx | `xxx` | $xxx$ | `xxx` | xxx | xxx | `xxx` |
 
-    英文标识符(Symbol) | 中文名称(Name) | 数据类型(Type) | 含义(Meaning) | 单位(Units) | 所属函数(Method) |
-    | ---- | ---- | ---- | --- | ---- | --- | 
+4. 状态变量(state variables)：
+      
+    | # | 中文名称(Name) | 代码标识(Symbol) | 数学符号(Math-sym) | 数据类型(Type) | 含义(Meaning) | 单位(Units) | 所属函数(Method) | 初始值(Initial-val) | 更新时机(Update-tim) |
+    |---| ---- | ---- | ---- | --- | ---- | --- |
+    | 1 | xxx | `xxx` | $xxx$ | `xxx` | xxx | xxx | `xxx` | xxx | xxxxxxxxxxxxxxxxxxxxxxxxxxxx |
+
+5. 常量(contant):
+
+    | # | 中文名称(Name) | 代码标识(Symbol) | 数学符号(Math-sym) | 数据类型(Type) | 含义(Meaning) | 单位(Units) | 所属函数(Method) |
+    |---| ---- | ---- | ---- | --- | ---- | --- |
+    | 1 | xxx | `xxx` | $xxx$ | `xxx` | xxx | xxx | `xxx` |
 
 
 ### 关键数学公式
@@ -113,6 +132,10 @@ flowchart TD
 (
 - 框架依赖和可替换依赖。
 )
+
+#### 边界条件
+
+1. **xxx**：xxxxxxxxxxxxxxxxxxxxx。
 
 #### 测试和验证计划
 (

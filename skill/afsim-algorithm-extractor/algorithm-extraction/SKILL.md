@@ -1,5 +1,5 @@
 ---
-name: afsim-algorithm-extractor
+name: algorithm-extraction
 description: 一个专门从 C++ 仿真源码中提取数学公式并还原为标准数学表示的 skill。
 ---
 
