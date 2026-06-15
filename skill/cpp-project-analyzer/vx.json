@@ -1,0 +1,22 @@
+{
+    "created_time": "2026-06-15T21:55:00Z",
+    "files": [
+        {
+            "attachment_folder": "",
+            "created_time": "2026-06-15T21:55:00Z",
+            "name": "SKILL.md",
+            "signature": "cpp-project-analyzer-orchestrator-v1"
+        }
+    ],
+    "folders": [
+        {
+            "name": "phases"
+        },
+        {
+            "name": "templates"
+        }
+    ],
+    "id": "cpp-proj-analyzer-root",
+    "modified_time": "2026-06-15T21:55:00Z",
+    "version": 1
+}

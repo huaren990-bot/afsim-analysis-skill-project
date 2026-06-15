@@ -1,0 +1,1001 @@
+{
+  "schema_version": "1",
+  "source_root": "/Users/hjt/afsim/afsim-analysis-skill-project/source_root",
+  "extract_roots": [
+    "afsim-2_9",
+    "src"
+  ],
+  "exclude_paths": [
+    ".git",
+    "build",
+    "3rd_party",
+    "node_modules"
+  ],
+  "analysis_depth": "full",
+  "language_standard": "C++14",
+  "build_system": "CMake",
+  "total_file_count": 43591,
+  "total_source_count": 17342,
+  "module_count": 107,
+  "modules": [
+    {
+      "name": "ARCHITECTURE.md",
+      "path": "ARCHITECTURE.md",
+      "file_count": 1,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'ARCHITECTURE.md': 1 files, 0 source/header files"
+    },
+    {
+      "name": "CRDImporter",
+      "path": "CRDImporter",
+      "file_count": 15,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'CRDImporter': 15 files, 0 source/header files"
+    },
+    {
+      "name": "CoverageOverlay",
+      "path": "CoverageOverlay",
+      "file_count": 14,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'CoverageOverlay': 14 files, 0 source/header files"
+    },
+    {
+      "name": "MapDisplay",
+      "path": "MapDisplay",
+      "file_count": 35,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'MapDisplay': 35 files, 0 source/header files"
+    },
+    {
+      "name": "MapHoverInfo",
+      "path": "MapHoverInfo",
+      "file_count": 20,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'MapHoverInfo': 20 files, 0 source/header files"
+    },
+    {
+      "name": "ModelBrowser",
+      "path": "ModelBrowser",
+      "file_count": 18,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'ModelBrowser': 18 files, 0 source/header files"
+    },
+    {
+      "name": "Performance",
+      "path": "Performance",
+      "file_count": 15,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'Performance': 15 files, 0 source/header files"
+    },
+    {
+      "name": "PositionConverterTool",
+      "path": "PositionConverterTool",
+      "file_count": 12,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'PositionConverterTool': 12 files, 0 source/header files"
+    },
+    {
+      "name": "ReaderWriterMod",
+      "path": "ReaderWriterMod",
+      "file_count": 3,
+      "source_count": 1,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'ReaderWriterMod': 3 files, 1 source/header files"
+    },
+    {
+      "name": "ReaderWriterOGL",
+      "path": "ReaderWriterOGL",
+      "file_count": 3,
+      "source_count": 1,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'ReaderWriterOGL': 3 files, 1 source/header files"
+    },
+    {
+      "name": "ResultCoverageOverlay",
+      "path": "ResultCoverageOverlay",
+      "file_count": 7,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'ResultCoverageOverlay': 7 files, 0 source/header files"
+    },
+    {
+      "name": "ResultMapDisplay",
+      "path": "ResultMapDisplay",
+      "file_count": 14,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'ResultMapDisplay': 14 files, 0 source/header files"
+    },
+    {
+      "name": "ResultMapHoverInfo",
+      "path": "ResultMapHoverInfo",
+      "file_count": 10,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'ResultMapHoverInfo': 10 files, 0 source/header files"
+    },
+    {
+      "name": "ResultModelBrowser",
+      "path": "ResultModelBrowser",
+      "file_count": 9,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'ResultModelBrowser': 9 files, 0 source/header files"
+    },
+    {
+      "name": "ResultPerformance",
+      "path": "ResultPerformance",
+      "file_count": 8,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'ResultPerformance': 8 files, 0 source/header files"
+    },
+    {
+      "name": "ResultPositionConverterTool",
+      "path": "ResultPositionConverterTool",
+      "file_count": 6,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'ResultPositionConverterTool': 6 files, 0 source/header files"
+    },
+    {
+      "name": "ResultTerrainTools",
+      "path": "ResultTerrainTools",
+      "file_count": 8,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'ResultTerrainTools': 8 files, 0 source/header files"
+    },
+    {
+      "name": "ResultTetherView",
+      "path": "ResultTetherView",
+      "file_count": 9,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'ResultTetherView': 9 files, 0 source/header files"
+    },
+    {
+      "name": "ResultUnitConverterTool",
+      "path": "ResultUnitConverterTool",
+      "file_count": 6,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'ResultUnitConverterTool': 6 files, 0 source/header files"
+    },
+    {
+      "name": "ResultVideoCapture",
+      "path": "ResultVideoCapture",
+      "file_count": 8,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'ResultVideoCapture': 8 files, 0 source/header files"
+    },
+    {
+      "name": "ResultVisibility",
+      "path": "ResultVisibility",
+      "file_count": 8,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'ResultVisibility': 8 files, 0 source/header files"
+    },
+    {
+      "name": "TerrainTools",
+      "path": "TerrainTools",
+      "file_count": 16,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'TerrainTools': 16 files, 0 source/header files"
+    },
+    {
+      "name": "TetherView",
+      "path": "TetherView",
+      "file_count": 18,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'TetherView': 18 files, 0 source/header files"
+    },
+    {
+      "name": "UnitConverterTool",
+      "path": "UnitConverterTool",
+      "file_count": 12,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'UnitConverterTool': 12 files, 0 source/header files"
+    },
+    {
+      "name": "VideoCapture",
+      "path": "VideoCapture",
+      "file_count": 16,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'VideoCapture': 16 files, 0 source/header files"
+    },
+    {
+      "name": "Visibility",
+      "path": "Visibility",
+      "file_count": 14,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'Visibility': 14 files, 0 source/header files"
+    },
+    {
+      "name": "afperf",
+      "path": "afperf",
+      "file_count": 3,
+      "source_count": 1,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'afperf': 3 files, 1 source/header files"
+    },
+    {
+      "name": "artificer",
+      "path": "artificer",
+      "file_count": 3,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'artificer': 3 files, 0 source/header files"
+    },
+    {
+      "name": "benchmark",
+      "path": "benchmark",
+      "file_count": 3,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'benchmark': 3 files, 0 source/header files"
+    },
+    {
+      "name": "brawler",
+      "path": "brawler",
+      "file_count": 15,
+      "source_count": 12,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'brawler': 15 files, 12 source/header files"
+    },
+    {
+      "name": "cli",
+      "path": "cli",
+      "file_count": 3,
+      "source_count": 1,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'cli': 3 files, 1 source/header files"
+    },
+    {
+      "name": "comm",
+      "path": "comm",
+      "file_count": 28,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'comm': 28 files, 0 source/header files"
+    },
+    {
+      "name": "component",
+      "path": "component",
+      "file_count": 18,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'component': 18 files, 0 source/header files"
+    },
+    {
+      "name": "demos",
+      "path": "demos",
+      "file_count": 6304,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'demos': 6304 files, 0 source/header files"
+    },
+    {
+      "name": "documentation",
+      "path": "documentation",
+      "file_count": 5075,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'documentation': 5075 files, 0 source/header files"
+    },
+    {
+      "name": "dummy_library",
+      "path": "dummy_library",
+      "file_count": 3,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'dummy_library': 3 files, 0 source/header files"
+    },
+    {
+      "name": "engage",
+      "path": "engage",
+      "file_count": 158,
+      "source_count": 45,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'engage': 158 files, 45 source/header files"
+    },
+    {
+      "name": "exec",
+      "path": "exec",
+      "file_count": 3,
+      "source_count": 1,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'exec': 3 files, 1 source/header files"
+    },
+    {
+      "name": "geodata",
+      "path": "geodata",
+      "file_count": 2,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'geodata': 2 files, 0 source/header files"
+    },
+    {
+      "name": "iadsLib",
+      "path": "iadsLib",
+      "file_count": 158,
+      "source_count": 146,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'iadsLib': 158 files, 146 source/header files"
+    },
+    {
+      "name": "legacy_test",
+      "path": "legacy_test",
+      "file_count": 4,
+      "source_count": 1,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'legacy_test': 4 files, 1 source/header files"
+    },
+    {
+      "name": "lib",
+      "path": "lib",
+      "file_count": 55,
+      "source_count": 51,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'lib': 55 files, 51 source/header files"
+    },
+    {
+      "name": "misc",
+      "path": "misc",
+      "file_count": 17,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'misc': 17 files, 0 source/header files"
+    },
+    {
+      "name": "mission",
+      "path": "mission",
+      "file_count": 28,
+      "source_count": 2,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'mission': 28 files, 2 source/header files"
+    },
+    {
+      "name": "mover",
+      "path": "mover",
+      "file_count": 56,
+      "source_count": 2,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'mover': 56 files, 2 source/header files"
+    },
+    {
+      "name": "mover_creator",
+      "path": "mover_creator",
+      "file_count": 583,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'mover_creator': 583 files, 0 source/header files"
+    },
+    {
+      "name": "observer",
+      "path": "observer",
+      "file_count": 26,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'observer': 26 files, 0 source/header files"
+    },
+    {
+      "name": "osgdb_osgearth_dted_tms",
+      "path": "osgdb_osgearth_dted_tms",
+      "file_count": 7,
+      "source_count": 5,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'osgdb_osgearth_dted_tms': 7 files, 5 source/header files"
+    },
+    {
+      "name": "p6dof",
+      "path": "p6dof",
+      "file_count": 103,
+      "source_count": 100,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'p6dof': 103 files, 100 source/header files"
+    },
+    {
+      "name": "pack_to_cpp",
+      "path": "pack_to_cpp",
+      "file_count": 3,
+      "source_count": 1,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'pack_to_cpp': 3 files, 1 source/header files"
+    },
+    {
+      "name": "post_processor",
+      "path": "post_processor",
+      "file_count": 64,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'post_processor': 64 files, 0 source/header files"
+    },
+    {
+      "name": "profiling",
+      "path": "profiling",
+      "file_count": 12,
+      "source_count": 5,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'profiling': 12 files, 5 source/header files"
+    },
+    {
+      "name": "proxy_test",
+      "path": "proxy_test",
+      "file_count": 14,
+      "source_count": 1,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'proxy_test': 14 files, 1 source/header files"
+    },
+    {
+      "name": "resources",
+      "path": "resources",
+      "file_count": 1349,
+      "source_count": 6,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'resources': 1349 files, 6 source/header files"
+    },
+    {
+      "name": "scene_gen",
+      "path": "scene_gen",
+      "file_count": 22,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'scene_gen': 22 files, 0 source/header files"
+    },
+    {
+      "name": "sensor",
+      "path": "sensor",
+      "file_count": 18,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'sensor': 18 files, 0 source/header files"
+    },
+    {
+      "name": "sensor_plot",
+      "path": "sensor_plot",
+      "file_count": 80,
+      "source_count": 3,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'sensor_plot': 80 files, 3 source/header files"
+    },
+    {
+      "name": "sensor_plot_lib",
+      "path": "sensor_plot_lib",
+      "file_count": 74,
+      "source_count": 41,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'sensor_plot_lib': 74 files, 41 source/header files"
+    },
+    {
+      "name": "sosm",
+      "path": "sosm",
+      "file_count": 48,
+      "source_count": 45,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'sosm': 48 files, 45 source/header files"
+    },
+    {
+      "name": "source",
+      "path": "source",
+      "file_count": 15718,
+      "source_count": 15113,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'source': 15718 files, 15113 source/header files"
+    },
+    {
+      "name": "source_plugin",
+      "path": "source_plugin",
+      "file_count": 2,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": true,
+      "brief": "Module 'source_plugin': 2 files, 0 source/header files"
+    },
+    {
+      "name": "src",
+      "path": "src",
+      "file_count": 2617,
+      "source_count": 62,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'src': 2617 files, 62 source/header files"
+    },
+    {
+      "name": "swdev",
+      "path": "swdev",
+      "file_count": 448,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'swdev': 448 files, 0 source/header files"
+    },
+    {
+      "name": "test",
+      "path": "test",
+      "file_count": 445,
+      "source_count": 268,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'test': 445 files, 268 source/header files"
+    },
+    {
+      "name": "tools",
+      "path": "tools",
+      "file_count": 120,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'tools': 120 files, 0 source/header files"
+    },
+    {
+      "name": "training",
+      "path": "training",
+      "file_count": 1441,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'training': 1441 files, 0 source/header files"
+    },
+    {
+      "name": "usmtf",
+      "path": "usmtf",
+      "file_count": 4,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'usmtf': 4 files, 0 source/header files"
+    },
+    {
+      "name": "util",
+      "path": "util",
+      "file_count": 6,
+      "source_count": 2,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'util': 6 files, 2 source/header files"
+    },
+    {
+      "name": "util_script",
+      "path": "util_script",
+      "file_count": 2,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'util_script': 2 files, 0 source/header files"
+    },
+    {
+      "name": "version_greater_library",
+      "path": "version_greater_library",
+      "file_count": 3,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'version_greater_library': 3 files, 0 source/header files"
+    },
+    {
+      "name": "version_lesser_library",
+      "path": "version_lesser_library",
+      "file_count": 3,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'version_lesser_library': 3 files, 0 source/header files"
+    },
+    {
+      "name": "vx.json",
+      "path": "vx.json",
+      "file_count": 1,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'vx.json': 1 files, 0 source/header files"
+    },
+    {
+      "name": "warlock",
+      "path": "warlock",
+      "file_count": 920,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'warlock': 920 files, 0 source/header files"
+    },
+    {
+      "name": "weapon",
+      "path": "weapon",
+      "file_count": 18,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'weapon': 18 files, 0 source/header files"
+    },
+    {
+      "name": "weapon_tools",
+      "path": "weapon_tools",
+      "file_count": 91,
+      "source_count": 26,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'weapon_tools': 91 files, 26 source/header files"
+    },
+    {
+      "name": "wizard",
+      "path": "wizard",
+      "file_count": 834,
+      "source_count": 3,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'wizard': 834 files, 3 source/header files"
+    },
+    {
+      "name": "wsf",
+      "path": "wsf",
+      "file_count": 1237,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'wsf': 1237 files, 0 source/header files"
+    },
+    {
+      "name": "wsf_air_combat",
+      "path": "wsf_air_combat",
+      "file_count": 143,
+      "source_count": 31,
+      "has_cmake": false,
+      "is_plugin": true,
+      "brief": "Module 'wsf_air_combat': 143 files, 31 source/header files"
+    },
+    {
+      "name": "wsf_alternate_locations",
+      "path": "wsf_alternate_locations",
+      "file_count": 22,
+      "source_count": 7,
+      "has_cmake": false,
+      "is_plugin": true,
+      "brief": "Module 'wsf_alternate_locations': 22 files, 7 source/header files"
+    },
+    {
+      "name": "wsf_annotation",
+      "path": "wsf_annotation",
+      "file_count": 20,
+      "source_count": 5,
+      "has_cmake": false,
+      "is_plugin": true,
+      "brief": "Module 'wsf_annotation': 20 files, 5 source/header files"
+    },
+    {
+      "name": "wsf_argo8",
+      "path": "wsf_argo8",
+      "file_count": 18,
+      "source_count": 3,
+      "has_cmake": false,
+      "is_plugin": true,
+      "brief": "Module 'wsf_argo8': 18 files, 3 source/header files"
+    },
+    {
+      "name": "wsf_brawler",
+      "path": "wsf_brawler",
+      "file_count": 147,
+      "source_count": 15,
+      "has_cmake": false,
+      "is_plugin": true,
+      "brief": "Module 'wsf_brawler': 147 files, 15 source/header files"
+    },
+    {
+      "name": "wsf_coverage",
+      "path": "wsf_coverage",
+      "file_count": 129,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": true,
+      "brief": "Module 'wsf_coverage': 129 files, 0 source/header files"
+    },
+    {
+      "name": "wsf_cyber",
+      "path": "wsf_cyber",
+      "file_count": 209,
+      "source_count": 85,
+      "has_cmake": false,
+      "is_plugin": true,
+      "brief": "Module 'wsf_cyber': 209 files, 85 source/header files"
+    },
+    {
+      "name": "wsf_fires",
+      "path": "wsf_fires",
+      "file_count": 44,
+      "source_count": 22,
+      "has_cmake": false,
+      "is_plugin": true,
+      "brief": "Module 'wsf_fires': 44 files, 22 source/header files"
+    },
+    {
+      "name": "wsf_grammar_check",
+      "path": "wsf_grammar_check",
+      "file_count": 8,
+      "source_count": 2,
+      "has_cmake": false,
+      "is_plugin": true,
+      "brief": "Module 'wsf_grammar_check': 8 files, 2 source/header files"
+    },
+    {
+      "name": "wsf_iads_c2_lib",
+      "path": "wsf_iads_c2_lib",
+      "file_count": 98,
+      "source_count": 3,
+      "has_cmake": false,
+      "is_plugin": true,
+      "brief": "Module 'wsf_iads_c2_lib': 98 files, 3 source/header files"
+    },
+    {
+      "name": "wsf_l16",
+      "path": "wsf_l16",
+      "file_count": 181,
+      "source_count": 105,
+      "has_cmake": false,
+      "is_plugin": true,
+      "brief": "Module 'wsf_l16': 181 files, 105 source/header files"
+    },
+    {
+      "name": "wsf_mil",
+      "path": "wsf_mil",
+      "file_count": 637,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": true,
+      "brief": "Module 'wsf_mil': 637 files, 0 source/header files"
+    },
+    {
+      "name": "wsf_mil_parser",
+      "path": "wsf_mil_parser",
+      "file_count": 13,
+      "source_count": 7,
+      "has_cmake": false,
+      "is_plugin": true,
+      "brief": "Module 'wsf_mil_parser': 13 files, 7 source/header files"
+    },
+    {
+      "name": "wsf_mtt",
+      "path": "wsf_mtt",
+      "file_count": 50,
+      "source_count": 30,
+      "has_cmake": false,
+      "is_plugin": true,
+      "brief": "Module 'wsf_mtt': 50 files, 30 source/header files"
+    },
+    {
+      "name": "wsf_multiresolution",
+      "path": "wsf_multiresolution",
+      "file_count": 114,
+      "source_count": 14,
+      "has_cmake": false,
+      "is_plugin": true,
+      "brief": "Module 'wsf_multiresolution': 114 files, 14 source/header files"
+    },
+    {
+      "name": "wsf_nx",
+      "path": "wsf_nx",
+      "file_count": 187,
+      "source_count": 72,
+      "has_cmake": false,
+      "is_plugin": true,
+      "brief": "Module 'wsf_nx': 187 files, 72 source/header files"
+    },
+    {
+      "name": "wsf_oms_uci",
+      "path": "wsf_oms_uci",
+      "file_count": 163,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": true,
+      "brief": "Module 'wsf_oms_uci': 163 files, 0 source/header files"
+    },
+    {
+      "name": "wsf_p6dof",
+      "path": "wsf_p6dof",
+      "file_count": 806,
+      "source_count": 191,
+      "has_cmake": false,
+      "is_plugin": true,
+      "brief": "Module 'wsf_p6dof': 806 files, 191 source/header files"
+    },
+    {
+      "name": "wsf_parser",
+      "path": "wsf_parser",
+      "file_count": 150,
+      "source_count": 138,
+      "has_cmake": false,
+      "is_plugin": true,
+      "brief": "Module 'wsf_parser': 150 files, 138 source/header files"
+    },
+    {
+      "name": "wsf_plugins",
+      "path": "wsf_plugins",
+      "file_count": 1,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": true,
+      "brief": "Module 'wsf_plugins': 1 files, 0 source/header files"
+    },
+    {
+      "name": "wsf_prompt",
+      "path": "wsf_prompt",
+      "file_count": 7,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": true,
+      "brief": "Module 'wsf_prompt': 7 files, 0 source/header files"
+    },
+    {
+      "name": "wsf_ripr",
+      "path": "wsf_ripr",
+      "file_count": 62,
+      "source_count": 24,
+      "has_cmake": false,
+      "is_plugin": true,
+      "brief": "Module 'wsf_ripr': 62 files, 24 source/header files"
+    },
+    {
+      "name": "wsf_scenario_analyzer",
+      "path": "wsf_scenario_analyzer",
+      "file_count": 10,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": true,
+      "brief": "Module 'wsf_scenario_analyzer': 10 files, 0 source/header files"
+    },
+    {
+      "name": "wsf_scenario_analyzer_iads_c2",
+      "path": "wsf_scenario_analyzer_iads_c2",
+      "file_count": 9,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": true,
+      "brief": "Module 'wsf_scenario_analyzer_iads_c2': 9 files, 0 source/header files"
+    },
+    {
+      "name": "wsf_simdis",
+      "path": "wsf_simdis",
+      "file_count": 12,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": true,
+      "brief": "Module 'wsf_simdis': 12 files, 0 source/header files"
+    },
+    {
+      "name": "wsf_six_dof",
+      "path": "src/wsf_plugins/wsf_six_dof",
+      "file_count": 938,
+      "source_count": 331,
+      "has_cmake": false,
+      "is_plugin": true,
+      "brief": "Module 'wsf_six_dof': 938 files, 331 source/header files"
+    },
+    {
+      "name": "wsf_sosm",
+      "path": "wsf_sosm",
+      "file_count": 24,
+      "source_count": 6,
+      "has_cmake": false,
+      "is_plugin": true,
+      "brief": "Module 'wsf_sosm': 24 files, 6 source/header files"
+    },
+    {
+      "name": "wsf_space",
+      "path": "wsf_space",
+      "file_count": 695,
+      "source_count": 304,
+      "has_cmake": false,
+      "is_plugin": true,
+      "brief": "Module 'wsf_space': 695 files, 304 source/header files"
+    },
+    {
+      "name": "wsf_weapon_server",
+      "path": "wsf_weapon_server",
+      "file_count": 16,
+      "source_count": 2,
+      "has_cmake": false,
+      "is_plugin": true,
+      "brief": "Module 'wsf_weapon_server': 16 files, 2 source/header files"
+    },
+    {
+      "name": "xio",
+      "path": "xio",
+      "file_count": 124,
+      "source_count": 0,
+      "has_cmake": false,
+      "is_plugin": false,
+      "brief": "Module 'xio': 124 files, 0 source/header files"
+    }
+  ],
+  "top_level_dirs": [
+    {
+      "brief": "AFSIM 2.9 main distribution: demos, documentation, resources, swdev (core C++ source), tools, training",
+      "file_count": 43633,
+      "name": "afsim-2_9",
+      "path": "source_root/afsim-2_9"
+    },
+    {
+      "brief": "Plugin analysis metadata and documentation; contains wsf_plugins/wsf_six_dof with vx.json and markdown",
+      "file_count": 5,
+      "name": "src",
+      "path": "source_root/src"
+    }
+  ],
+  "evidence_level": "source-cited",
+  "notes": []
+}

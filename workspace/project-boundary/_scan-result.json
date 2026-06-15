@@ -1,0 +1,59 @@
+{
+  "build_files": [
+    "afsim-2_9/swdev/src/CMakeLists.txt"
+  ],
+  "build_system": "CMake",
+  "cmake_info": {
+    "cmake_version": "3.7...3.12",
+    "cxx_standard": "14",
+    "project_name": "afsim",
+    "subdirectories": [
+      "tools/misc",
+      "tools/util",
+      "tools/util_script",
+      "tools/geodata",
+      "tools/packetio/source",
+      "tools/dis/source",
+      "tools/tracking_filters/source",
+      "tools/genio/source",
+      "tools/scene_gen",
+      "tools/profiling",
+      "tools/artificer",
+      "core/wsf_util/source",
+      "core/wsf"
+    ]
+  },
+  "language_standard": "C++14",
+  "module_candidates": [
+    {
+      "file_count": 3,
+      "has_cmake": false,
+      "name": "wsf_six_dof",
+      "path": "src/wsf_plugins/wsf_six_dof"
+    }
+  ],
+  "notes": [
+    "AFSIM v2.9.0 — Advanced Framework for Simulation, Integration, and Modeling (USAF)",
+    "Top-level CMakeLists.txt located at afsim-2_9/swdev/src/CMakeLists.txt (not at source_root root)",
+    "Source tree uses plugin/extension architecture via wsf_module + wsf_cmake_extension pattern",
+    "src/ directory contains only analysis metadata (vx.json) and markdown docs, no actual C++ sources or build files",
+    "Core AFSIM libraries: wsf, wsf_util plus tool libraries (util, util_script, geodata, packetio, dis, tracking_filters, genio, profiling, artificer)",
+    "Optional extensions discovered dynamically via glob on wsf_module marker files",
+    "Build supports both shared/plugin and static configurations (WSF_PLUGIN_BUILD option)",
+    "demos/ contains 63+ scenario demo directories covering air-to-air, IADS, space, cyber, EW, etc."
+  ],
+  "top_level_dirs": [
+    {
+      "brief": "AFSIM 2.9 main distribution: demos, documentation, resources, swdev (core C++ source), tools, training",
+      "file_count": 43633,
+      "name": "afsim-2_9",
+      "path": "source_root/afsim-2_9"
+    },
+    {
+      "brief": "Plugin analysis metadata and documentation; contains wsf_plugins/wsf_six_dof with vx.json and markdown",
+      "file_count": 5,
+      "name": "src",
+      "path": "source_root/src"
+    }
+  ]
+}
