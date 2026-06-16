@@ -312,6 +312,23 @@ afsim-analysis-skill-project/
 
 ### 3. 自有项目需求映射
 
+```text
+[用户] 自然语言需求描述
+    ↓
+[requirement-spec-generator] 
+    → 读取 AFSIM 认知资产
+    → 生成待确认需求规范文档（含复选框/选项）
+    ↓
+[人工] 勾选必须/可选、选择简化/详细、确认优先级
+    ↓
+[requirement-mapping]
+    → 读取确认后规范
+    → 映射到 AFSIM 功能 + 对比目标系统
+    → 生成缺口报告 + 映射矩阵
+    ↓
+[下游] 代码迁移 Agent
+```
+
 使用 `afsim-requirement-mapper` 读取自有项目需求文档、接口定义或源码，形成需求到 AFSIM 能力的映射。每条需求分类为：
 
 - 已满足
