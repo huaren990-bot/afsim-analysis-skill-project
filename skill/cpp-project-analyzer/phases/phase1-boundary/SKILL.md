@@ -4,7 +4,7 @@ description: Phase 1: C++项目边界确认与结构发现 — 扫描目录树�
 metadata:
   phase: 1
   requires-codegraph: false
-  produces: project-boundary.json, file-classification.jsonl
+  produces: project-boundary.json, file-classification.jsonl, directory-tree.md
 ---
 
 # Phase 1: 项目边界确认与结构发现
@@ -33,7 +33,7 @@ metadata:
 
 ### Step 1: 目录树扫描
 
-1. 使用 `find <extract_root> -maxdepth 3 -type d` 获取 3 层目录结构。
+1. 使用 `find <extract_root> -maxdepth 4 -type d` 获取 4 层目录结构。
 2. 识别 `CMakeLists.txt`、`Makefile`、`BUILD` 等构建标记文件位置。
 3. 识别 `wsf_module` 或类似模块标记文件（如有）。
 4. 记录顶级目录名称、文件计数、用途描述。
@@ -73,15 +73,24 @@ metadata:
 | `generated` | 自动生成的文件（如 `.pb.h`, `_generated.h`, 由代码生成器产生的文件） |
 | `unknown` | 无法明确分类 |
 
-### Step 5: 生成输出
+### Step 5: 目录树生成
+
+1. 使用 `find <extract_root> -maxdepth 4 -type d` 获取 4 层目录结构。
+2. 以树形文本格式（`├──`、`└──`、`│`）组织目录关系。
+3. 统计每个顶级目录的文件数量和各级子目录数量。
+4. 按模板 `template_directory-tree.md` 格式输出。
+
+### Step 6: 生成输出
 
 1. **project-boundary.json**：按模板 `template_project-boundary.md` 格式输出。
 2. **file-classification.jsonl**：按模板 `template_file-classification.md` 格式输出。
+3. **directory-tree.md**：按模板 `template_directory-tree.md` 格式输出。
 
 ## 输出文件
 
 - `project-boundary/project-boundary.json`
 - `project-boundary/file-classification.jsonl`
+- `project-boundary/directory-tree.md`
 
 ## 质量门槛
 
@@ -91,6 +100,7 @@ metadata:
 4. `module_count` 与实际识别的模块数一致。
 5. `total_file_count` 与 file-classification.jsonl 行数一致。
 6. 排除路径下的文件不纳入分类。
+7. `directory-tree.md` 覆盖所有 `extract_roots`，深度为 4 层。
 
 ## 使用 CodeGraph 的策略
 

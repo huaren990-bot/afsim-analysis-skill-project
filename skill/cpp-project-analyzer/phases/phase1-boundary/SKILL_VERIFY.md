@@ -17,8 +17,16 @@ metadata:
 
 - `project-boundary/project-boundary.json`
 - `project-boundary/file-classification.jsonl`
+- `project-boundary/directory-tree.md`
 
 ## 验证步骤
+
+### 检查 0: directory-tree.md 完整性
+
+1. 文件存在且非空。
+2. 包含所有 `extract_roots`（在 `project-boundary.json` 中定义）的目录树。
+3. 深度不超过 4 层。
+4. 顶级目录的文件计数与实际一致。
 
 ### 检查 1: project-boundary.json 结构完整性
 
@@ -84,6 +92,7 @@ metadata:
 
 | # | 检查项 | 结果 | 详情 |
 |---|--------|------|------|
+| 0 | 目录树完整性 | ✅/❌ | ... |
 | 1 | 结构完整性 | ✅/❌ | ... |
 | 2 | 格式正确性 | ✅/❌ | ... |
 | 3 | 字段完整性 | ✅/❌ | ... |
@@ -97,13 +106,13 @@ metadata:
 
 ## 总体评价
 
-- 通过项：N/6
-- 不通过项：M/6
+- 通过项：N/7
+- 不通过项：M/7
 - 建议：通过 / 修正后重新验证 / 人工介入
 ```
 
 ## 质量门槛
 
-1. 6 项检查中至少 4 项通过。
+1. 7 项检查中至少 5 项通过。
 2. 检查 2（格式正确性）和检查 3（字段完整性）必须通过。
 3. 如有不通过项，明确写出修复指引。
