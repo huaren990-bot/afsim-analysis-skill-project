@@ -29,10 +29,9 @@ description: 本 skill 负责将模糊的功能需求文档转化为一份高度
 
 ## 输出
 
-- AFSIM 架构报告（docs/architecture/afsim-architecture.md）
-- 算法卡片概览（docs/algorithms/CompendiumofAlgorithms.md）
-- 功能索引（workspace/source-index/function-index.jsonl）
-- 用户功能需求文档。
+### `docs/algorithms/<domain>-<algorithm>-card.md`
+
+算法卡片。要求和格式应当严格遵循模板skill/afsim-algorithm-extractor/template_list/template_algorithm-card.md
 
 ## 需求项 REQ-001
 - **原始需求**：“飞行器要能进行高精度的六自由度仿真”
