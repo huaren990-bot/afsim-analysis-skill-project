@@ -11,8 +11,8 @@ description: 当用户需要把自有项目需求、规范文档、接口定义�
 
 ## 输入
 
-- 用户确认的需求规范文档(`docs/requirements/structured_requirement_confirm/`)。
-- 自有项目源码或接口说明。
+- 用户确认的需求规范文档，位置在`docs/requirements/structured_requirement_confirm/`，不明确需要找人工确认。
+- 自有项目源码或接口说明。(如果没有自有项目，可以按照空系统处理，即所有需求都视为缺失)
 - AFSIM 架构报告和函数索引。
 - 已有算法卡片。
 
