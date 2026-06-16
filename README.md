@@ -259,11 +259,6 @@ afsim-analysis-skill-project/
 │   └── README.md                               #   测试目录说明（结构检查/JSONL解析/报告元数据验证/算法原型编译）
 │
 └── source_root/                                # ═══════════ AFSIM 2.9.0 源码（Git 忽略） ═══════════
-    └── afsim-2_9/                              #   AFSIM 2.9.0 完整源码目录 + demos/
-        ├── swdev/src/core/                     #     核心框架（14 个模块，~4,997 文件）
-        ├── swdev/src/wsf_plugins/              #     功能插件
-        ├── swdev/src/tools/                    #     辅助工具
-        └── demos/                              #     示例场景（acoustic/aea_iads/air_to_air 等）
 ```
 
 ### 阶段 1：AFSIM 源码结构化分析

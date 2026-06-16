@@ -9,6 +9,6 @@
 [gap-analyzer]
     → 读取确认后规范
     → 映射到 AFSIM 功能 + 对比目标系统
-    → 生成缺口报告 + 映射矩阵`structured_requirement_doc/`
+    → 生成缺口报告 + 映射矩阵`confirmed_requirement_doc/`
     ↓
 [下游] 代码迁移 Agent
