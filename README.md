@@ -335,6 +335,22 @@ afsim-analysis-skill-project/
 
 ### 4. 功能迁移与适配生成
 
+```text
+[上游Agent] `docs/requirements/`
+    ↓
+[FU-design-generator] 
+    → 读取 AFSIM 认知资产
+    → 生成待确认功能单位迁移方案（含复选框/选项）
+    ↓
+[人工] 勾选必须/可选、选择简化/详细、确认优先级
+    ↓
+[migration-builder]
+    → 读取确认后迁移方案
+    → 生成软件设计说明和迁移代码、测试demo
+    ↓
+[下游] 交给人工
+```
+
 使用 `afsim-migration-builder` 选择可迁移算法和功能，生成：
 
 - 候选 AFSIM 源码位置

@@ -48,3 +48,68 @@ description: 当用户需要把 AFSIM 中的算法、模型或功能迁移到自
 - 是否有输入输出和单位说明。
 - 是否有测试计划。
 - 是否处理许可证和版权声明。
+
+
+
+---
+
+## 3. 迁移程序生成 Skill
+
+**文件路径**：`skill/afsim-migration-builder/skills/migration-code-generation.md`
+
+```markdown
+# migration-code-generation — 迁移程序生成 Skill
+
+## 角色
+你是一个 **迁移代码实现专家**，在软件设计说明（SDD）获得人工确认后，负责将设计转化为符合目标系统规范、包含完整中文注释的 C++ 迁移代码，并编写相应的测试调用说明。
+
+## 前置条件
+- `docs/migration/software-design-description.md` 已通过人工确认（状态为 `confirmed`）。
+- AFSIM 源码及目标系统头文件可访问。
+
+## 输入
+- 已确认的 SDD 文档
+- AFSIM 源文件（通过 `get_afs_source` 获取）
+- 目标系统编码规范及已有接口定义（若有）
+
+## 工作步骤
+1. **加载 SDD**：读取确认后的软件设计说明，提取待实现的 FU 列表。
+2. **逐 FU 生成迁移代码**：
+   - 根据 SDD 中的适配方案和接口定义，生成目标系统的 C++ 源文件和头文件。
+   - 从 AFSIM 源码中拷贝核心算法部分，按照 SDD 中的“需移除/保留/修改”清单进行处理：
+     - 移除 AFSIM 特定宏、日志、全局配置引用。
+     - 替换数据类型为目标系统类型（依据映射表）。
+     - 添加必要的适配层函数（如状态结构体转换）。
+   - 所有代码必须包含**中文注释**，说明每个函数/关键步骤的作用、参数含义、修改来源。
+   - 保留原始版权声明（若有许可证要求），并添加“迁移自 AFSIM ...”的说明。
+3. **生成测试调用说明**：
+   - 按照 `template_test_and_verification.md` 为每个 FU 生成测试验证文档，包含：
+     - 编译依赖、头文件包含
+     - 测试用例构造方法（输入数据准备）
+     - 调用示例代码
+     - 预期输出和验证方式（如与 AFSIM 原输出对比、数值容差等）
+4. **保存产物**：
+   - 建立迁移代码保存目录 `tests/migration_src/<requirement_index>/`。
+   - 迁移代码保存至 `src/migration/{module}/{function_name}.h` 和 `.cpp`。
+   - 测试说明文档保存至 `docs/migration/test-plan-FU-XXX.md` 或汇总至 `docs/migration/test-and-verification.md`。
+   - 更新 `workspace/migration/<requirement_index>-migration-log.jsonl`，记录代码生成状态为 “implemented”。
+
+5. **过程留痕**：把每一步的决策依据和执行计划生成文档进行记录归档，放在目录 `docs/records` 里面，以便人工追溯。
+
+## 输出
+- `src/migration/` 下的 C++ 头文件和源文件（带中文注释）
+- `docs/migration/test-and-verification.md` 或各 FU 测试说明
+- 更新的迁移日志
+
+## 代码规范
+- 文件头部必须包含注释块，说明来源、修改点、日期。
+- 每个公共函数前必须有中文注释，说明功能、参数、返回值、注意事项。
+- 关键算法步骤使用中文行注释。
+- 遵循目标系统的命名约定和代码风格。
+
+## 工具
+- `read_file(path)` — 读取 SDD、源码索引
+- `get_afs_source(function_id)` — 获取 AFSIM 源函数代码
+- `write_file(path, content)` — 写入迁移代码和文档
+- `run_syntax_check(code)` — 对生成的代码进行语法检查（需编译环境支持）
+- `append_migration_log(entry)` — 追加日志

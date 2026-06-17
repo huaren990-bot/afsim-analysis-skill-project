@@ -1,10 +1,12 @@
-# Tests
+# 测试
+在此处放置结构测试、脚本测试和提取的算法验证用例。
 
-Place structural tests, script tests, and extracted algorithm validation cases here.
+建议的初始检查项：
 
-Suggested first checks:
+- 验证项目目录是否存在。
 
-- Verify project directories exist.
-- Validate JSONL indexes can be parsed.
-- Check every report has metadata and evidence sections.
-- Compile or run extracted algorithm prototypes.
+- 验证 JSONL 索引能否被解析。
+
+- 检查每份报告是否包含元数据和证据部分。
+
+- 编译或运行提取的算法原型。

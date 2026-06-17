@@ -49,7 +49,7 @@ description: 本 skill 负责将模糊的功能需求文档转化为一份高度
 
 ## 输出
 
-### `docs/requirements/structured_requirement_doc/<index>-requirement-<name>.md` 
+### `docs/requirements/structured_requirement_doc/<requirement_index>-requirement-<name>.md` 
 
 需求规范文档。要求和格式应当严格遵循模板skill\afsim-requirement-mapper\tamplate_list\template_requirement-specification.md
 
