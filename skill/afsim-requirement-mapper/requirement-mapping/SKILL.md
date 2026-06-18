@@ -34,11 +34,17 @@ description: 当用户需要把自有项目需求、规范文档、接口定义�
     - FU ID，关联需求 ID
     - 功能描述（基于确认的需求描述）
     - 期望接口签名（输入、输出、类型）
-    - AFSIM 参考实现（源函数位置，若找到）
-    - 建议迁移方式（直接适配/局部重写/Clean-room）
+    - AFSIM 参考实现（源函数位置，若找到；若 AFSIM 中也无对应功能，填"无"，标记为 🆕）
+    - 建议迁移方式：
+        - `direct_adaptation`（直接适配——AFSIM 有参考，自有系统有类似实现）
+        - `partial_rewrite`（局部重写——AFSIM 有参考，自有系统部分满足）
+        - `cleanroom`（Clean-room 重实现——AFSIM 有参考，自有系统完全缺失）
+        - `novel`（全新设计——AFSIM 无参考，自有系统也缺失，需从领域文献/算法教材中寻找设计依据）
     - 优先级（沿用人工确认的优先级）
 
-5. 对**每条需求**给出状态：已满足、部分满足、缺失、未知。
+5. 对**每条需求**给出状态：已满足、部分满足、缺失、缺失（AFSIM无参考）、未知。
+   - **缺失**：自有系统缺失，但 AFSIM 中有对应参考实现，可通过 cleanroom 方式迁移
+   - **缺失（AFSIM无参考）**：自有系统缺失，且 AFSIM 中也找不到对应功能，需 novel 全新设计
 
 6. 生成输出：
     - **需求追溯矩阵**：生成`<requirement_index>-requirement-to-afsim-trace.md`，（REQ -> AFSIM 源 -> FU）展示每条需求对应的 AFSIM 实现函数和生成的功能单元。按模板 `skill/afsim-requirement-mapper/tamplate_list/template_requirement-to-afsim-trace.md` 格式输出。

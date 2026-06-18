@@ -256,6 +256,12 @@ afsim-analysis-skill-project/
 │       └── README.md                           #   经审查的标准输出样例
 │
 ├── tests/                                      # ═══════════ 测试与验证 ═══════════
+│   ├── migration_src/                          # 所有需求的迁移代码目录
+│   │   └── <req_index>/                        # 需求对应迁移代码
+│   │       ├── REQ_xxx.h                       # 该需求下所有原子功能的接口声明
+│   │       ├── REQ_xxx.cpp                     # 所有原子功能的实现（按 FU 分段注释）
+│   │       ├── test_demo.cpp                   # 测试 demo（验证整个 REQ 功能）
+│   │       └── README.md                       # 编译说明
 │   └── README.md                               #   测试目录说明（结构检查/JSONL解析/报告元数据验证/算法原型编译）
 │
 └── source_root/                                # ═══════════ AFSIM 2.9.0 源码（Git 忽略） ═══════════
@@ -335,21 +341,30 @@ afsim-analysis-skill-project/
 
 ### 4. 功能迁移与适配生成
 
+- 完整的工作流程:
 ```text
-[上游Agent] `docs/requirements/`
+[gap-specs.jsonl + 映射矩阵]
     ↓
-[FU-design-generator] 
-    → 读取 AFSIM 认知资产
-    → 生成待确认功能单位迁移方案（含复选框/选项）
+[migration-planner] → 生成含 Y/N 的计划文档
     ↓
-[人工] 勾选必须/可选、选择简化/详细、确认优先级
+[人工] 勾选 Y/N 并填写要求（多轮迭代）
+    ↓ 全部 Y
+[标记为可执行计划]
     ↓
-[migration-builder]
-    → 读取确认后迁移方案
-    → 生成软件设计说明和迁移代码、测试demo
+[migration-implementer] → 读取计划 + 模板 → 生成 SDD + 代码 + demo
     ↓
-[下游] 交给人工
+[检验 Skill 验证] → 人工 HCP 审核 → 交付
 ```
+
+- 最终 migration-implementer 产出清单为：
+
+| 产物 |	路径	| 说明 |
+|------|-----------|-------|
+|软件设计说明|	docs/migration/<req_index>-SDD.md	|依据 template_sdd.md 撰写|
+|功能头文件|	tests/migration_src/<req_index>/fu_xxx.h	|接口定义，详细注释|
+|功能实现文件|	tests/migration_src/<req_index>/fu_xxx.cpp	|核心算法实现，完整注释|
+|测试 Demo|	tests/migration_src/<req_index>/test_demo.cpp	|包含 main，快速验证|
+|使用说明|	tests/migration_src/<req_index>/README.md	|编译、依赖、运行示例|
 
 使用 `afsim-migration-builder` 选择可迁移算法和功能，生成：
 

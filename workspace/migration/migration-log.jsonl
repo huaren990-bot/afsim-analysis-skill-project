@@ -1,0 +1,1 @@
+{"event":"fu_design_generated","req_index":"REQ-001","req_name":"使用六自由度模型计算无人机的姿态和轨迹","file":"docs/migration/REQ-001-FU-design.md","fu_count":4,"fu_list":["FU-001:推进系统与燃油管理","FU-002:气动模型","FU-003:六自由度积分器","FU-004:姿态控制系统SAS"],"migration_approach":"cleanroom","status":"待确认","generated_at":"2026-06-18T14:30:00","designer":"AI+待人工确认"}

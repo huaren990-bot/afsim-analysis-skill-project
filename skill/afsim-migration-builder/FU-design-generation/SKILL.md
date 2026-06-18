@@ -1,49 +1,62 @@
-# software-design-generation — 迁移软件设计说明生成 Skill
+---
+name: migration-planner
+description: AFSIM 功能迁移的计划制定者与迭代协调者。它负责将上游需求映射阶段产生的每个原子功能单元（FU）转化为详细的、可逐项确认的迁移计划，并驱动与人工的多轮交互，直至所有计划获得人工“Y”确认，形成可执行基线。
+---
 
-## 角色
-你是一个 **迁移设计专家**，负责为每一个待迁移的功能单元（FU）生成正式的软件设计说明（SDD）。
-你的工作依据上游 `afsim-requirement-mapper` 产出的**结构化缺口规格**（`gap-specs.jsonl`）和 AFSIM 源码索引，
-通过定位源码、评估耦合、规划接口适配，形成可供人工审核和后续编码实施的详细设计文档。
+# 迁移计划生成与迭代确认 Skill
 
 ## 输入
-- `docs/requirements/confirmed_requirement_doc/<requirement_index>-requirement-gap-analysis.md`：完整缺口报告
-- `docs/requirements/confirmed_requirement_doc/<requirement_index>-function-mapping-matrix.md`：功能映射矩阵
-- `docs/requirements/confirmed_requirement_doc/<requirement_index>-requirement-to-afsim-trace.md`：需求到AFSIM的追溯矩阵
-- `workspace/requirements/<requirement_index>-gap-specs.jsonl`：缺口规格清单
-- AFSIM 源码索引（`workspace/source-index/function-index.jsonl`, `dependency-index.jsonl`）
-- AFSIM 架构报告（`docs/architecture/afsim-architecture.md`）
-- AFSIM 算法卡片（`docs/algorithms/` 下的相关卡片）
-- 目标系统接口约定（若有）
+- `workspace/requirements/gap-specs.jsonl`：原子功能规格，每个 FU 包含需求 ID、描述、AFSIM 源位置、目标状态等。
+- `docs/requirements/function-mapping-matrix.md`：需求映射矩阵（辅助理解全局）。
+- AFSIM 源码索引（`workspace/source-index/function-index.jsonl` 等）及架构报告。
+- 目标系统公共接口定义（如已有的头文件路径）。
 
-## 工作步骤
-1. **加载输入**：读取缺口规格清单，提取每个 FU 的功能描述、期望接口、AFSIM 参考实现（若有）和迁移建议，如果不知道是哪个需求，可以先问人工确认需求 ID。如果自有项目接口不明确，可以先生成接口假设和问题清单，供人工确认后再进行设计。
-2. **加载缺口规格**：读取 `<requirement_index>-gap-specs.jsonl`，按优先级顺序依次处理每个 FU。
-3. **定位 AFSIM 实现**：
-   - 使用 `search_afs_function` 在 function-index 中搜索与 FU 描述最匹配的函数。
-   - 若 FU 已包含 `afs_reference`，则直接提取对应源码；否则搜索后填入。
-4. **依赖与耦合分析**：
-   - 调用 `analyze_dependencies` 获取候选函数的依赖关系图。
-   - 区分：标准 C++/Eigen/数学库（可保留）、AFSIM 框架特定类型/宏/全局对象（需替换或剥离）、外部硬件依赖（需移除）。
-   - 评估耦合等级（低/中/高）和剥离可行性。
-5. **接口适配设计**：
-   - 对照 FU 的 `expected_signature`，设计适配层或修改后的函数签名。
-   - 规划输入输出类型映射（如 AFSIM 的 `AFSIM::State` → 目标系统的 `TargetState`）。
-   - 标注需要转换的单位、坐标系、数据结构。
-6. **生成软件设计说明**：
-   - 按照 `template_sdd.md` 格式，为每个 FU 生成一份 SDD 草稿（合并为一份总文档或多个独立文档）。
-   - 包含：功能描述、AFSIM 源定位、耦合评估、适配方案、接口定义、数据类型映射、测试策略建议。
-7. **保存与标记**：
-   - 将 SDD 写入 `docs/migration/software-design-specification/<requirement_index>-software-design-description.md`。
-   - 若为多个 FU，可分段或分文件，主索引放入 `docs/migration/software-design-specification/`。
-   - 设置状态为“待人工确认”，并通过 `ask_human_feedback` 通知人工审核。
+## 工作流程（步骤）
+1. **加载输入与上下文**
+   - 读取全部缺口规格，提取所有待迁移 FU。
+   - 加载 AFSIM 索引与架构报告，建立快速查找能力。
 
-8. **过程留痕**：把每一步的决策依据和执行计划生成文档进行记录归档，放在目录 `docs/records` 里面，以便人工追溯。
+2. **为每个 FU 生成初步迁移计划**
+   - 对每个 FU：
+     - **若 `migration_approach == “novel”`（AFSIM 无参考）**：
+       - 查阅设计依据来源：领域文献、算法教材、数学公式或网络资源。
+       - 耦合分析：无 AFSIM 专有依赖，仅评估第三方库和标准 C++ 依赖。
+       - 迁移策略：`novel`（全新设计——AFSIM 无参考，从领域文献/算法教材中寻找设计依据）。
+       - 接口方案：无 AFSIM 源接口，改为”定义目标接口”——从需求描述和核心算法公式推导接口签名。
+       - 关键设计决策：记录核心算法选择、数据结构设计、边界条件处理等关键决策点。
+     - **若 AFSIM 有参考实现**：
+       - 获取 AFSIM 源函数完整代码（通过工具或读取源码）。
+       - 运行耦合分析：列出所有外部依赖，标注为 `标准C++`、`第三方库`、`AFSIM专有` 三类。
+       - 选择迁移策略：`直接适配`（仅需替换少量接口/依赖）、`局部重写`（需要修改部分逻辑但保留核心算法）、`Clean-room重实现`（仅参考功能描述重写，不直接使用代码）。
+       - 生成接口适配方案：源接口 → 目标接口映射，列出需要转换的类型、新增的参数。
+       - 确定关键修改点：需移除/替换/保留的代码块、宏、全局变量。
+     - 拟定测试策略与风险评估。
+     - 附加人工确认选项：`[ ] Y（通过）` `[ ] N（需修改）`，并提供”修改要求”填写区。
 
-## 输出
-- `docs/migration/software-design-specification/<requirement_index>-software-design-description.md`：汇总的软件设计说明（包含所有 FU 的设计条目）。
-- 可选：`docs/migration/software-design-specification/<requirement_index>-design-FU-XXX.md` 每个 FU 独立说明。
-- 更新 `workspace/migration/<requirement_index>-migration-log.jsonl`，记录每个 FU 的设计状态为“designed”。
+3. **汇编计划文档**
+   - 将所有 FU 的计划按照合并写入 `docs/migration/preliminary-migration-plan/<requirement_index>-FU-design.md`。
+   - 文档头部包含需求索引编号、生成时间、状态（草稿/待确认）。
+   - 每个 FU 独立章节，末尾附 Y/N 选项。
 
-## 注意事项
-- 遇到高度耦合、难以剥离的函数，应在 SDD 中明确标记“建议 Clean-room 重实现”，并提供详细的行为描述和参考伪代码。
-- 任何不确定的接口映射或第三方库依赖，应通过 `ask_human_feedback` 提问，切勿猜测。
+4. **人工确认迭代**
+   - 提示人工审阅计划文档，对每个 FU 勾选 Y 或 N，若选 N 需写明具体要求。
+   - 读取人工反馈，仅修改标记为 N 的 FU 计划（保持 Y 的部分不变）。
+   - 重新生成修改后的 FU 章节，并保留历史修改记录（在文档底部添加修订表）。
+   - 循环直至所有 FU 均为 Y。
+   - 将文档标记为“已确认可执行计划”，添加确认时间和人工签字（电子记录）。
+
+5. **输出最终计划并记录日志**
+   - 保存确认版 `docs/migration/preliminary-migration-plan/<req_index>-FU-design-confirmed.md`。
+   - 更新迁移日志 `workspace/migration/migration-log.jsonl`，记录该需求计划的确认时间、版本。
+
+6.**操作留痕**
+   - 每次修改 FU 计划时，记录修改内容、修改原因、修改时间，形成完整的迭代历史。
+   - 把每一步的决策依据和执行计划生成文档进行记录归档，放在目录docs/records里面，以便人工追溯。
+
+## 输出文件
+- `docs/migration/preliminary-migration-plan/<requirement_index>-FU-design.md`：功能迁移计划文档，包含每个 FU 的详细迁移方案和人工确认状态。
+  - 确认后为最终执行计划。
+  - 按模板 `skill\afsim-migration-builder\template_list\template_FU-migration.md` 格式输出。
+- `workspace/migration/migration-log.jsonl`：迁移日志，记录每个需求的计划生成和确认历史。
+
+
