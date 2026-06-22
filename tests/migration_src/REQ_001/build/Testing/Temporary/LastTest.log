@@ -1,0 +1,18 @@
+Start testing: Jun 22 16:18 中国标准时间
+----------------------------------------------------------
+1/1 Testing: REQ_001_test_demo
+1/1 Test: REQ_001_test_demo
+Command: "E:/All_About_The_Code/VS Code repository/work_surrogatemodels/afsim-analysis-skill-project/tests/migration_src/REQ_001/build/test_demo.exe"
+Directory: E:/All_About_The_Code/VS Code repository/work_surrogatemodels/afsim-analysis-skill-project/tests/migration_src/REQ_001/build
+"REQ_001_test_demo" start time: Jun 22 16:18 中国标准时间
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Failed.
+"REQ_001_test_demo" end time: Jun 22 16:18 中国标准时间
+"REQ_001_test_demo" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Jun 22 16:18 中国标准时间
