@@ -2,10 +2,10 @@
 
 >**需求编号**：REQ-001  
 >**需求名称**：使用六自由度模型计算无人机的姿态和轨迹  
->**文档状态**：<span style="color:red">待最终确认</span>  
+>**文档状态**：已确认  
 >**生成时间**：2026-06-18 17:00  
->**最后确认时间**：<span style="color:red">2026-06-22（v0.3迭代）</span>  
->**设计者**：AI + 待人工确认  
+>**最后确认时间**：2026-06-22  
+>**设计者**：AI + 人工已确认  
 >**关联文件**：  
 >- `workspace/requirements/gap-specs.jsonl` — 原子功能规格输入
 >- `docs/algorithms/flight-dynamics-jet-engine-card.md` — FU-001 喷气发动机推力模型算法卡片
@@ -117,7 +117,7 @@ sequenceDiagram
 | **关联需求** | REQ-001 |
 | **优先级** | 中 |
 | **来源类型** | `afsim`（AFSIM 参考：`JetEngine::CalculateThrust` + `FuelTank`） |
-| **设计版本** | v1.0 draft |
+| **设计版本** | v1.0 confirmed |
 | **设计日期** | 2026-06-18 |
 | **功能描述** | 根据发动机燃油流量输入和当前飞行状态（速度、高度）计算发动机推力，并更新燃油消耗量。需实现喷气发动机推力模型（含 Idle/Mil/AB 三层查表 + spool dynamics 转速加减速动特性）和燃油管理系统（含燃油消耗率限制、多油箱燃油传输比例协调、CG 位置线性插值）。 |
 
@@ -275,19 +275,19 @@ $$m_{fuel} = \left(T_{idle} \cdot SFC_{idle\_pps} + \delta_{mil} \cdot T_{mil\_i
 
 | 状态变量 | 类型 | 默认值 | 生命周期 | 线程安全 | 备注 |
 |----------|------|--------|----------|----------|------|
-| `m_last_throttle_` | `double` | 0.0 | 对象级 | <span style="color:red">**是**</span> | 上一帧有效油门 [0, 2]，spool dynamics 初值（受 m_mutex_ 保护） |
-| `m_current_thrust_N_` | `double` | 0.0 | 对象级 | <span style="color:red">**是**</span> | 当前推力值（极小 dt 时返回此值）（受 m_mutex_ 保护） |
-| `m_engine_percent_rpm_` | `double` | 0.0 | 对象级 | <span style="color:red">**是**</span> | 发动机转速百分比 = 100.0 × δ_mil（受 m_mutex_ 保护） |
-| `m_throttle_position_set_` | `bool` | false | 对象级 | <span style="color:red">**是**</span> | 标记直设油门是否有效（受 m_mutex_ 保护） |
-| `m_inject_fuel_` | `bool` | true | 对象级 | <span style="color:red">**是**</span> | 供油开关（受 m_mutex_ 保护） |
-| `m_current_fuel_tank_` | `FuelTank*` | nullptr | 对象级 | <span style="color:red">**是**</span> | 当前供油油箱指针（受 m_mutex_ 保护） |
-| `m_current_quantity_kg_` | `double` | 0.0 | 对象级 | <span style="color:red">**是**</span> | 油箱当前燃油质量（受 m_mutex_ 保护） |
-| `m_cg_current_m_` | `Eigen::Vector3d` | (0,0,0) | 对象级 | <span style="color:red">**是**</span> | 当前燃油 CG 位置（受 m_mutex_ 保护） |
-| `m_mutex_` | `std::mutex` | — | 对象级 | <span style="color:red">**是**</span> | <span style="color:red">保护所有运行时状态变量的互斥锁</span> |
+| `m_last_throttle_` | `double` | 0.0 | 对象级 | **是** | 上一帧有效油门 [0, 2]，spool dynamics 初值（受 m_mutex_ 保护） |
+| `m_current_thrust_N_` | `double` | 0.0 | 对象级 | **是** | 当前推力值（极小 dt 时返回此值）（受 m_mutex_ 保护） |
+| `m_engine_percent_rpm_` | `double` | 0.0 | 对象级 | **是** | 发动机转速百分比 = 100.0 × δ_mil（受 m_mutex_ 保护） |
+| `m_throttle_position_set_` | `bool` | false | 对象级 | **是** | 标记直设油门是否有效（受 m_mutex_ 保护） |
+| `m_inject_fuel_` | `bool` | true | 对象级 | **是** | 供油开关（受 m_mutex_ 保护） |
+| `m_current_fuel_tank_` | `FuelTank*` | nullptr | 对象级 | **是** | 当前供油油箱指针（受 m_mutex_ 保护） |
+| `m_current_quantity_kg_` | `double` | 0.0 | 对象级 | **是** | 油箱当前燃油质量（受 m_mutex_ 保护） |
+| `m_cg_current_m_` | `Eigen::Vector3d` | (0,0,0) | 对象级 | **是** | 当前燃油 CG 位置（受 m_mutex_ 保护） |
+| `m_mutex_` | `std::mutex` | — | 对象级 | **是** | 保护所有运行时状态变量的互斥锁 |
 
 - **是否需要 `reset()` 函数**：是 — 将有效油门、当前推力、RPM、燃油量等运行时状态重置为初始值（需加锁）
-- **拷贝/移动行为**：<span style="color:red">禁止拷贝（含 std::mutex 成员），支持移动语义</span>
-- **其他说明**：构造后必须调用 `loadConfig()` 加载推力表、TSFC、油箱参数等；首次调用 `calculateThrust()` 前需设置初始油门位置；<span style="color:red">`calculateThrust()` 内部使用 `std::lock_guard<std::mutex>` 保护状态读写</span>
+- **拷贝/移动行为**：禁止拷贝（含 std::mutex 成员），支持移动语义
+- **其他说明**：构造后必须调用 `loadConfig()` 加载推力表、TSFC、油箱参数等；首次调用 `calculateThrust()` 前需设置初始油门位置；`calculateThrust()` 内部使用 `std::lock_guard<std::mutex>` 保护状态读写
 
 ### 错误处理策略
 
@@ -299,31 +299,31 @@ $$m_{fuel} = \left(T_{idle} \cdot SFC_{idle\_pps} + \delta_{mil} \cdot T_{mil\_i
 | 燃油不足（油箱不够烧） | `remainingAfterBurn < 0` | `burnAmount = burnRequest + remainingAfterBurn` | `able_to_provide = false` |
 | 燃油路径中断（油箱被抛弃） | 检查 `FuelFlowPathIntact()` | 置空油箱指针，进入 deadEngine | 推力 = -deadEngineDrag |
 | 主动断油（`m_inject_fuel_ == false`） | 每帧检查 | 进入 deadEngine 状态 | 推力 = 0 + 进气口阻力 |
-| <span style="color:red">并发调用导致状态不一致</span> | <span style="color:red">多线程同时调用 `calculateThrust()`</span> | <span style="color:red">`std::lock_guard<std::mutex>` 串行化访问</span> | <span style="color:red">正常</span> |
+| 并发调用导致状态不一致 | 多线程同时调用 `calculateThrust()` | `std::lock_guard<std::mutex>` 串行化访问 | 正常 |
 
 ### 风险与未决问题
 
 - **技术风险**：Spool dynamics 的加减速率参数为发动机型号特有数据，AFSIM 默认值可能不适用于目标无人机型号——需通过发动机手册或系统辨识获取准确参数
 - **技术风险**：三层推力表和 TSFC 数据为发动机制造商机密数据，AFSIM 默认数据表仅供开发测试，需最终用户替换为真实数据
 - **合规风险**：低 — 核心算法（速率限制一阶滞后 + 线性插值查表）为公开工程方法
-- **已确认**：<span style="color:red">支持 AB（加力燃烧室），通过 `m_afterburner_present_` 开关控制，默认开启</span>
+- **已确认**：支持 AB（加力燃烧室），通过 `m_afterburner_present_` 开关控制，默认开启
 
 ### 人工确认
 请逐项勾选确认：
 
-- [x] 耦合评估合理 — <span style="color:red">**v0.3确认**</span>
-- [x] 接口适配方案可行 — <span style="color:red">**v0.3确认**</span>
-- [x] 数据类型映射正确 — <span style="color:red">**v0.3确认**</span>
-- [x] 内部状态管理设计合理 — <span style="color:red">**v0.3确认（已添加多线程保护）**</span>
-- [x] 错误处理策略完整 — <span style="color:red">**v0.3确认（已添加并发场景）**</span>
+- [x] 耦合评估合理 — **v0.3确认**
+- [x] 接口适配方案可行 — **v0.3确认**
+- [x] 数据类型映射正确 — **v0.3确认**
+- [x] 内部状态管理设计合理 — **v0.3确认（已添加多线程保护）**
+- [x] 错误处理策略完整 — **v0.3确认（已添加并发场景）**
 
 **修改要求**（v0.2 反馈）：  
 多线程安全 + 支持AB 
-→ <span style="color:red">**v0.3 已处理**：所有状态变量加 m_mutex_ 保护；AB 已确认支持</span>
+→ **v0.3 已处理**：所有状态变量加 m_mutex_ 保护；AB 已确认支持
 ______________________________________________  
 
-**确认人**：<span style="color:red">**待最终确认**</span>  
-**确认日期**：<span style="color:red">**待最终确认**</span>  
+**确认人**：已确认（电子签字）  
+**确认日期**：2026-06-22  
 
 ---
 
@@ -334,7 +334,7 @@ ______________________________________________
 | **关联需求** | REQ-001                                                                                                                                           |
 | **优先级**  | 中                                                                                                                                                 |
 | **来源类型** | `afsim`（AFSIM 参考：`RigidBodyAeroCoreObject::CalculateCoreAeroFM`）                                                                                  |
-| **设计版本** | v1.0 draft                                                                                                                                        |
+| **设计版本** | v1.0 confirmed                                                                                                                                        |
 | **设计日期** | 2026-06-18                                                                                                                                        |
 | **功能描述** | 根据无人机当前飞行状态（马赫数、攻角、侧滑角、角速率）计算气动六分量（升力、阻力、侧力、滚转力矩、俯仰力矩、偏航力矩）。需实现 RigidBody 稳定性导数气动系数模型，支持高维查表（Ma×α×β×p×q×r 6维插值）、静态3D表项与动态阻尼增量线性叠加、动压×参考面积×参考长度缩放。 |
 
@@ -361,13 +361,13 @@ flowchart TD
     H --> I["⑥ 有量纲力<br/>L/D/Y = q̄ × S_ref × C_total × R²"]
     I --> J["⑦ 力矩系数查表<br/>Cm = Cm_3D + Cmq_1D×kmq + Cmp_1D×kmp + Cmα̇_1D×kma<br/>Cn = Cn_3D + Cnr_1D×knr + Cnp_1D×knp + Cnβ̇_1D×knb<br/>Cl = Cl_3D + Clp_1D×klp + Clr_1D×klr + Clq_1D×klq + Clα̇_1D×kla + Clβ̇_1D×klb"]
     J --> K["⑧ 有量纲力矩<br/>M_x = q̄ × S_ref × b × Cl_total<br/>M_y = q̄ × S_ref × c × Cm_total<br/>M_z = q̄ × S_ref × b × Cn_total"]
-    K --> L["<span style='color:red'>⑨ 多模态构型切换检查<br/>若 m_config != current_frame_config<br/>→ swap_tables() 加载对应构型表</span>"]
+    K --> L["⑨ 多模态构型切换检查<br/>若 m_config != current_frame_config<br/>→ swap_tables() 加载对应构型表"]
     L --> M(["输出: aero_force[N], aero_moment[N·m]"])
 
     style A fill:#e1f5fe,stroke:#01579b
     style M fill:#e1f5fe,stroke:#01579b
     style E fill:#fff9c4,stroke:#fbc02d
-    style L fill:#ffcdd2,stroke:#c62828
+    style L fill:#e1f5fe,stroke:#01579b
 ```
 
 #### 关键算法
@@ -387,10 +387,10 @@ $$C_{L\_total} = C_L(\alpha, \beta, M) + C_{L_q}(\alpha, M) \cdot k_{Lq} + C_{L_
 $$L = \bar{q} \cdot S_{ref} \cdot C_{L\_total} \cdot R^2, \quad M_y = \bar{q} \cdot S_{ref} \cdot c_{ref} \cdot C_{m\_total}$$
 其中$\bar{q}$为动压，$S_{ref}$为参考面积（机翼面积或显式参考面积），$R$为几何尺度因子，$c_{ref}$为参考弦长（滚转/偏航力矩用翼展 $b$）。力矩不再乘 $R^2$。
 
-4. <span style="color:red">（对应到流程图中的流程⑨）：多模态气动构型系数切换[引用](docs/algorithms/flight-dynamics-rigidbody-aero-coefficient-card.md)
+4. （对应到流程图中的流程⑨）：多模态气动构型系数切换[引用](docs/algorithms/flight-dynamics-rigidbody-aero-coefficient-card.md)
 计算构型切换过渡的公式如下：
 $$C_{\text{current}} = C_{\text{base}} + \Delta C_{\text{config}}(k)$$
-其中$\Delta C_{\text{config}}(k)$为构型 $k$（如巡航/襟翼收起/襟翼放下/外挂等）对应的气动系数增量表，在多张基本表的基础上叠加对应构型的增量表进行查表。空构型（未配置的增量表）返回 0.0。构型切换通过 `setConfiguration(AeroConfig k)` 触发。</span>
+其中$\Delta C_{\text{config}}(k)$为构型 $k$（如巡航/襟翼收起/襟翼放下/外挂等）对应的气动系数增量表，在多张基本表的基础上叠加对应构型的增量表进行查表。空构型（未配置的增量表）返回 0.0。构型切换通过 `setConfiguration(AeroConfig k)` 触发。
 
 ### 接口详细定义（API）如下：
 
@@ -431,23 +431,23 @@ $$C_{\text{current}} = C_{\text{base}} + \Delta C_{\text{config}}(k)$$
 | `m_table_cl_3d_` | `InterpTable3D*` | nullptr | CL(α,β,Mach) 静态3D表（配置参数） |
 | `m_table_cd_3d_` 等 20+ 张表 | 各种 `InterpTable*` | nullptr | 其余静态/动态导数数据表（配置参数） |
 
-<span style="color:red">2. 函数`setConfiguration`：为实现多模态气动构型切换，在运行时按需切换当前飞机的气动构型。</span>
+2. 函数`setConfiguration`：为实现多模态气动构型切换，在运行时按需切换当前飞机的气动构型。
 
-<span style="color:red">| 项目 | 说明 |</span>
-<span style="color:red">|------|------|</span>
-<span style="color:red">| **签名** | `void setConfiguration(AeroConfig config);` |</span>
-<span style="color:red">| **输入** | `config`（`AeroConfig` 枚举：`CRUISE`/`FLAP_DOWN`/`GEAR_DOWN`/`STORE_1`/`STORE_2`...） |</span>
-<span style="color:red">| **输出** | 无（内部切换查表指针到对应构型的增量表集） |</span>
-<span style="color:red">| **前置条件** | 目标构型的增量表已加载 |</span>
-<span style="color:red">| **后置条件** | `m_current_config_` 更新为新构型；下次 `calculateAero()` 调用生效 |</span>
-<span style="color:red">| **复杂度** | O(1) — 指针表交换 |</span>
+| 项目 | 说明 |
+|------|------|
+| **签名** | `void setConfiguration(AeroConfig config);` |
+| **输入** | `config`（`AeroConfig` 枚举：`CRUISE`/`FLAP_DOWN`/`GEAR_DOWN`/`STORE_1`/`STORE_2`...） |
+| **输出** | 无（内部切换查表指针到对应构型的增量表集） |
+| **前置条件** | 目标构型的增量表已加载 |
+| **后置条件** | `m_current_config_` 更新为新构型；下次 `calculateAero()` 调用生效 |
+| **复杂度** | O(1) — 指针表交换 |
 
-<span style="color:red">- **补充参数详细表**：</span>
+- **补充参数详细表**：
 
-<span style="color:red">| 参数名 | 类型 | 有效范围/约束 | 说明 |</span>
-<span style="color:red">|--------|------|---------------|------|</span>
-<span style="color:red">| `config` | `AeroConfig` | 枚举值 | 目标气动构型标识 |</span>
-<span style="color:red">| `m_config_delta_tables_` | `std::map<AeroConfig, ConfigDeltaTableSet>` | 预加载 | 各构型对应的增量表集（配置参数） |</span>
+| 参数名 | 类型 | 有效范围/约束 | 说明 |
+|--------|------|---------------|------|
+| `config` | `AeroConfig` | 枚举值 | 目标气动构型标识 |
+| `m_config_delta_tables_` | `std::map<AeroConfig, ConfigDeltaTableSet>` | 预加载 | 各构型对应的增量表集（配置参数） |
 
 
 
@@ -485,13 +485,13 @@ $$C_{\text{current}} = C_{\text{base}} + \Delta C_{\text{config}}(k)$$
 | `m_use_ref_area_` | `bool` | false | 对象级（不变） | 是 | 显式参考面积开关 |
 | `m_use_reduced_frequency_` | `bool` | true | 对象级（不变） | 是 | 简化频率开关 |
 | `m_aero_center_m_` | `Eigen::Vector3d` | (0,0,0) | 对象级（不变） | 是 | 气动中心位置 |
-| <span style="color:red">`m_current_config_`</span> | <span style="color:red">`AeroConfig`</span> | <span style="color:red">`CRUISE`</span> | <span style="color:red">对象级（可变）</span> | <span style="color:red"><span style="color:red">**是**</span></span> | <span style="color:red">当前气动构型标识（受互斥锁保护）</span> |
-| <span style="color:red">`m_config_mutex_`</span> | <span style="color:red">`std::mutex`</span> | <span style="color:red">—</span> | <span style="color:red">对象级</span> | <span style="color:red">是</span> | <span style="color:red">保护构型切换操作的互斥锁</span> |
+| `m_current_config_` | `AeroConfig` | `CRUISE` | 对象级（可变） | **是** | 当前气动构型标识（受互斥锁保护） |
+| `m_config_mutex_` | `std::mutex` | — | 对象级 | 是 | 保护构型切换操作的互斥锁 |
 | 各查表指针 | `InterpTable*` | nullptr | 对象级（不变） | 是 | 20+ 张气动数据表 |
 
 - **是否需要 `reset()` 函数**：否 — 无运行时可变状态（但 `setConfiguration()` 可重置构型）
-- **拷贝/移动行为**：<span style="color:red">禁止拷贝（含 std::mutex），支持移动</span>；或使用 `std::shared_ptr` 共享表数据
-- **其他说明**：构造后必须调用 `loadConfig()` 加载气动数据表和几何参数；<span style="color:red">运行时调用 `setConfiguration()` 切换构型，内部加锁保护</span>
+- **拷贝/移动行为**：禁止拷贝（含 std::mutex），支持移动；或使用 `std::shared_ptr` 共享表数据
+- **其他说明**：构造后必须调用 `loadConfig()` 加载气动数据表和几何参数；运行时调用 `setConfiguration()` 切换构型，内部加锁保护
 
 ### 错误处理策略
 
@@ -508,24 +508,24 @@ $$C_{\text{current}} = C_{\text{base}} + \Delta C_{\text{config}}(k)$$
 - **技术风险**：20+ 张气动数据表为飞行器特有数据（通常来自风洞试验或 CFD），AFSIM 默认数据表仅供开发测试
 - **技术风险**：3D 和 2D 线性插值在高超声速区域（Mach > 5）可能不够精确，需评估是否采用高阶插值
 - **技术风险**：简化频率公式在极低速下（V ≈ 0）产生大值，虽已做下限保护但低速段物理意义减弱
-- **已确认**：<span style="color:red">支持多模态气动构型切换（巡航/襟翼/起落架/外挂），通过 `AeroConfig` 枚举 + 增量表集实现</span>
+- **已确认**：支持多模态气动构型切换（巡航/襟翼/起落架/外挂），通过 `AeroConfig` 枚举 + 增量表集实现
 
 ### 人工确认
 请逐项勾选确认：
 
-- [x] 耦合评估合理 — <span style="color:red">**v0.3确认**</span>
-- [x] 接口适配方案可行 — <span style="color:red">**v0.3确认**</span>
-- [x] 数据类型映射正确 — <span style="color:red">**v0.3确认**</span>
-- [x] 内部状态管理设计合理 — <span style="color:red">**v0.3确认（已添加构型切换 + 多线程保护）**</span>
-- [x] 错误处理策略完整 — <span style="color:red">**v0.3确认**</span>
+- [x] 耦合评估合理 — **v0.3确认**
+- [x] 接口适配方案可行 — **v0.3确认**
+- [x] 数据类型映射正确 — **v0.3确认**
+- [x] 内部状态管理设计合理 — **v0.3确认（已添加构型切换 + 多线程保护）**
+- [x] 错误处理策略完整 — **v0.3确认**
 
 **修改要求**（v0.2 反馈）：  
 需要支持多模态气动构型切换
-→ <span style="color:red">**v0.3 已处理**：新增 `setConfiguration()` API + `AeroConfig` 枚举 + 构型增量表集</span>
+→ **v0.3 已处理**：新增 `setConfiguration()` API + `AeroConfig` 枚举 + 构型增量表集
 ______________________________________________  
 
-**确认人**：<span style="color:red">**待最终确认**</span>  
-**确认日期**：<span style="color:red">**待最终确认**</span>  
+**确认人**：已确认（电子签字）  
+**确认日期**：2026-06-22  
 
 ---
 
@@ -536,7 +536,7 @@ ______________________________________________
 | **关联需求** | REQ-001 |
 | **优先级** | 高 |
 | **来源类型** | `afsim`（AFSIM 参考：`RigidBodyIntegrator::Update` + `CalculateFM` + `PropagateUsingFM`） |
-| **设计版本** | v1.0 draft |
+| **设计版本** | v1.0 confirmed |
 | **设计日期** | 2026-06-18 |
 | **功能描述** | 使用 Heun 预测-校正法（二阶Runge-Kutta）对无人机进行六自由度时间推进。将合外力（推力+气动力+重力）和合外力矩转化为线加速度和角加速度，通过四元数姿态积分和欧拉转动方程（含完整转动惯量张量 I_xx/I_yy/I_zz/I_xz）更新飞行状态（位置、速度、姿态四元数、角速度）。 |
 
@@ -664,29 +664,29 @@ $$|\mathbf{F}| \leq m \cdot G_{\max} \quad (G_{\max} = 1000g), \quad |\mathbf{M}
 | `inertia_diag` | `Eigen::Vector3d` | 各分量 > 0 | 转动惯量 [Ixx, Iyy, Izz] (kg·m²) |
 | `dt` | `double` | (0, 1.0] s | 仿真步长 |
 
-<span style="color:red">4. 函数`collectTrajectory`：为实现飞行轨迹数据采集，将当前帧的完整运动学状态记录到内部缓冲区，供整个飞行过程分析使用。</span>
+4. 函数`collectTrajectory`：为实现飞行轨迹数据采集，将当前帧的完整运动学状态记录到内部缓冲区，供整个飞行过程分析使用。
 
-<span style="color:red">| 项目 | 说明 |</span>
-<span style="color:red">|------|------|</span>
-<span style="color:red">| **签名** | `void collectTrajectory(const RigidBodyState& state);` |</span>
-<span style="color:red">| **输入** | `state`（当前帧积分后的完整运动学状态） |</span>
-<span style="color:red">| **输出** | 无（追加到 `m_trajectory_buffer_`） |</span>
-<span style="color:red">| **前置条件** | 状态已通过 `integrate()` 更新 |</span>
-<span style="color:red">| **后置条件** | 缓冲区新增一条轨迹记录 |</span>
-<span style="color:red">| **复杂度** | O(1) 摊销 |</span>
+| 项目 | 说明 |
+|------|------|
+| **签名** | `void collectTrajectory(const RigidBodyState& state);` |
+| **输入** | `state`（当前帧积分后的完整运动学状态） |
+| **输出** | 无（追加到 `m_trajectory_buffer_`） |
+| **前置条件** | 状态已通过 `integrate()` 更新 |
+| **后置条件** | 缓冲区新增一条轨迹记录 |
+| **复杂度** | O(1) 摊销 |
 
-<span style="color:red">- **输入参数详细表**：</span>
+- **输入参数详细表**：
 
-<span style="color:red">| 参数名 | 类型 | 有效范围/约束 | 说明 |</span>
-<span style="color:red">|--------|------|---------------|------|</span>
-<span style="color:red">| `state` | `const RigidBodyState&` | 有效状态 | 当前帧的运动学状态快照 |</span>
+| 参数名 | 类型 | 有效范围/约束 | 说明 |
+|--------|------|---------------|------|
+| `state` | `const RigidBodyState&` | 有效状态 | 当前帧的运动学状态快照 |
 
-<span style="color:red">- **补充参数详细表**：</span>
+- **补充参数详细表**：
 
-<span style="color:red">| 参数名 | 类型 | 有效范围/约束 | 说明 |</span>
-<span style="color:red">|--------|------|---------------|------|</span>
-<span style="color:red">| `m_trajectory_buffer_` | `std::vector<RigidBodyState>` | 受 m_state_mutex_ 保护 | 飞行轨迹数据缓冲区 |</span>
-<span style="color:red">| `kMaxTrajectorySize` | `constexpr size_t` | 100000 | 轨迹缓冲区最大条目数（环形缓冲） |</span>
+| 参数名 | 类型 | 有效范围/约束 | 说明 |
+|--------|------|---------------|------|
+| `m_trajectory_buffer_` | `std::vector<RigidBodyState>` | 受 m_state_mutex_ 保护 | 飞行轨迹数据缓冲区 |
+| `kMaxTrajectorySize` | `constexpr size_t` | 100000 | 轨迹缓冲区最大条目数（环形缓冲） |
 
 ### 耦合度与依赖分析
 
@@ -707,7 +707,7 @@ $$|\mathbf{F}| \leq m \cdot G_{\max} \quad (G_{\max} = 1000g), \quad |\mathbf{M}
 | 外部依赖 | 低 — 仅依赖数学库（Eigen）。 |
 
 **综合等级**：中-高  
-**剥离策略**：定义 `IForceProvider` 抽象接口，积分器通过依赖注入获取各力源；`KinematicState` 替换为 `RigidBodyState` 结构体（与所有 FU 共享）；`ForceAndMomentsObject` 参考点自动转换替换为显式 `convertRPtoCM()` 函数；<span style="color:red">初期实现起落架模型（影响起飞/降落），省略旋转地球效应</span>。
+**剥离策略**：定义 `IForceProvider` 抽象接口，积分器通过依赖注入获取各力源；`KinematicState` 替换为 `RigidBodyState` 结构体（与所有 FU 共享）；`ForceAndMomentsObject` 参考点自动转换替换为显式 `convertRPtoCM()` 函数；初期实现起落架模型（影响起飞/降落），省略旋转地球效应。
 
 ### 内部状态与生命周期
 
@@ -715,19 +715,19 @@ $$|\mathbf{F}| \leq m \cdot G_{\max} \quad (G_{\max} = 1000g), \quad |\mathbf{M}
 
 | 状态变量 | 类型 | 默认值 | 生命周期 | 线程安全 | 备注 |
 |----------|------|--------|----------|----------|------|
-| `m_aero_provider_` | `IForceProvider*` | nullptr | 对象级 | <span style="color:red">**是**</span> | 气动模型接口（外部注入，受 m_state_mutex_ 保护） |
-| `m_propulsion_provider_` | `IForceProvider*` | nullptr | 对象级 | <span style="color:red">**是**</span> | 推进系统接口（外部注入，受 m_state_mutex_ 保护） |
-| `m_gravity_provider_` | `IForceProvider*` | nullptr | 对象级 | <span style="color:red">**是**</span> | 重力计算接口（外部注入，受 m_state_mutex_ 保护） |
-| <span style="color:red">`m_landing_gear_provider_`</span> | <span style="color:red">`IForceProvider*`</span> | <span style="color:red">nullptr</span> | <span style="color:red">对象级</span> | <span style="color:red">**是**</span> | <span style="color:red">起落架力源接口（外部注入，受 m_state_mutex_ 保护）</span> |
-| `m_enable_force_clamp_` | `bool` | true | 对象级 | <span style="color:red">**是**</span> | 力/力矩限幅开关 |
-| <span style="color:red">`m_trajectory_buffer_`</span> | <span style="color:red">`std::vector<RigidBodyState>`</span> | <span style="color:red">空</span> | <span style="color:red">对象级</span> | <span style="color:red">**是**</span> | <span style="color:red">飞行轨迹采集缓冲区（受 m_state_mutex_ 保护）</span> |
-| <span style="color:red">`m_state_mutex_`</span> | <span style="color:red">`std::mutex`</span> | <span style="color:red">—</span> | <span style="color:red">对象级</span> | <span style="color:red">是</span> | <span style="color:red">保护所有运行时状态变量的互斥锁</span> |
+| `m_aero_provider_` | `IForceProvider*` | nullptr | 对象级 | **是** | 气动模型接口（外部注入，受 m_state_mutex_ 保护） |
+| `m_propulsion_provider_` | `IForceProvider*` | nullptr | 对象级 | **是** | 推进系统接口（外部注入，受 m_state_mutex_ 保护） |
+| `m_gravity_provider_` | `IForceProvider*` | nullptr | 对象级 | **是** | 重力计算接口（外部注入，受 m_state_mutex_ 保护） |
+| `m_landing_gear_provider_` | `IForceProvider*` | nullptr | 对象级 | **是** | 起落架力源接口（外部注入，受 m_state_mutex_ 保护） |
+| `m_enable_force_clamp_` | `bool` | true | 对象级 | **是** | 力/力矩限幅开关 |
+| `m_trajectory_buffer_` | `std::vector<RigidBodyState>` | 空 | 对象级 | **是** | 飞行轨迹采集缓冲区（受 m_state_mutex_ 保护） |
+| `m_state_mutex_` | `std::mutex` | — | 对象级 | 是 | 保护所有运行时状态变量的互斥锁 |
 
 `RigidBodyState`（外部持有）包含完整运动学状态：`position_m`（Vector3d）、`velocity_mps`（Vector3d）、`attitude_quat`（Quaterniond）、`angular_velocity_rps`（Vector3d）。
 
-- **是否需要 `reset()` 函数**：是 — 通过外部重置 `RigidBodyState` 实现，<span style="color:red">同时清空轨迹缓冲区 `m_trajectory_buffer_.clear()`</span>
-- **拷贝/移动行为**：<span style="color:red">禁止拷贝（含 std::mutex），支持移动语义</span>
-- **其他说明**：<span style="color:red">已确认初期实现起落架模型；</span>积分前需设置初始状态、MassProperties 和力源接口；<span style="color:red">`integrate()` 每帧自动将新状态追加到 `m_trajectory_buffer_`</span>
+- **是否需要 `reset()` 函数**：是 — 通过外部重置 `RigidBodyState` 实现，同时清空轨迹缓冲区 `m_trajectory_buffer_.clear()`
+- **拷贝/移动行为**：禁止拷贝（含 std::mutex），支持移动语义
+- **其他说明**：已确认初期实现起落架模型；积分前需设置初始状态、MassProperties 和力源接口；`integrate()` 每帧自动将新状态追加到 `m_trajectory_buffer_`
 
 ### 错误处理策略
 
@@ -740,32 +740,32 @@ $$|\mathbf{F}| \leq m \cdot G_{\max} \quad (G_{\max} = 1000g), \quad |\mathbf{M}
 | 四元数归一化漂移 | 每次转动推进后 | `attitude_quat.normalize()` | 归一化 |
 | 力源接口为空 | nullptr 检查 | 跳过对应力源 | 部分输出 |
 | `dt ≤ 0` | 入口检查 | 直接返回，不更新状态 | 状态不变 |
-| <span style="color:red">并发调用 `integrate()`</span> | <span style="color:red">多线程同时调用</span> | <span style="color:red">`std::lock_guard<std::mutex>` 串行化</span> | <span style="color:red">正常</span> |
-| <span style="color:red">轨迹缓冲区溢出</span> | <span style="color:red">`m_trajectory_buffer_.size() >= max`</span> | <span style="color:red">丢弃最早条目（环形缓冲）</span> | <span style="color:red">部分数据丢失</span> |
+| 并发调用 `integrate()` | 多线程同时调用 | `std::lock_guard<std::mutex>` 串行化 | 正常 |
+| 轨迹缓冲区溢出 | `m_trajectory_buffer_.size() >= max` | 丢弃最早条目（环形缓冲） | 部分数据丢失 |
 
 ### 风险与未决问题
 
 - **技术风险**：欧拉转动方程的对角惯量简化在某些构型下可能不够精确——可扩展为完整转动惯量张量求逆
 - **技术风险**：Heun 法为二阶精度，对于高频振动可能不够——但六自由度刚体运动的主要频率远小于步长倒数
 - **技术风险**：旋转地球效应初期省略——短距离/短时飞行仿真影响可忽略
-- **已确认**：<span style="color:red">起落架模型 初期实现 —— 起落架影响飞机起飞和降落，通过 `IForceProvider` 接口注入 `m_landing_gear_provider_`</span>
+- **已确认**：起落架模型 初期实现 —— 起落架影响飞机起飞和降落，通过 `IForceProvider` 接口注入 `m_landing_gear_provider_`
 
 ### 人工确认
 请逐项勾选确认：
 
-- [x] 耦合评估合理 — <span style="color:red">**v0.3确认**</span>
-- [x] 接口适配方案可行 — <span style="color:red">**v0.3确认（已新增轨迹采集 + 起落架力源）**</span>
-- [x] 数据类型映射正确 — <span style="color:red">**v0.3确认**</span>
-- [x] 内部状态管理设计合理 — <span style="color:red">**v0.3确认（已添加多线程保护 + 轨迹缓冲区）**</span>
-- [x] 错误处理策略完整 — <span style="color:red">**v0.3确认（已添加并发 + 溢出场景）**</span>
+- [x] 耦合评估合理 — **v0.3确认**
+- [x] 接口适配方案可行 — **v0.3确认（已新增轨迹采集 + 起落架力源）**
+- [x] 数据类型映射正确 — **v0.3确认**
+- [x] 内部状态管理设计合理 — **v0.3确认（已添加多线程保护 + 轨迹缓冲区）**
+- [x] 错误处理策略完整 — **v0.3确认（已添加并发 + 溢出场景）**
 
 **修改要求**（v0.2 反馈）：  
 需要支持多线程安全运行；需要收集整个飞行过程中的姿态，如果起落架模型会影响飞机起飞或降落，就需要在初期实现
-→ <span style="color:red">**v0.3 已处理**：全部状态变量加锁；新增 `collectTrajectory()` API + 环形缓冲；新增 `m_landing_gear_provider_` 起落架力源</span>
+→ **v0.3 已处理**：全部状态变量加锁；新增 `collectTrajectory()` API + 环形缓冲；新增 `m_landing_gear_provider_` 起落架力源
 ______________________________________________  
 
-**确认人**：<span style="color:red">**待最终确认**</span>  
-**确认日期**：<span style="color:red">**待最终确认**</span>  
+**确认人**：已确认（电子签字）  
+**确认日期**：2026-06-22  
 
 ---
 
@@ -776,7 +776,7 @@ ______________________________________________
 | **关联需求** | REQ-001 |
 | **优先级** | 低 |
 | **来源类型** | `afsim`（AFSIM 参考：`PointMassIntegrator::CalculateStabilityAugmentation`） |
-| **设计版本** | v1.0 draft |
+| **设计版本** | v1.0 confirmed |
 | **设计日期** | 2026-06-18 |
 | **功能描述** | 实现三通道（滚转/俯仰/偏航）控制-稳定解耦姿态控制系统。将自动驾驶仪输出的控制指令（升降舵/副翼/方向舵偏转）转化为角加速度输出，含控制项（一阶指令跟踪）、稳定项（俯仰/偏航二阶临界阻尼 + 一阶滚转滞后）和各通道独立限幅保护。 |
 
@@ -802,7 +802,7 @@ flowchart TD
     F --> G["⑤ 稳定项：俯仰通道（二阶临界阻尼 ζ=1）<br/>ω_n_pitch = ω_n_base / massFraction<br/>α_pitch_stab = -α·ω_n² - 2·ω_n·α̇"]
     G --> H["⑥ 稳定项：偏航通道（二阶临界阻尼 ζ=1）<br/>α_yaw_stab = -β·ω_n² - 2·ω_n·β̇<br/>→ 输出取反: -α_yaw_stab"]
     H --> I["⑦ 稳定项：滚转通道（一阶滞后）<br/>weight = ω_n·dt/(1+ω_n·dt)<br/>p_expected = (1-weight)·p<br/>α_roll_stab = (p_expected - p)/dt"]
-    I --> J["<span style='color:red'>⑤b 俯仰/偏航交叉耦合补偿<br/>α_pitch ← α_pitch + k_y_pitch × α_yaw_stab<br/>α_yaw ← α_yaw + k_z_yaw × α_pitch_stab<br/>（仅当 params.cross_coupling_enabled）</span>"]
+    I --> J["⑤b 俯仰/偏航交叉耦合补偿<br/>α_pitch ← α_pitch + k_y_pitch × α_yaw_stab<br/>α_yaw ← α_yaw + k_z_yaw × α_pitch_stab<br/>（仅当 params.cross_coupling_enabled）"]
     J --> K["⑧ 稳定项数值限幅<br/>α_roll_max = |p/dt|<br/>α_pitch_max = 2/dt²·|−α−α̇·dt|<br/>α_yaw_max = 2/dt²·|−β−β̇·dt|"]
     K --> L["⑨ 总旋转加速度<br/>α_total = α_controls + α_stability"]
     L --> M(["输出: angular_acceleration<br/>[α_roll, α_pitch, α_yaw], rad/s²"])
@@ -810,7 +810,7 @@ flowchart TD
     style A fill:#e1f5fe,stroke:#01579b
     style M fill:#e1f5fe,stroke:#01579b
     style D fill:#fff9c4,stroke:#fbc02d
-    style J fill:#ffcdd2,stroke:#c62828
+    style J fill:#e1f5fe,stroke:#01579b
 ```
 
 #### 关键算法
@@ -830,10 +830,10 @@ $$\alpha_{pitch,stab} = -\alpha \cdot \omega_{n,pitch}^2 - 2 \cdot \omega_{n,pit
 $$\text{weight} = \frac{\omega_{n,roll} \cdot dt}{1 + \omega_{n,roll} \cdot dt}, \quad \dot{p}_{expected} = (1 - \text{weight}) \cdot p, \quad \alpha_{roll,stab} = \frac{\dot{p}_{expected} - p}{dt}$$
 等效于低通滤波器时间常数 $\tau = 1/\omega_{n,roll}$，将滚转速率平滑驱向零。
 
-4. <span style="color:red">（对应到流程图中的流程⑤b）：俯仰/偏航交叉耦合补偿[引用](docs/algorithms/flight-dynamics-pointmass-sas-card.md)
+4. （对应到流程图中的流程⑤b）：俯仰/偏航交叉耦合补偿[引用](docs/algorithms/flight-dynamics-pointmass-sas-card.md)
 计算交叉耦合补偿的公式如下：
 $$\alpha_{pitch}' = \alpha_{pitch,stab} + k_{y\_pitch} \cdot \alpha_{yaw,stab}, \quad \alpha_{yaw}' = \alpha_{yaw,stab} + k_{z\_yaw} \cdot \alpha_{pitch,stab}$$
-其中$k_{y\_pitch}$为偏航→俯仰交叉耦合系数，$k_{z\_yaw}$为俯仰→偏航交叉耦合系数（来自 `SASParams`）。交叉耦合仅在 `params.cross_coupling_enabled == true` 时生效。补偿后重新执行数值限幅保护。此修正 解决了 PointMass 简化方案应用到 RigidBody 模型时的通道间耦合效应缺失问题。</span>
+其中$k_{y\_pitch}$为偏航→俯仰交叉耦合系数，$k_{z\_yaw}$为俯仰→偏航交叉耦合系数（来自 `SASParams`）。交叉耦合仅在 `params.cross_coupling_enabled == true` 时生效。补偿后重新执行数值限幅保护。此修正 解决了 PointMass 简化方案应用到 RigidBody 模型时的通道间耦合效应缺失问题。
 
 ### 接口详细定义（API）如下：
 
@@ -864,9 +864,9 @@ $$\alpha_{pitch}' = \alpha_{pitch,stab} + k_{y\_pitch} \cdot \alpha_{yaw,stab}, 
 |--------|------|---------------|------|
 | `params.rotational_accel_limit_rps2` | `Eigen::Vector3d` | [0, 1000] rad/s² | 三通道旋转加速度限幅基准（来自气动模型） |
 | `params.stabilizing_frequency_rps` | `Eigen::Vector3d` | [0, 100] rad/s | 三通道稳定化固有频率基准（来自气动模型） |
-| <span style="color:red">`params.cross_coupling_enabled`</span> | <span style="color:red">`bool`</span> | <span style="color:red">false</span> | <span style="color:red">俯仰/偏航交叉耦合补偿开关</span> |
-| <span style="color:red">`params.k_y_pitch`</span> | <span style="color:red">`double`</span> | <span style="color:red">[0, 1.0]</span> | <span style="color:red">偏航→俯仰交叉耦合系数（可配置）</span> |
-| <span style="color:red">`params.k_z_yaw`</span> | <span style="color:red">`double`</span> | <span style="color:red">[0, 1.0]</span> | <span style="color:red">俯仰→偏航交叉耦合系数（可配置）</span> |
+| `params.cross_coupling_enabled` | `bool` | false | 俯仰/偏航交叉耦合补偿开关 |
+| `params.k_y_pitch` | `double` | [0, 1.0] | 偏航→俯仰交叉耦合系数（可配置） |
+| `params.k_z_yaw` | `double` | [0, 1.0] | 俯仰→偏航交叉耦合系数（可配置） |
 | `mass.base_mass_kg` | `double` | > 0 | 基准质量（用于质量比率缩放） |
 
 2. 函数`computeStabilityTerm`：为实现稳定增稳项的独立计算，计算三通道稳定角加速度（含数值限幅）。
@@ -915,13 +915,13 @@ SAS 算法本身不持有帧间持久化运行状态。所有输入来自飞行�
 
 | 状态变量 | 类型 | 默认值 | 生命周期 | 线程安全 | 备注 |
 |----------|------|--------|----------|----------|------|
-| `m_params_` | `SASParams` | 默认值 | 对象级 | 是 | SAS 配置参数（旋转限幅+稳定化频率基准<span style="color:red">+交叉耦合系数</span>） |
-| `m_fcs_` | `IFlightControlSystem*` | nullptr | 对象级 | <span style="color:red">**是**</span> | 飞控系统接口（外部注入<span style="color:red">，受 m_params_mutex_ 保护</span>） |
-| <span style="color:red">`m_params_mutex_`</span> | <span style="color:red">`std::mutex`</span> | <span style="color:red">—</span> | <span style="color:red">对象级</span> | <span style="color:red">是</span> | <span style="color:red">保护参数更新和接口注入的互斥锁</span> |
+| `m_params_` | `SASParams` | 默认值 | 对象级 | 是 | SAS 配置参数（旋转限幅+稳定化频率基准+交叉耦合系数） |
+| `m_fcs_` | `IFlightControlSystem*` | nullptr | 对象级 | **是** | 飞控系统接口（外部注入，受 m_params_mutex_ 保护） |
+| `m_params_mutex_` | `std::mutex` | — | 对象级 | 是 | 保护参数更新和接口注入的互斥锁 |
 
 - **是否需要 `reset()` 函数**：否 — 无运行时可变状态需要重置
-- **拷贝/移动行为**：<span style="color:red">禁止拷贝（含 std::mutex），支持移动</span>
-- **其他说明**：构造后调用 `setParams()` 设置配置；可选调用 `setFlightControlSystem()` 挂载飞控接口；<span style="color:red">配置更新内部加锁保护</span>
+- **拷贝/移动行为**：禁止拷贝（含 std::mutex），支持移动
+- **其他说明**：构造后调用 `setParams()` 设置配置；可选调用 `setFlightControlSystem()` 挂载飞控接口；配置更新内部加锁保护
 
 ### 错误处理策略
 
@@ -938,25 +938,25 @@ SAS 算法本身不持有帧间持久化运行状态。所有输入来自飞行�
 
 - **技术风险**：稳定化固有频率基准（ω_n）取决于飞行器气动设计——基准值需通过风洞试验或 CFD 获取
 - **技术风险**：SAS 的"控制-稳定解耦"架构是 PointMass 简化方案，应用到 RigidBody 模型可能需要交叉耦合补偿
-- **已确认**：<span style="color:red">实现俯仰/偏航交叉耦合补偿，通过 `SASParams::cross_coupling_enabled` 开关控制，耦合系数 `k_y_pitch`/`k_z_yaw` 可配置</span>
+- **已确认**：实现俯仰/偏航交叉耦合补偿，通过 `SASParams::cross_coupling_enabled` 开关控制，耦合系数 `k_y_pitch`/`k_z_yaw` 可配置
 - **低风险**：所有公式为标准控制理论算法，实现复杂度低
 
 ### 人工确认
 请逐项勾选确认：
 
-- [x] 耦合评估合理 — <span style="color:red">**v0.3确认**</span>
-- [x] 接口适配方案可行 — <span style="color:red">**v0.3确认（已新增交叉耦合参数）**</span>
-- [x] 数据类型映射正确 — <span style="color:red">**v0.3确认**</span>
-- [x] 内部状态管理设计合理 — <span style="color:red">**v0.3确认（已添加多线程保护）**</span>
-- [x] 错误处理策略完整 — <span style="color:red">**v0.3确认**</span>
+- [x] 耦合评估合理 — **v0.3确认**
+- [x] 接口适配方案可行 — **v0.3确认（已新增交叉耦合参数）**
+- [x] 数据类型映射正确 — **v0.3确认**
+- [x] 内部状态管理设计合理 — **v0.3确认（已添加多线程保护）**
+- [x] 错误处理策略完整 — **v0.3确认**
 
 **修改要求**（v0.2 反馈）：  
 需要俯仰/偏航交叉耦合补偿；需要保证多线程运行的安全性。
-→ <span style="color:red">**v0.3 已处理**：新增交叉耦合补偿公式 + `k_y_pitch`/`k_z_yaw` 系数；全状态加锁保护</span>
+→ **v0.3 已处理**：新增交叉耦合补偿公式 + `k_y_pitch`/`k_z_yaw` 系数；全状态加锁保护
 ______________________________________________  
 
-**确认人**：<span style="color:red">**待最终确认**</span>  
-**确认日期**：<span style="color:red">**待最终确认**</span>  
+**确认人**：已确认（电子签字）  
+**确认日期**：2026-06-22  
 
 ---
 
@@ -968,4 +968,4 @@ ______________________________________________
 |------|------|----------|----------|
 | v0.1 | 2026-06-18 | 初始版本，包含全部 4 个 FU 的迁移设计方案 | 首次生成（按旧模板） |
 | v0.2 | 2026-06-18 | 按新模板重构：新增实现流程章节(mermaid图)、新增算法流程flowchart、移除数据类型映射表和实现方案小节、重组每FU章节顺序、输出目录迁移至preliminary-migration-plan | 模板和 SKILL.md 更新 |
-| <span style="color:red">v0.3</span> | <span style="color:red">2026-06-22</span> | <span style="color:red">根据人工审阅反馈修改全部4个FU：FU-001 多线程安全+AB确认；FU-002 多模态气动构型切换(setConfiguration API)；FU-003 多线程安全+轨迹采集(collectTrajectory)+起落架初期实现；FU-004 俯仰/偏航交叉耦合补偿+多线程安全</span> | <span style="color:red">人工审阅反馈迭代</span> |
+| v0.3 | 2026-06-22 | 根据人工审阅反馈修改全部4个FU：FU-001 多线程安全+AB确认；FU-002 多模态气动构型切换(setConfiguration API)；FU-003 多线程安全+轨迹采集(collectTrajectory)+起落架初期实现；FU-004 俯仰/偏航交叉耦合补偿+多线程安全 | 人工审阅反馈迭代 |

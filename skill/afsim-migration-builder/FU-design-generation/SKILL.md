@@ -57,6 +57,8 @@ description: AFSIM 功能迁移的计划制定者与迭代协调者。它负责�
 - `docs/migration/preliminary-migration-plan/<requirement_index>-FU-design.md`：功能迁移计划文档，包含每个 FU 的详细迁移方案和人工确认状态。
   - 确认后为最终执行计划。
   - 按模板 `skill\afsim-migration-builder\template_list\template_FU-migration.md` 格式输出。
+  - 所有需要用户确认的条目，均标亮（红色）显示，并提供修改要求填写区。
+- `docs/records/`：操作留痕文件，记录每次修改的内容、原因、时间等，形成完整的迭代历史。
 - `workspace/migration/migration-log.jsonl`：迁移日志，记录每个需求的计划生成和确认历史。
 
 

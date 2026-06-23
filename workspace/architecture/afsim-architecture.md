@@ -64,17 +64,17 @@ afsim-2_9/  # AFSIM 2.9 主发布目录
 
 ### 核心仿真引擎子系统
 
-| 系统 | 子系统 | 核心模块 | 源文件数 | 核心职责 |
-|------|--------|----------|----------|----------|
-| 仿真框架 | WSF Core | wsf, wsf_util | 2,810+ | 平台(Platform)/传感器(Sensor)/事件(Event)/仿真引擎(Simulation) |
-| 数据链路 | Link16/Comm | wsf_l16, comm | 685+ | Link16 消息处理、通信网络、数据字段定义 |
-| 太空仿真 | Space | wsf_space, sosm | 1,542+ | 轨道预报、星座管理、大气模型、交会对接 |
-| 飞行器动力学 | Flight Dynamics | wsf_six_dof, wsf_p6dof | 1,744+ | 六自由度/质点动力学、自动驾驶仪、气动系数 |
-| 电子战 | EW | wsf_nx, wsf_ripr | 249+ | 雷达电子战、箔条云、天线方向图 |
-| 网络战 | Cyber | wsf_cyber | 209+ | 网络攻击、防御模型 |
-| 解析器 | Parser | wsf_parser, wsf_mil_parser | 163+ | 场景文件 XML/JSON 解析、语法检查 |
-| 可视化 | Viz | wizard, warlock, mystic | 2,500+ | 2D/3D 地图、数据显示、结果回放 |
-| 工具集 | Tools | tools/wkf, util_script, genio | 583+ | 向导框架、脚本方法构建器、文件IO |
+| 系统     | 子系统             | 核心模块                          | 源文件数   | 核心职责                                                |
+| ------ | --------------- | ----------------------------- | ------ | --------------------------------------------------- |
+| 仿真框架   | WSF Core        | wsf, wsf_util                 | 2,810+ | 平台(Platform)/传感器(Sensor)/事件(Event)/仿真引擎(Simulation) |
+| 数据链路   | Link16/Comm     | wsf_l16, comm                 | 685+   | Link16 消息处理、通信网络、数据字段定义                             |
+| 太空仿真   | Space           | wsf_space, sosm               | 1,542+ | 轨道预报、星座管理、大气模型、交会对接                                 |
+| 飞行器动力学 | Flight Dynamics | wsf_six_dof, wsf_p6dof        | 1,744+ | 六自由度/质点动力学、自动驾驶仪、气动系数                               |
+| 电子战    | EW              | wsf_nx, wsf_ripr              | 249+   | 雷达电子战、箔条云、天线方向图                                     |
+| 网络战    | Cyber           | wsf_cyber                     | 209+   | 网络攻击、防御模型                                           |
+| 解析器    | Parser          | wsf_parser, wsf_mil_parser    | 163+   | 场景文件 XML/JSON 解析、语法检查                               |
+| 可视化    | Viz             | wizard, warlock, mystic       | 2,500+ | 2D/3D 地图、数据显示、结果回放                                  |
+| 工具集    | Tools           | tools/wkf, util_script, genio | 583+   | 向导框架、脚本方法构建器、文件IO                                   |
 
 ### 模块级统计
 
@@ -109,16 +109,16 @@ flowchart LR
 
 ### 生命周期各阶段关联
 
-| 阶段 | 方法数量 | 入口函数示例 | 关键类 |
-|------|---------|-------------|--------|
-| entry（入口） | 0 | main / Initialize | WsfApplication, WsfSimulation |
-| scenario_load（场景加载） | 1586 | LoadScenario / ParseXML | WsfParser, WsfParseGrammar, WsfScenario |
-| object_create（对象创建） | 5269 | Create / Register / Initialize | WsfComponentFactory, WsfObjectTypeList |
-| simulation_loop（仿真循环） | 782 | UpdatePlatforms / AdvanceTime | WsfSimulation, WsfMultiThreadManager |
-| model_update（模型更新） | 3886 | Update / Compute / Process | WsfPlatform, WsfMover, WsfSensor |
-| event_handling（事件处理） | 13273 | Handle / On / Publish | WsfEvent, WsfEventPublisher |
-| output（结果输出） | 1730 | WriteResults / Serialize / Render | WsfResultWriter, PostProcessor |
-| shutdown（清理） | 2257 | ~Destructor / Cleanup / Shutdown | WsfSimulation, WsfApplication |
+| 阶段                    | 方法数量  | 入口函数示例                            | 关键类                                     |
+| --------------------- | ----- | --------------------------------- | --------------------------------------- |
+| entry（入口）             | 0     | main / Initialize                 | WsfApplication, WsfSimulation           |
+| scenario_load（场景加载）   | 1586  | LoadScenario / ParseXML           | WsfParser, WsfParseGrammar, WsfScenario |
+| object_create（对象创建）   | 5269  | Create / Register / Initialize    | WsfComponentFactory, WsfObjectTypeList  |
+| simulation_loop（仿真循环） | 782   | UpdatePlatforms / AdvanceTime     | WsfSimulation, WsfMultiThreadManager    |
+| model_update（模型更新）    | 3886  | Update / Compute / Process        | WsfPlatform, WsfMover, WsfSensor        |
+| event_handling（事件处理）  | 13273 | Handle / On / Publish             | WsfEvent, WsfEventPublisher             |
+| output（结果输出）          | 1730  | WriteResults / Serialize / Render | WsfResultWriter, PostProcessor          |
+| shutdown（清理）          | 2257  | ~Destructor / Cleanup / Shutdown  | WsfSimulation, WsfApplication           |
 
 详细信息见 [lifecycle.md](lifecycle.md)。
 
@@ -211,38 +211,38 @@ flowchart LR
 
 ### 核心方法（按调用复杂度排序前 30）
 
-| qualified_name（限定名） | lifecycle_role（生命周期角色） | 调用数 |
-|--------------------------|-------------------------------|--------|
-| WsfEM_Antenna::WsfEM_Antenna | unknown | 50 |
-| WsfEM_Antenna::WsfEM_Antenna | unknown | 50 |
-| WsfEM_Antenna::~WsfEM_Antenna | shutdown | 50 |
-| WsfEM_Antenna::GetArticulatedPart | unknown | 50 |
-| WsfEM_Antenna::GetPlatform | unknown | 50 |
-| WsfEM_Antenna::Initialize | object_create | 50 |
-| WsfEM_Antenna::ProcessInput | model_update | 50 |
-| WsfEM_Antenna::UpdatePosition | simulation_loop | 50 |
-| WsfEM_Antenna::GetScriptClassName | unknown | 50 |
-| WsfEM_Antenna::SetRangeLimits | unknown | 50 |
-| WsfPlatformPart::GetPlatform | unknown | 50 |
-| WsfPlatformPart::SetPlatform | unknown | 50 |
-| WsfPlatformPart::PlatformAdded | object_create | 50 |
-| WsfPlatformPart::PlatformDeleted | shutdown | 50 |
-| ut::script::wsf::WsfPlatform::GetCreationTime | event_handling | 50 |
-| ut::script::wsf::WsfPlatform::InitializeCreationTime | object_create | 50 |
-| ut::script::wsf::WsfPlatform::SetCreationTime | event_handling | 50 |
-| ut::script::wsf::WsfPlatform::GetLastUpdateTime | simulation_loop | 50 |
-| ut::script::wsf::WsfPlatform::GetSimTime | unknown | 50 |
-| ut::script::wsf::WsfPlatform::SetUpdateLocked | model_update | 50 |
-| wsf::comm::router::medium::WsfScenario::CloneType | object_create | 50 |
-| wsf::comm::router::event::Comment::GetPlatform | event_handling | 50 |
-| wsf::comm::router::event::Comment::GetComment | event_handling | 50 |
-| wsf::comm::router::event::CommAddedToLocal::Print | object_create | 50 |
-| wsf::comm::router::event::CommAddedToLocal::PrintCSV | object_create | 50 |
-| wsf::comm::router::event::CommAddedToLocal::GetLocalRouter | object_create | 50 |
-| wsf::comm::router::event::CommAddedToLocal::GetProtocol | object_create | 50 |
-| wsf::comm::router::event::CommAddedToLocal::GetAddedAddress | object_create | 50 |
-| wsf::comm::router::event::CommRemovedFromLocal::Print | event_handling | 50 |
-| wsf::comm::router::event::CommRemovedFromLocal::PrintCSV | event_handling | 50 |
+| qualified_name（限定名）                                         | lifecycle_role（生命周期角色） | 调用数 |
+| ----------------------------------------------------------- | ---------------------- | --- |
+| WsfEM_Antenna::WsfEM_Antenna                                | unknown                | 50  |
+| WsfEM_Antenna::WsfEM_Antenna                                | unknown                | 50  |
+| WsfEM_Antenna::~WsfEM_Antenna                               | shutdown               | 50  |
+| WsfEM_Antenna::GetArticulatedPart                           | unknown                | 50  |
+| WsfEM_Antenna::GetPlatform                                  | unknown                | 50  |
+| WsfEM_Antenna::Initialize                                   | object_create          | 50  |
+| WsfEM_Antenna::ProcessInput                                 | model_update           | 50  |
+| WsfEM_Antenna::UpdatePosition                               | simulation_loop        | 50  |
+| WsfEM_Antenna::GetScriptClassName                           | unknown                | 50  |
+| WsfEM_Antenna::SetRangeLimits                               | unknown                | 50  |
+| WsfPlatformPart::GetPlatform                                | unknown                | 50  |
+| WsfPlatformPart::SetPlatform                                | unknown                | 50  |
+| WsfPlatformPart::PlatformAdded                              | object_create          | 50  |
+| WsfPlatformPart::PlatformDeleted                            | shutdown               | 50  |
+| ut::script::wsf::WsfPlatform::GetCreationTime               | event_handling         | 50  |
+| ut::script::wsf::WsfPlatform::InitializeCreationTime        | object_create          | 50  |
+| ut::script::wsf::WsfPlatform::SetCreationTime               | event_handling         | 50  |
+| ut::script::wsf::WsfPlatform::GetLastUpdateTime             | simulation_loop        | 50  |
+| ut::script::wsf::WsfPlatform::GetSimTime                    | unknown                | 50  |
+| ut::script::wsf::WsfPlatform::SetUpdateLocked               | model_update           | 50  |
+| wsf::comm::router::medium::WsfScenario::CloneType           | object_create          | 50  |
+| wsf::comm::router::event::Comment::GetPlatform              | event_handling         | 50  |
+| wsf::comm::router::event::Comment::GetComment               | event_handling         | 50  |
+| wsf::comm::router::event::CommAddedToLocal::Print           | object_create          | 50  |
+| wsf::comm::router::event::CommAddedToLocal::PrintCSV        | object_create          | 50  |
+| wsf::comm::router::event::CommAddedToLocal::GetLocalRouter  | object_create          | 50  |
+| wsf::comm::router::event::CommAddedToLocal::GetProtocol     | object_create          | 50  |
+| wsf::comm::router::event::CommAddedToLocal::GetAddedAddress | object_create          | 50  |
+| wsf::comm::router::event::CommRemovedFromLocal::Print       | event_handling         | 50  |
+| wsf::comm::router::event::CommRemovedFromLocal::PrintCSV    | event_handling         | 50  |
 
 
 ### 关键宏

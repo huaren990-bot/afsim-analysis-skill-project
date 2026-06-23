@@ -2,8 +2,7 @@
 name: migration-implementer
 description: >
   负责将已确认的迁移计划转化为符合工程规范的软件设计说明（SDD）和可编译运行的代码实现。
-  严格遵循模板生成 SDD，并按需求粒度为每个 REQ 生成一个头文件、一个实现文件、
-  一个测试 demo 和一个快速入门 README。
+  严格遵循模板生成 SDD，并按需求粒度为每个 REQ 生成一个头文件、一个实现文件、一个测试 demo 和一个快速入门 README。
 ---
 
 # 迁移实现 Skill
@@ -15,7 +14,7 @@ description: >
 
 | 输入项 | 路径/来源 | 说明 |
 |--------|-----------|------|
-| 确认后的迁移计划 | `docs/migration/<req_index>-FU-design.md` | 必须为已确认版本（所有 FU 均为 Y） |
+| 确认后的迁移计划 | `docs/migration/<req_index>-FU-design-confirmed.md` | 必须为已确认版本（所有 FU 均为 Y） |
 | 软件设计说明模板 | `docs/templates/template_sdd.md` | 定义 SDD 的章节结构 |
 | 需求缺口报告 | `docs/requirements/requirement-gap-analysis.md` | 提供需求的完整上下文 |
 | 算法卡片 | `docs/algorithms/` | 对应 FU 的算法公式、伪代码、变量映射 |
@@ -55,7 +54,6 @@ description: >
 
 ### 步骤 4：生成软件设计说明（SDD）
 - 以需求（REQ）为范围撰写一份软件设计说明`<req_index>-SDD.md`，按模板 `skill\afsim-migration-builder\template_list\template_sdd.md` 格式输出。
-- 内容覆盖：概述、引用文档、设计细节（含每个 FU 的算法描述、数据流）、接口定义（输入、输出、单位、生命周期、错误处理）、依赖关系、测试策略、限制与假设。
 
 ### 步骤 5：生成代码文件
 - **头文件**：生成`REQ_xxx.h`，要求包括所有 FU 的接口声明；每个函数前用注释标注 FU ID 和实现来源（AFSIM 源位置 或 novel FU 的设计依据文献引用）；包含完整的 Doxygen 风格注释。按模板 `skill/afsim-migration-builder/template_list/template_REQ_xxx.h` 格式输出。
@@ -63,6 +61,7 @@ description: >
 - **测试 Demo**：生成 `test_demo.cpp`，可直接编译运行的演示程序，包含 `main()`；注释中说明编译命令、运行方法和预期输出；覆盖主要使用场景。按模板 `skill/afsim-migration-builder/template_list/template_test_demo.cpp` 格式输出。
   - main() 为最简单示例场景，展示核心功能的输入输出，统一调用测试用例函数。
   - 设计至少 3 个测试用例，覆盖正常情况、边界情况和异常情况，每个以 `/* --- TC-xxx: 描述 --- */` 开头，每个测试用例对应一个函数，都放在 `test_demo.cpp` 中。
+  - 为每个测试用例提供详细的注释和预期输出说明。
 
 ### 步骤 6：生成 README
 - 在代码目录下生成 `README.md`，仅包含：编译命令、依赖列表、运行 demo 的步骤和预期输出。按模板 `skill/afsim-migration-builder/template_list/template_README.md` 格式输出。
@@ -71,6 +70,10 @@ description: >
 ### 步骤 7：输出与记录
 - 写入所有文件。
 - 更新迁移日志 `workspace/migration/migration-log.jsonl`，记录生成的文件路径和版本。
+
+### 步骤8：操作留痕
+- 每次修改SDD和迁移计划时，记录修改内容、修改原因、修改时间，形成完整的迭代历史。
+- 把每一步的决策依据和执行计划生成文档进行记录归档，放在目录 `docs/records/` 里面，以便人工追溯。
 
 ## 四、生成代码前检查清单
 
@@ -81,13 +84,12 @@ description: >
 - [ ] 目标系统接入点已明确（目录、命名空间、类型）。
 - [ ] 输入输出、单位、生命周期、错误处理已定义。
 - [ ] 测试计划已拟定。
-- [ ] 许可证和版权声明已处理（保留原始声明或确认 Clean-room）。
 
 ## 五、输出文件
 
 | 产物 | 路径 | 说明 |
 |------|------|------|
-| 软件设计说明 | `docs/migration/<req_index>-SDD.md` | 依据 `template_sdd.md` 模板撰写 |
+| 软件设计说明 | `docs/migration/software-design-specification/<req_index>-SDD.md` | 依据 `template_sdd.md` 模板撰写 |
 | 头文件 | `tests/migration_src/<req_index>/REQ_xxx.h` | 接口声明，含 FU 追溯注释 |
 | 实现文件 | `tests/migration_src/<req_index>/REQ_xxx.cpp` | 核心实现，按 FU 分段注释 |
 | 测试 Demo | `tests/migration_src/<req_index>/test_demo.cpp` | 完整可运行示例 |

@@ -35,13 +35,13 @@ flowchart LR
 
 ## 场景/配置加载
 
-| 属性 | 值 |
-|------|-----|
-| lifecycle_role | `scenario_load` |
-| 函数数量 | 1586 |
-| 关键类 | N/A |
-| 主要状态对象 | mName, mType, mRoot, mPath, mPointList |
-| 证据位置 | afsim-2_9/swdev/src/core/wsf/source/WsfExchange.hpp:41, afsim-2_9/swdev/src/core/wsf_parser/source/WsfParser.hpp:36 |
+| 属性             | 值                                                                                                                   |
+| -------------- | ------------------------------------------------------------------------------------------------------------------- |
+| lifecycle_role | `scenario_load`                                                                                                     |
+| 函数数量           | 1586                                                                                                                |
+| 关键类            | N/A                                                                                                                 |
+| 主要状态对象         | mName, mType, mRoot, mPath, mPointList                                                                              |
+| 证据位置           | afsim-2_9/swdev/src/core/wsf/source/WsfExchange.hpp:41, afsim-2_9/swdev/src/core/wsf_parser/source/WsfParser.hpp:36 |
 
 **调用链**：
 

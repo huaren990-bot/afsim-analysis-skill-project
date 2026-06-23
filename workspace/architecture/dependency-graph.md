@@ -235,29 +235,29 @@ graph TD
 
 ## 模块依赖详情
 
-| 模块 | 依赖目标数 | 主要目标 |
-|------|----------|---------|
-| wsf | 498 | vespa, Chat, WsfXIO_Interface |
-| wizard | 263 | wkf, PostProcessor, WsfXIO_Interface |
-| wkf | 214 | wsfg, PostProcessor, P6DOF |
-| Designer | 98 | G_LimitSettings, LiftDataCharacteristics, QObject |
-| vespa | 87 | wkf, warlock, WsfArticulatedPart |
-| PatternVisualizer | 85 | wkf, PostProcessor, WsfAntennaPattern |
-| osg | 54 | SharedData, Utok, UtoTerrainUpdateMarkNodeVisito |
-| engage | 53 | wsf, WsfPrivate, WsfSensorMode |
-| WsfL16 | 49 | profiling, WsfMessage, WsfObjectTypeList |
-| ScenarioAnalyzer | 45 | PostProcessor, QVector, SelectCheckGroupModel |
-| ScenarioImporter | 40 | PostProcessor, Data, Stage |
-| usmtf | 35 | Point, Segment, PackageData |
-| SPLAT | 30 | PostProcessor, TargetType, QStringList |
-| wsfg | 29 | ealConfigWidgetT : ConfigWidge, QObject, AstrolabeDockWidgetBase |
-| PostProcessor | 29 | WsfProxy, TrajectoryDialog, QVector |
+| 模块                | 依赖目标数 | 主要目标                                                             |
+| ----------------- | ----- | ---------------------------------------------------------------- |
+| wsf               | 498   | vespa, Chat, WsfXIO_Interface                                    |
+| wizard            | 263   | wkf, PostProcessor, WsfXIO_Interface                             |
+| wkf               | 214   | wsfg, PostProcessor, P6DOF                                       |
+| Designer          | 98    | G_LimitSettings, LiftDataCharacteristics, QObject                |
+| vespa             | 87    | wkf, warlock, WsfArticulatedPart                                 |
+| PatternVisualizer | 85    | wkf, PostProcessor, WsfAntennaPattern                            |
+| osg               | 54    | SharedData, Utok, UtoTerrainUpdateMarkNodeVisito                 |
+| engage            | 53    | wsf, WsfPrivate, WsfSensorMode                                   |
+| WsfL16            | 49    | profiling, WsfMessage, WsfObjectTypeList                         |
+| ScenarioAnalyzer  | 45    | PostProcessor, QVector, SelectCheckGroupModel                    |
+| ScenarioImporter  | 40    | PostProcessor, Data, Stage                                       |
+| usmtf             | 35    | Point, Segment, PackageData                                      |
+| SPLAT             | 30    | PostProcessor, TargetType, QStringList                           |
+| wsfg              | 29    | ealConfigWidgetT : ConfigWidge, QObject, AstrolabeDockWidgetBase |
+| PostProcessor     | 29    | WsfProxy, TrajectoryDialog, QVector                              |
 
 
 ## Strength 分布
 
-| Strength | 条目数 | 占比 |
-|----------|--------|------|
-| strong | 19596 | 37.0% |
-| medium | 31843 | 60.1% |
-| weak | 1557 | 2.9% |
+| Strength | 条目数   | 占比    |
+| -------- | ----- | ----- |
+| strong   | 19596 | 37.0% |
+| medium   | 31843 | 60.1% |
+| weak     | 1557  | 2.9%  |

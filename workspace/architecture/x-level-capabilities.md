@@ -93,7 +93,7 @@
 #### 2.1.2 SharedData
 
 1. **类功能概述**：SharedData 的功能集合
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=class::SharedData`
+2. **功能对应条目**：见 function-index.jsonl  中 `level=Class-level` 的条目 `qualified_name=class::SharedData`
 3. **方法级功能细览**：该类级功能包含 83 个方法级功能：
 
 | 类级功能 | 方法级功能 | qualified_name（限定名） | lifecycle_role（生命周期角色） | algorithm_hint（算法提示） | 核心职责 |
@@ -110,13 +110,13 @@
 2. **功能对应条目**：见 function-index.jsonl 中 `level=Module-level` 的条目 `qualified_name=module::wsf_p6dof`
 3. **类级功能细览**：该模块级功能包含 20 个类级功能：
 
-| 模块级功能 | 类级功能 (Class-level) | 核心职责 |
-|-----------|----------------------|----------|
-| wsf_p6dof | Event | Event 的功能集合 |
-| wsf_p6dof | Data | Struct defined in WsfRelativeManeuver |
-| wsf_p6dof | WsfP6DOF_TypeManager | WsfP6DOF_TypeManager 的功能集合 |
-| wsf_p6dof | wsf::p6dof::EventPipe | wsf::p6dof::EventPipe 的功能集合 |
-| wsf_p6dof | wsf::p6dof::EventPipeInterface | wsf::p6dof::EventPipeInterface 的功能集合 |
+| 模块级功能     | 类级功能 (Class-level)             | 核心职责                                  |
+| --------- | ------------------------------ | ------------------------------------- |
+| wsf_p6dof | Event                          | Event 的功能集合                           |
+| wsf_p6dof | Data                           | Struct defined in WsfRelativeManeuver |
+| wsf_p6dof | WsfP6DOF_TypeManager           | WsfP6DOF_TypeManager 的功能集合            |
+| wsf_p6dof | wsf::p6dof::EventPipe          | wsf::p6dof::EventPipe 的功能集合           |
+| wsf_p6dof | wsf::p6dof::EventPipeInterface | wsf::p6dof::EventPipeInterface 的功能集合  |
 
 #### 2.2.1 Event
 
@@ -523,105 +523,105 @@
 
 > 从 45603 个方法级功能中选取调用复杂度最高的 100 个方法。
 
-| qualified_name | lifecycle_role | algorithm_hint | calls | 核心职责 |
-|----------------|----------------|----------------|-------|----------|
-| wsf::TerrainInterface::ProcessRect | model_update | math | 50 | method: bool ProcessRect(UtInput& aInput) |
-| wsf::Terrain::ProcessRect | model_update | math | 50 | method: bool ProcessRect(UtInput& aInput) |
-| wsf::six_dof::NestedFeedbackLoop::value_or | model_update | math | 50 | method: int tickCount = middleLoopFactor. value_or(1) |
-| wsf::six_dof::NestedFeedbackLoop::value_or | model_update | math | 50 | method: int middleLoopTickCount = middleLoopFactor. value_or |
-| wsf::six_dof::NestedFeedbackLoop::value_or | model_update | math | 50 | method: int outerLoopTickCount  = outerLoopFactor. value_or( |
-| Designer::Designer::GeometryMassProperties::GetCgX | unknown | control_flow | 50 | method: double GetCgX() |
-| Designer::Designer::GeometryMassProperties::GetCgY | unknown | control_flow | 50 | method: double GetCgY() |
-| Designer::Designer::GeometryMassProperties::GetCgZ | unknown | control_flow | 50 | method: double GetCgZ() |
-| Designer::Designer::GeometryMassProperties::GetCg | unknown | control_flow | 50 | method: UtVec3dX GetCg() |
-| Designer::Designer::GeometryMassProperties::GetFueledIxx | unknown | control_flow | 50 | method: double GetFueledIxx() |
-| Designer::Designer::GeometryMassProperties::GetFueledIyy | unknown | control_flow | 50 | method: double GetFueledIyy() |
-| Designer::Designer::GeometryMassProperties::GetFueledIzz | unknown | control_flow | 50 | method: double GetFueledIzz() |
-| Designer::Designer::GeometryMassProperties::GetFueledCgX | unknown | control_flow | 50 | method: double GetFueledCgX() |
-| Designer::Designer::GeometryMassProperties::GetFueledCgY | unknown | control_flow | 50 | method: double GetFueledCgY() |
-| Designer::Designer::GeometryMassProperties::GetFueledCgZ | unknown | control_flow | 50 | method: double GetFueledCgZ() |
-| Designer::GeometryGLFocusPoint::Draw | output | math | 50 | method: void Draw() |
-| Designer::GeometryGLFocusPoint::GetX | unknown | math | 50 | method: double GetX() |
-| Designer::GeometryGLFocusPoint::GetY | unknown | math | 50 | method: double GetY() |
-| Designer::GeometryGLFocusPoint::GetZ | unknown | math | 50 | method: double GetZ() |
-| Designer::GeometryGLWidget::AdjustViewingDistance | utility | math | 50 | method: void AdjustViewingDistance(bool aInitialize = false) |
-| Designer::GeometryGLWidget::initializeGL | object_create | math | 50 | method: void initializeGL() override |
-| Designer::GeometryGLWidget::ToggleAxis | unknown | math | 50 | method: void ToggleAxis() |
-| Designer::GeometryGLWidget::ToggleSelectedObjectCG | unknown | math | 50 | method: void ToggleSelectedObjectCG() |
-| Designer::GeometryGLWidget::ToggleShowEngines | unknown | math | 50 | method: void ToggleShowEngines() |
-| Designer::GeometryGLWidget::ToggleThrustVectors | unknown | math | 50 | method: void ToggleThrustVectors() |
-| Designer::GeometryGLWidget::TogglePointMasses | unknown | math | 50 | method: void TogglePointMasses() |
-| Designer::GeometryGLWidget::ToggleFuelTanks | unknown | math | 50 | method: void ToggleFuelTanks() |
-| Designer::GeometryGLWidget::ToggleVehicleCG | unknown | math | 50 | method: void ToggleVehicleCG() |
-| Designer::GeometryGLWidget::ToggleLandingGear | unknown | math | 50 | method: void ToggleLandingGear() |
-| Designer::GeometryGLWidget::ToggleSpeedBrakes | unknown | math | 50 | method: void ToggleSpeedBrakes() |
-| Designer::GeometryGLWidget::ToggleShowWireframe | model_update | math | 50 | method: void ToggleShowWireframe() |
-| Designer::GeometryGLWidget::ShowAxis | unknown | math | 50 | method: void ShowAxis(bool aShow) |
-| Designer::GeometryGLWidget::ShowSelectedObjectCG | unknown | math | 50 | method: void ShowSelectedObjectCG(bool aShow) |
-| Designer::GeometryGLWidget::Draw | output | math | 50 | method: void Draw() override |
-| Designer::GeometryGLWidget::QtDraw | output | math | 50 | method: void QtDraw() override |
-| Designer::GeometryGLWidget::Draw3dView | output | math | 50 | method: void Draw3dView() |
-| Designer::GeometryGLWidget::Draw2dOverlay | output | math | 50 | method: void Draw2dOverlay() |
-| Designer::GeometryGLWidget::Draw2dOverlayTopLeft | output | math | 50 | method: void Draw2dOverlayTopLeft() |
-| Designer::GeometryGLWidget::Draw2dOverlayTopCenter | output | math | 50 | method: void Draw2dOverlayTopCenter() |
-| Designer::GeometryGLWidget::Draw2dOverlayTopRight | output | math | 50 | method: void Draw2dOverlayTopRight() |
-| Designer::GeometryGLWidget::Draw2dOverlayBottomLeft | output | math | 50 | method: void Draw2dOverlayBottomLeft() |
-| Designer::GeometryWing::GetAspectRatio | unknown | math | 50 | method: double GetAspectRatio() override |
-| Designer::GeometryWing::GetPlanformArea_ft2 | unknown | math | 50 | method: double GetPlanformArea_ft2() override |
-| Designer::GeometryWing::GetAileronsPresent | event_handling | math | 50 | method: bool GetAileronsPresent() |
-| Designer::GeometryWing::GetAileronsChordFractionStart | event_handling | math | 50 | method: double GetAileronsChordFractionStart() |
-| Designer::GeometryWing::GetAileronsChordFractionEnd | event_handling | math | 50 | method: double GetAileronsChordFractionEnd() |
-| Designer::GeometryWing::GetAileronsSpanFractionStart | event_handling | math | 50 | method: double GetAileronsSpanFractionStart() |
-| Designer::GeometryWing::GetAileronsSpanFractionEnd | event_handling | math | 50 | method: double GetAileronsSpanFractionEnd() |
-| Designer::GeometryWing::GetAileronsUseExponentialAngleMapping | event_handling | math | 50 | method: bool GetAileronsUseExponentialAngleMapping() |
-| Designer::GeometryWing::GetAileronsControlSurfaceMinAngle_deg | event_handling | math | 50 | method: double GetAileronsControlSurfaceMinAngle_deg() |
-| Designer::GeometryWing::GetAileronsControlSurfaceMaxAngle_deg | event_handling | math | 50 | method: double GetAileronsControlSurfaceMaxAngle_deg() |
-| Designer::GeometryWing::GetAileronsActuatorMinRate_dps | event_handling | math | 50 | method: double GetAileronsActuatorMinRate_dps() |
-| Designer::GeometryWing::GetAileronsActuatorMaxRate_dps | event_handling | math | 50 | method: double GetAileronsActuatorMaxRate_dps() |
-| Designer::GeometryWing::GetAileronsActuatorMinAngle_deg | event_handling | math | 50 | method: double GetAileronsActuatorMinAngle_deg() |
-| Designer::GeometryWing::GetAileronsActuatorMaxAngle_deg | event_handling | math | 50 | method: double GetAileronsActuatorMaxAngle_deg() |
-| Designer::GeometryWing::GetDrageronsPresent | event_handling | math | 50 | method: bool GetDrageronsPresent() |
-| Designer::GeometryWing::GetDrageronsChordFractionStart | event_handling | math | 50 | method: double GetDrageronsChordFractionStart() |
-| Designer::GeometryWing::GetDrageronsChordFractionEnd | event_handling | math | 50 | method: double GetDrageronsChordFractionEnd() |
-| Designer::GeometryWing::GetDrageronsSpanFractionStart | event_handling | math | 50 | method: double GetDrageronsSpanFractionStart() |
-| Designer::GeometryWing::GetDrageronsSpanFractionEnd | event_handling | math | 50 | method: double GetDrageronsSpanFractionEnd() |
-| Designer::GeometryWing::GetDrageronsUseExponentialAngleMapping | event_handling | math | 50 | method: bool GetDrageronsUseExponentialAngleMapping() |
-| Designer::VehicleAero::AeroObjectNameIsUnique | unknown | math | 50 | method: bool AeroObjectNameIsUnique(const std::string& aName |
-| Designer::VehicleAero::MakeNameUnique | unknown | math | 50 | method: std::string MakeNameUnique(const std::string& aBaseN |
-| Designer::VehicleAero::EnableDisableTables | unknown | math | 50 | method: void EnableDisableTables(bool aGenerateP6DOFMover, b |
-| Designer::VehicleAero::CalculateFullVehicleAerodynamics | model_update | math | 50 | method: void CalculateFullVehicleAerodynamics() |
-| Designer::VehicleAero::SetVehicleAlphaBeta | unknown | math | 50 | method: void SetVehicleAlphaBeta(double aAlpha_deg, double a |
-| WkP6DOF_Controller::HUD::~HUD | event_handling | math | 50 | destructor: ~HUD() override |
-| WkP6DOF_Controller::HUD::Clone | object_create | math | 50 | method: HUD* Clone() const override |
-| WkP6DOF_Controller::HUD::Initialize | object_create | math | 50 | method: bool Initialize() override |
-| WkP6DOF_Controller::HUD::Update | model_update | math | 50 | method: void Update() override |
-| WkP6DOF_Controller::HUD::SetupHudProjection | event_handling | math | 50 | method: void SetupHudProjection(float aFovY) |
-| WkP6DOF_Controller::HUD::SetHudMode | event_handling | math | 50 | method: void SetHudMode(P6DOF_ControllerDataContainer::eHudM |
-| WkP6DOF_Controller::RegionExtents::X1 | event_handling | math | 50 | method: double X1() const |
-| WkP6DOF_Controller::RegionExtents::Y1 | event_handling | math | 50 | method: double Y1() const |
-| WkP6DOF_Controller::RegionExtents::X2 | event_handling | math | 50 | method: double X2() const |
-| WkP6DOF_Controller::RegionExtents::Y2 | event_handling | math | 50 | method: double Y2() const |
-| RoadTrafficNetworkInput::BadValue | unknown | math | 44 | method: throw UtInput:: BadValue(aInput, "XWsfRoadTraffic th |
-| Designer::GeometrySurface::GeometrySurface | unknown | math | 50 | constructor: explicit GeometrySurface(Vehicle* aVehicle) |
-| Designer::GeometrySurface::~GeometrySurface | shutdown | math | 50 | destructor: virtual ~GeometrySurface() |
-| Designer::GeometrySurface::MoveRefPoint | unknown | math | 50 | method: void MoveRefPoint(UtVec3dX aMoveDelta_ft) override |
-| Designer::GeometrySurface::GetSpan_ft | unknown | math | 50 | method: double GetSpan_ft() |
-| Designer::GeometrySurface::GetRootChord_ft | unknown | math | 50 | method: double GetRootChord_ft() |
-| Designer::GeometrySurface::GetTipChord_ft | unknown | math | 50 | method: double GetTipChord_ft() |
-| Designer::GeometrySurface::GetSweepAngle_deg | unknown | math | 50 | method: double GetSweepAngle_deg() |
-| Designer::GeometrySurface::GetDihedralAngle_deg | unknown | math | 50 | method: double GetDihedralAngle_deg() |
-| Designer::GeometrySurface::GetIncidenceAngle_deg | unknown | math | 50 | method: double GetIncidenceAngle_deg() |
-| Designer::GeometrySurface::GetThicknessRatio | unknown | math | 50 | method: double GetThicknessRatio() |
-| Designer::GeometrySurface::GetOswaldsEfficiency | unknown | math | 50 | method: double GetOswaldsEfficiency() |
-| Designer::GeometrySurface::GetFinRefRadius_ft | unknown | math | 50 | method: double GetFinRefRadius_ft() |
-| Designer::Designer::Vehicle::SetVehicleControlConfiguration | event_handling | math | 50 | method: void SetVehicleControlConfiguration(VehicleControlCo |
-| Designer::Designer::Vehicle::GetVehicleControlConfiguration | event_handling | math | 50 | method: VehicleControlConfig GetVehicleControlConfiguration( |
-| Designer::Designer::Vehicle::GetVehicleControlConfigurationString | event_handling | math | 50 | method: QString GetVehicleControlConfigurationString() const |
-| Designer::Designer::Vehicle::IsAircraft | unknown | math | 50 | method: bool IsAircraft() |
-| Designer::Designer::Vehicle::IsWeapon | event_handling | math | 50 | method: bool IsWeapon() |
-| WsfImageProcessor::ReceiveMessage | model_update | math | 50 | method: bool ReceiveMessage(double aSimTime, const WsfMessag |
-| ObjectTest::GetDraw | output | math | 50 | method: double GetDraw() const |
-| ObjectTest::GetRequiredDetected | unknown | math | 50 | method: double GetRequiredDetected() const |
-| wkf::RegionExtents::X1 | event_handling | math | 50 | method: double X1() const |
-| wkf::RegionExtents::Y1 | event_handling | math | 50 | method: double Y1() const |
-| wkf::RegionExtents::X2 | event_handling | math | 50 | method: double X2() const |
+| qualified_name                                                    | lifecycle_role | algorithm_hint | calls | 核心职责                                                         |
+| ----------------------------------------------------------------- | -------------- | -------------- | ----- | ------------------------------------------------------------ |
+| wsf::TerrainInterface::ProcessRect                                | model_update   | math           | 50    | method: bool ProcessRect(UtInput& aInput)                    |
+| wsf::Terrain::ProcessRect                                         | model_update   | math           | 50    | method: bool ProcessRect(UtInput& aInput)                    |
+| wsf::six_dof::NestedFeedbackLoop::value_or                        | model_update   | math           | 50    | method: int tickCount = middleLoopFactor. value_or(1)        |
+| wsf::six_dof::NestedFeedbackLoop::value_or                        | model_update   | math           | 50    | method: int middleLoopTickCount = middleLoopFactor. value_or |
+| wsf::six_dof::NestedFeedbackLoop::value_or                        | model_update   | math           | 50    | method: int outerLoopTickCount  = outerLoopFactor. value_or( |
+| Designer::Designer::GeometryMassProperties::GetCgX                | unknown        | control_flow   | 50    | method: double GetCgX()                                      |
+| Designer::Designer::GeometryMassProperties::GetCgY                | unknown        | control_flow   | 50    | method: double GetCgY()                                      |
+| Designer::Designer::GeometryMassProperties::GetCgZ                | unknown        | control_flow   | 50    | method: double GetCgZ()                                      |
+| Designer::Designer::GeometryMassProperties::GetCg                 | unknown        | control_flow   | 50    | method: UtVec3dX GetCg()                                     |
+| Designer::Designer::GeometryMassProperties::GetFueledIxx          | unknown        | control_flow   | 50    | method: double GetFueledIxx()                                |
+| Designer::Designer::GeometryMassProperties::GetFueledIyy          | unknown        | control_flow   | 50    | method: double GetFueledIyy()                                |
+| Designer::Designer::GeometryMassProperties::GetFueledIzz          | unknown        | control_flow   | 50    | method: double GetFueledIzz()                                |
+| Designer::Designer::GeometryMassProperties::GetFueledCgX          | unknown        | control_flow   | 50    | method: double GetFueledCgX()                                |
+| Designer::Designer::GeometryMassProperties::GetFueledCgY          | unknown        | control_flow   | 50    | method: double GetFueledCgY()                                |
+| Designer::Designer::GeometryMassProperties::GetFueledCgZ          | unknown        | control_flow   | 50    | method: double GetFueledCgZ()                                |
+| Designer::GeometryGLFocusPoint::Draw                              | output         | math           | 50    | method: void Draw()                                          |
+| Designer::GeometryGLFocusPoint::GetX                              | unknown        | math           | 50    | method: double GetX()                                        |
+| Designer::GeometryGLFocusPoint::GetY                              | unknown        | math           | 50    | method: double GetY()                                        |
+| Designer::GeometryGLFocusPoint::GetZ                              | unknown        | math           | 50    | method: double GetZ()                                        |
+| Designer::GeometryGLWidget::AdjustViewingDistance                 | utility        | math           | 50    | method: void AdjustViewingDistance(bool aInitialize = false) |
+| Designer::GeometryGLWidget::initializeGL                          | object_create  | math           | 50    | method: void initializeGL() override                         |
+| Designer::GeometryGLWidget::ToggleAxis                            | unknown        | math           | 50    | method: void ToggleAxis()                                    |
+| Designer::GeometryGLWidget::ToggleSelectedObjectCG                | unknown        | math           | 50    | method: void ToggleSelectedObjectCG()                        |
+| Designer::GeometryGLWidget::ToggleShowEngines                     | unknown        | math           | 50    | method: void ToggleShowEngines()                             |
+| Designer::GeometryGLWidget::ToggleThrustVectors                   | unknown        | math           | 50    | method: void ToggleThrustVectors()                           |
+| Designer::GeometryGLWidget::TogglePointMasses                     | unknown        | math           | 50    | method: void TogglePointMasses()                             |
+| Designer::GeometryGLWidget::ToggleFuelTanks                       | unknown        | math           | 50    | method: void ToggleFuelTanks()                               |
+| Designer::GeometryGLWidget::ToggleVehicleCG                       | unknown        | math           | 50    | method: void ToggleVehicleCG()                               |
+| Designer::GeometryGLWidget::ToggleLandingGear                     | unknown        | math           | 50    | method: void ToggleLandingGear()                             |
+| Designer::GeometryGLWidget::ToggleSpeedBrakes                     | unknown        | math           | 50    | method: void ToggleSpeedBrakes()                             |
+| Designer::GeometryGLWidget::ToggleShowWireframe                   | model_update   | math           | 50    | method: void ToggleShowWireframe()                           |
+| Designer::GeometryGLWidget::ShowAxis                              | unknown        | math           | 50    | method: void ShowAxis(bool aShow)                            |
+| Designer::GeometryGLWidget::ShowSelectedObjectCG                  | unknown        | math           | 50    | method: void ShowSelectedObjectCG(bool aShow)                |
+| Designer::GeometryGLWidget::Draw                                  | output         | math           | 50    | method: void Draw() override                                 |
+| Designer::GeometryGLWidget::QtDraw                                | output         | math           | 50    | method: void QtDraw() override                               |
+| Designer::GeometryGLWidget::Draw3dView                            | output         | math           | 50    | method: void Draw3dView()                                    |
+| Designer::GeometryGLWidget::Draw2dOverlay                         | output         | math           | 50    | method: void Draw2dOverlay()                                 |
+| Designer::GeometryGLWidget::Draw2dOverlayTopLeft                  | output         | math           | 50    | method: void Draw2dOverlayTopLeft()                          |
+| Designer::GeometryGLWidget::Draw2dOverlayTopCenter                | output         | math           | 50    | method: void Draw2dOverlayTopCenter()                        |
+| Designer::GeometryGLWidget::Draw2dOverlayTopRight                 | output         | math           | 50    | method: void Draw2dOverlayTopRight()                         |
+| Designer::GeometryGLWidget::Draw2dOverlayBottomLeft               | output         | math           | 50    | method: void Draw2dOverlayBottomLeft()                       |
+| Designer::GeometryWing::GetAspectRatio                            | unknown        | math           | 50    | method: double GetAspectRatio() override                     |
+| Designer::GeometryWing::GetPlanformArea_ft2                       | unknown        | math           | 50    | method: double GetPlanformArea_ft2() override                |
+| Designer::GeometryWing::GetAileronsPresent                        | event_handling | math           | 50    | method: bool GetAileronsPresent()                            |
+| Designer::GeometryWing::GetAileronsChordFractionStart             | event_handling | math           | 50    | method: double GetAileronsChordFractionStart()               |
+| Designer::GeometryWing::GetAileronsChordFractionEnd               | event_handling | math           | 50    | method: double GetAileronsChordFractionEnd()                 |
+| Designer::GeometryWing::GetAileronsSpanFractionStart              | event_handling | math           | 50    | method: double GetAileronsSpanFractionStart()                |
+| Designer::GeometryWing::GetAileronsSpanFractionEnd                | event_handling | math           | 50    | method: double GetAileronsSpanFractionEnd()                  |
+| Designer::GeometryWing::GetAileronsUseExponentialAngleMapping     | event_handling | math           | 50    | method: bool GetAileronsUseExponentialAngleMapping()         |
+| Designer::GeometryWing::GetAileronsControlSurfaceMinAngle_deg     | event_handling | math           | 50    | method: double GetAileronsControlSurfaceMinAngle_deg()       |
+| Designer::GeometryWing::GetAileronsControlSurfaceMaxAngle_deg     | event_handling | math           | 50    | method: double GetAileronsControlSurfaceMaxAngle_deg()       |
+| Designer::GeometryWing::GetAileronsActuatorMinRate_dps            | event_handling | math           | 50    | method: double GetAileronsActuatorMinRate_dps()              |
+| Designer::GeometryWing::GetAileronsActuatorMaxRate_dps            | event_handling | math           | 50    | method: double GetAileronsActuatorMaxRate_dps()              |
+| Designer::GeometryWing::GetAileronsActuatorMinAngle_deg           | event_handling | math           | 50    | method: double GetAileronsActuatorMinAngle_deg()             |
+| Designer::GeometryWing::GetAileronsActuatorMaxAngle_deg           | event_handling | math           | 50    | method: double GetAileronsActuatorMaxAngle_deg()             |
+| Designer::GeometryWing::GetDrageronsPresent                       | event_handling | math           | 50    | method: bool GetDrageronsPresent()                           |
+| Designer::GeometryWing::GetDrageronsChordFractionStart            | event_handling | math           | 50    | method: double GetDrageronsChordFractionStart()              |
+| Designer::GeometryWing::GetDrageronsChordFractionEnd              | event_handling | math           | 50    | method: double GetDrageronsChordFractionEnd()                |
+| Designer::GeometryWing::GetDrageronsSpanFractionStart             | event_handling | math           | 50    | method: double GetDrageronsSpanFractionStart()               |
+| Designer::GeometryWing::GetDrageronsSpanFractionEnd               | event_handling | math           | 50    | method: double GetDrageronsSpanFractionEnd()                 |
+| Designer::GeometryWing::GetDrageronsUseExponentialAngleMapping    | event_handling | math           | 50    | method: bool GetDrageronsUseExponentialAngleMapping()        |
+| Designer::VehicleAero::AeroObjectNameIsUnique                     | unknown        | math           | 50    | method: bool AeroObjectNameIsUnique(const std::string& aName |
+| Designer::VehicleAero::MakeNameUnique                             | unknown        | math           | 50    | method: std::string MakeNameUnique(const std::string& aBaseN |
+| Designer::VehicleAero::EnableDisableTables                        | unknown        | math           | 50    | method: void EnableDisableTables(bool aGenerateP6DOFMover, b |
+| Designer::VehicleAero::CalculateFullVehicleAerodynamics           | model_update   | math           | 50    | method: void CalculateFullVehicleAerodynamics()              |
+| Designer::VehicleAero::SetVehicleAlphaBeta                        | unknown        | math           | 50    | method: void SetVehicleAlphaBeta(double aAlpha_deg, double a |
+| WkP6DOF_Controller::HUD::~HUD                                     | event_handling | math           | 50    | destructor: ~HUD() override                                  |
+| WkP6DOF_Controller::HUD::Clone                                    | object_create  | math           | 50    | method: HUD* Clone() const override                          |
+| WkP6DOF_Controller::HUD::Initialize                               | object_create  | math           | 50    | method: bool Initialize() override                           |
+| WkP6DOF_Controller::HUD::Update                                   | model_update   | math           | 50    | method: void Update() override                               |
+| WkP6DOF_Controller::HUD::SetupHudProjection                       | event_handling | math           | 50    | method: void SetupHudProjection(float aFovY)                 |
+| WkP6DOF_Controller::HUD::SetHudMode                               | event_handling | math           | 50    | method: void SetHudMode(P6DOF_ControllerDataContainer::eHudM |
+| WkP6DOF_Controller::RegionExtents::X1                             | event_handling | math           | 50    | method: double X1() const                                    |
+| WkP6DOF_Controller::RegionExtents::Y1                             | event_handling | math           | 50    | method: double Y1() const                                    |
+| WkP6DOF_Controller::RegionExtents::X2                             | event_handling | math           | 50    | method: double X2() const                                    |
+| WkP6DOF_Controller::RegionExtents::Y2                             | event_handling | math           | 50    | method: double Y2() const                                    |
+| RoadTrafficNetworkInput::BadValue                                 | unknown        | math           | 44    | method: throw UtInput:: BadValue(aInput, "XWsfRoadTraffic th |
+| Designer::GeometrySurface::GeometrySurface                        | unknown        | math           | 50    | constructor: explicit GeometrySurface(Vehicle* aVehicle)     |
+| Designer::GeometrySurface::~GeometrySurface                       | shutdown       | math           | 50    | destructor: virtual ~GeometrySurface()                       |
+| Designer::GeometrySurface::MoveRefPoint                           | unknown        | math           | 50    | method: void MoveRefPoint(UtVec3dX aMoveDelta_ft) override   |
+| Designer::GeometrySurface::GetSpan_ft                             | unknown        | math           | 50    | method: double GetSpan_ft()                                  |
+| Designer::GeometrySurface::GetRootChord_ft                        | unknown        | math           | 50    | method: double GetRootChord_ft()                             |
+| Designer::GeometrySurface::GetTipChord_ft                         | unknown        | math           | 50    | method: double GetTipChord_ft()                              |
+| Designer::GeometrySurface::GetSweepAngle_deg                      | unknown        | math           | 50    | method: double GetSweepAngle_deg()                           |
+| Designer::GeometrySurface::GetDihedralAngle_deg                   | unknown        | math           | 50    | method: double GetDihedralAngle_deg()                        |
+| Designer::GeometrySurface::GetIncidenceAngle_deg                  | unknown        | math           | 50    | method: double GetIncidenceAngle_deg()                       |
+| Designer::GeometrySurface::GetThicknessRatio                      | unknown        | math           | 50    | method: double GetThicknessRatio()                           |
+| Designer::GeometrySurface::GetOswaldsEfficiency                   | unknown        | math           | 50    | method: double GetOswaldsEfficiency()                        |
+| Designer::GeometrySurface::GetFinRefRadius_ft                     | unknown        | math           | 50    | method: double GetFinRefRadius_ft()                          |
+| Designer::Designer::Vehicle::SetVehicleControlConfiguration       | event_handling | math           | 50    | method: void SetVehicleControlConfiguration(VehicleControlCo |
+| Designer::Designer::Vehicle::GetVehicleControlConfiguration       | event_handling | math           | 50    | method: VehicleControlConfig GetVehicleControlConfiguration( |
+| Designer::Designer::Vehicle::GetVehicleControlConfigurationString | event_handling | math           | 50    | method: QString GetVehicleControlConfigurationString() const |
+| Designer::Designer::Vehicle::IsAircraft                           | unknown        | math           | 50    | method: bool IsAircraft()                                    |
+| Designer::Designer::Vehicle::IsWeapon                             | event_handling | math           | 50    | method: bool IsWeapon()                                      |
+| WsfImageProcessor::ReceiveMessage                                 | model_update   | math           | 50    | method: bool ReceiveMessage(double aSimTime, const WsfMessag |
+| ObjectTest::GetDraw                                               | output         | math           | 50    | method: double GetDraw() const                               |
+| ObjectTest::GetRequiredDetected                                   | unknown        | math           | 50    | method: double GetRequiredDetected() const                   |
+| wkf::RegionExtents::X1                                            | event_handling | math           | 50    | method: double X1() const                                    |
+| wkf::RegionExtents::Y1                                            | event_handling | math           | 50    | method: double Y1() const                                    |
+| wkf::RegionExtents::X2                                            | event_handling | math           | 50    | method: double X2() const                                    |

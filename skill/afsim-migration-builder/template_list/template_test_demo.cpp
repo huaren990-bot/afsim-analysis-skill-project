@@ -14,7 +14,8 @@
 #include "REQ_xxx.h"
 #include <iostream>
 
-int main() {
+/* --- TC-001: 正常情况测试 --- */
+void test_case_normal() {
     // 1. 初始化
     RigidBodyState state = RigidBodyState::Identity();
     // ... 设置初始值
@@ -22,12 +23,58 @@ int main() {
     // 2. 配置参数
     ModuleParams params;
     params.mass = 100.0;
+    // 3. 设置正常输入
+    // ...
 
-    // 3. 调用
+    // 4. 调用
     state = REQ_xxx_integrate_step(state, forces, 0.01, params);
 
-    // 4. 输出
-    std::cout << "Position: " << state.position.transpose() << std::endl;
+    // 5. 输出
+    std::cout << "TC-Normal: Position: " << state.position.transpose() << std::endl;
+}
+
+/* --- TC-002: 边界情况测试 --- */
+void test_case_boundary() {
+    // 1. 初始化
+    RigidBodyState state = RigidBodyState::Identity();
+    // 2. 配置参数
+    ModuleParams params;
+    params.mass = 100.0;
+    // 3. 设置边界输入
+    // ...
+    
+    // 4. 调用
+    state = REQ_xxx_integrate_step(state, forces, 0.01, params);
+    // 5. 输出
+    std::cout << "TC-Boundary: Position: " << state.position.transpose() << std::endl;
+}
+
+/* --- TC-003: 异常情况测试 --- */
+void test_case_exception() {
+    // 1. 初始化
+    RigidBodyState state = RigidBodyState::Identity();
+    // 2. 配置参数
+    ModuleParams params;
+    params.mass = 100.0;
+    // 3. 设置异常输入
+    // ... 
+    // 4. 调用并捕获异常
+    try {
+        state = REQ_xxx_integrate_step(state, forces, 0.01, params);
+        // 5. 输出
+        std::cout << "TC-Exception: Position: " << state.position.transpose() << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "TC-Exception: Caught exception: " << e.what() << std::endl;
+    }
+}
+
+
+
+
+int main() {
+    test_case_normal();
+    test_case_boundary();
+    test_case_exception();
     return 0;
 }
 

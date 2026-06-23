@@ -2,115 +2,115 @@
 
 ## 模块清单
 
-| # | 模块名 | 路径 | 文件总数 | 源码/头文件数 | 核心职责 |
-|---|--------|------|-------------|---------------|---------------------|
-| 1 | source | afsim-2_9 | 15718 | 15113 | 涵盖 swdev/src/ 全部代码的总括模块（15,113 个源码/头文件，跨核心库、插件、应用和工具） |
-| 2 | wsf_six_dof | afsim-2_9 | 938 | 331 | 六自由度运动学插件（331 个源文件） |
-| 3 | wsf_space | afsim-2_9 | 695 | 304 | 太空域仿真：开普勒/J2/NORAD 轨道力学、数值积分、姿态控制、星座管理 |
-| 4 | test | afsim-2_9 | 445 | 268 | 测试基础设施：核心库与插件的单元测试（268 个源码/头文件） |
-| 5 | wsf_p6dof | afsim-2_9 | 806 | 191 | 平台六自由度运动插件（191 个源文件） |
-| 6 | iadsLib | afsim-2_9 | 158 | 146 | 综合防空系统（IADS）核心库，供 scene_gen 使用（146 个源文件） |
-| 7 | wsf_parser | afsim-2_9 | 150 | 138 | 自定义 DSL 解析器：WsfPProxyStructType、WsfParseAction*、WsfPM_* 解析模型类、PProxy 序列化 |
-| 8 | wsf_l16 | afsim-2_9 | 181 | 105 | Link-16 战术数据链：J 系列报文（2.x~31.x）、网络武器、PPLI、监视、武器协同 |
-| 9 | p6dof | afsim-2_9 | 103 | 100 | 平台六自由度独立工具（100 个源文件） |
-| 10 | wsf_cyber | afsim-2_9 | 209 | 85 | 网络战仿真：网络攻击、网络防御、网络约束、网络可视化 |
-| 11 | wsf_nx | afsim-2_9 | 187 | 72 | 下一代扩展：箔条云/箔条包、ALARM 天线、电子战传感器、ESA 天线方向图 |
-| 12 | src | afsim-2_9 | 2617 | 62 | 附加源码分析元数据（vx.json、markdown） |
-| 13 | lib | afsim-2_9 | 55 | 51 | mystic/warlock 共享库（51 个源文件） |
-| 14 | engage | afsim-2_9 | 158 | 45 | 主仿真引擎可执行文件：语法定义、源码、测试、插件模块 |
-| 15 | sosm | afsim-2_9 | 48 | 45 | SOSM 独立工具（45 个源文件） |
-| 16 | sensor_plot_lib | afsim-2_9 | 74 | 41 | 传感器绘图库：雷达包络、垂直覆盖、等高线滤波、杂波表、地图投影 |
-| 17 | wsf_air_combat | afsim-2_9 | 143 | 31 | 空战仿真插件 |
-| 18 | wsf_mtt | afsim-2_9 | 50 | 30 | 多目标跟踪：航迹关联、数据融合、MHT（多假设跟踪） |
-| 19 | weapon_tools | afsim-2_9 | 91 | 26 | 武器系统分析（26 个源文件） |
-| 20 | wsf_ripr | afsim-2_9 | 62 | 24 | RIPR 数据接口：作业处理、作业板调度、观察者模式 |
-| 21 | wsf_fires | afsim-2_9 | 44 | 22 | 火力支援插件 |
-| 22 | wsf_brawler | afsim-2_9 | 147 | 15 | Brawler 空战交战模型插件 |
-| 23 | wsf_multiresolution | afsim-2_9 | 114 | 14 | 多分辨率建模插件 |
-| 24 | brawler | afsim-2_9 | 15 | 12 | Brawler 交战模型独立工具（12 个源文件） |
-| 25 | wsf_alternate_locations | afsim-2_9 | 22 | 7 | 备选位置与路径规划插件 |
-| 26 | wsf_mil_parser | afsim-2_9 | 13 | 7 | 军事语法解析扩展 |
-| 27 | resources | afsim-2_9 | 1349 | 6 | 静态资源：地图、模型、着色器（6 个源文件） |
-| 28 | wsf_sosm | afsim-2_9 | 24 | 6 | 特种作战/太空作战模型（SOSM）插件 |
-| 29 | profiling | afsim-2_9 | 12 | 5 | 性能分析工具（5 个源文件） |
-| 30 | wsf_annotation | afsim-2_9 | 20 | 5 | 场景标注插件 |
-| 31 | osgdb_osgearth_dted_tms | afsim-2_9 | 7 | 5 | OSGEarth DTED TMS 数据库插件（5 个源文件） |
-| 32 | wizard | afsim-2_9 | 834 | 3 | 场景编辑向导：CRD 文件导入、USMTF 处理、主程序及子插件 |
-| 33 | sensor_plot | afsim-2_9 | 80 | 3 | 传感器覆盖/探测距离可视化 |
-| 34 | wsf_argo8 | afsim-2_9 | 18 | 3 | ARGO8 集成插件 |
-| 35 | wsf_iads_c2_lib | afsim-2_9 | 98 | 3 | 综合防空系统（IADS）C2 库插件 |
-| 36 | mission | afsim-2_9 | 28 | 2 | 任务规划工具（2 个源文件） |
-| 37 | util | afsim-2_9 | 6 | 2 | 通用工具（2 个源文件） |
-| 38 | wsf_grammar_check | afsim-2_9 | 8 | 2 | 场景脚本语法校验工具 |
-| 39 | wsf_weapon_server | afsim-2_9 | 16 | 2 | 武器计算服务器 |
-| 40 | mover | afsim-2_9 | 56 | 2 | 运动体工具（2 个源文件） |
-| 41 | afperf | afsim-2_9 | 3 | 1 | 性能测量工具（1 个源文件） |
-| 42 | cli | afsim-2_9 | 3 | 1 | 命令行工具（1 个源文件） |
-| 43 | ReaderWriterMod | afsim-2_9 | 3 | 1 | OSG 模型读写插件（1 个源文件） |
-| 44 | ReaderWriterOGL | afsim-2_9 | 3 | 1 | OpenGL 读写插件（1 个源文件） |
-| 45 | exec | afsim-2_9 | 3 | 1 | 执行工具（1 个源文件） |
-| 46 | legacy_test | afsim-2_9 | 4 | 1 | 遗留测试支持（1 个源文件） |
-| 47 | proxy_test | afsim-2_9 | 14 | 1 | 代理测试支持（1 个源文件） |
-| 48 | pack_to_cpp | afsim-2_9 | 3 | 1 | Pack 转 C++ 代码生成器（1 个源文件） |
-| 49 | ARCHITECTURE.md | afsim-2_9 | 1 | 0 | 项目架构文档 |
-| 50 | vx.json | afsim-2_9 | 1 | 0 | 插件元数据（vx.json 描述文件） |
-| 51 | documentation | afsim-2_9 | 5075 | 0 | HTML 文档与更新日志 |
-| 52 | tools | afsim-2_9 | 120 | 0 | 外部 Perl/Python 工具脚本（批处理、事件提取、数据转换、绘图） |
-| 53 | training | afsim-2_9 | 1441 | 0 | 培训材料 |
-| 54 | swdev | afsim-2_9 | 448 | 0 | 构建系统：CMake 模块、预设、模板 |
-| 55 | demos | afsim-2_9 | 6304 | 0 | 67+ 演示场景（覆盖各作战域） |
-| 56 | warlock | afsim-2_9 | 920 | 0 | 仿真分析与调试工具：warlock_core、warlock_exec、插件 |
-| 57 | mover_creator | afsim-2_9 | 583 | 0 | 运动体（平台）批量创建工具 |
-| 58 | post_processor | afsim-2_9 | 64 | 0 | 仿真结果后处理（WizPostProcessor） |
-| 59 | scene_gen | afsim-2_9 | 22 | 0 | 场景生成工具 |
-| 60 | misc | afsim-2_9 | 17 | 0 | 杂项工具 |
-| 61 | util_script | afsim-2_9 | 2 | 0 | 工具脚本 |
-| 62 | geodata | afsim-2_9 | 2 | 0 | 地理数据处理 |
-| 63 | artificer | afsim-2_9 | 3 | 0 | 构件生成工具 |
-| 64 | wsf_simdis | afsim-2_9 | 12 | 0 | SIMDIS 3D 可视化集成插件 |
-| 65 | wsf_scenario_analyzer_iads_c2 | afsim-2_9 | 9 | 0 | IADS C2 场景分析插件 |
-| 66 | wsf_oms_uci | afsim-2_9 | 163 | 0 | 开放任务系统/通用指挥控制接口插件 |
-| 67 | wsf_coverage | afsim-2_9 | 129 | 0 | 覆盖分析插件 |
-| 68 | wsf_scenario_analyzer | afsim-2_9 | 10 | 0 | 场景分析插件 |
-| 69 | wsf_mil | afsim-2_9 | 637 | 0 | 军事领域扩展：通信、电子战（EW）、武器、运动体、传感器、观察器、处理器、脚本、DIS |
-| 70 | wsf | afsim-2_9 | 1237 | 0 | 核心作战仿真框架：应用、场景、仿真、平台、组件、插件、行为树、航迹 |
-| 71 | source_plugin | afsim-2_9 | 2 | 0 | 源插件元数据（wsf_module 标记） |
-| 72 | usmtf | afsim-2_9 | 4 | 0 | USMTF 报文格式处理 |
-| 73 | observer | afsim-2_9 | 26 | 0 | 观察者模式子系统 |
-| 74 | comm | afsim-2_9 | 28 | 0 | 通信框架子系统 |
-| 75 | component | afsim-2_9 | 18 | 0 | 组件模型子系统 |
-| 76 | xio | afsim-2_9 | 124 | 0 | 外部 I/O 子系统 |
-| 77 | sensor | afsim-2_9 | 18 | 0 | 传感器框架子系统 |
-| 78 | weapon | afsim-2_9 | 18 | 0 | 武器模型子系统 |
-| 79 | ResultModelBrowser | afsim-2_9 | 9 | 0 | 结果模型浏览器 |
-| 80 | ResultCoverageOverlay | afsim-2_9 | 7 | 0 | 结果覆盖叠加 |
-| 81 | ResultMapHoverInfo | afsim-2_9 | 10 | 0 | 结果地图悬停信息 |
-| 82 | ResultVideoCapture | afsim-2_9 | 8 | 0 | 结果视频采集 |
-| 83 | ResultPerformance | afsim-2_9 | 8 | 0 | 结果性能显示 |
-| 84 | ResultVisibility | afsim-2_9 | 8 | 0 | 结果可见性显示 |
-| 85 | ResultPositionConverterTool | afsim-2_9 | 6 | 0 | 结果位置转换器 |
-| 86 | ResultMapDisplay | afsim-2_9 | 14 | 0 | 结果地图显示 |
-| 87 | ResultUnitConverterTool | afsim-2_9 | 6 | 0 | 结果单位转换器 |
-| 88 | ResultTerrainTools | afsim-2_9 | 8 | 0 | 结果地形工具 |
-| 89 | ResultTetherView | afsim-2_9 | 9 | 0 | 结果系留视图 |
-| 90 | Visibility | afsim-2_9 | 14 | 0 | 可见性分析工具 |
-| 91 | MapHoverInfo | afsim-2_9 | 20 | 0 | 地图悬停信息显示 |
-| 92 | ModelBrowser | afsim-2_9 | 18 | 0 | 模型浏览器可视化 |
-| 93 | UnitConverterTool | afsim-2_9 | 12 | 0 | 单位转换工具 |
-| 94 | VideoCapture | afsim-2_9 | 16 | 0 | 视频采集工具 |
-| 95 | CoverageOverlay | afsim-2_9 | 14 | 0 | 覆盖叠加可视化 |
-| 96 | CRDImporter | afsim-2_9 | 15 | 0 | CRD 文件导入向导插件 |
-| 97 | TetherView | afsim-2_9 | 18 | 0 | 系留视图可视化 |
-| 98 | TerrainTools | afsim-2_9 | 16 | 0 | 地形分析工具 |
-| 99 | Performance | afsim-2_9 | 15 | 0 | 性能可视化 |
-| 100 | MapDisplay | afsim-2_9 | 35 | 0 | 地图显示可视化 |
-| 101 | PositionConverterTool | afsim-2_9 | 12 | 0 | 位置坐标转换器 |
-| 102 | benchmark | afsim-2_9 | 3 | 0 | 性能基准测试基础设施 |
-| 103 | version_lesser_library | afsim-2_9 | 3 | 0 | 版本比较库（小于测试） |
-| 104 | version_greater_library | afsim-2_9 | 3 | 0 | 版本比较库（大于测试） |
-| 105 | dummy_library | afsim-2_9 | 3 | 0 | 构建测试用虚拟库 |
-| 106 | wsf_prompt | afsim-2_9 | 7 | 0 | 提示/命令插件 |
-| 107 | wsf_plugins | src | 1 | 0 | 插件模块聚合器（元数据） |
+| #   | 模块名                           | 路径        | 文件总数  | 源码/头文件数 | 核心职责                                                                     |
+| --- | ----------------------------- | --------- | ----- | ------- | ------------------------------------------------------------------------ |
+| 1   | source                        | afsim-2_9 | 15718 | 15113   | 涵盖 swdev/src/ 全部代码的总括模块（15,113 个源码/头文件，跨核心库、插件、应用和工具）                    |
+| 2   | wsf_six_dof                   | afsim-2_9 | 938   | 331     | 六自由度运动学插件（331 个源文件）                                                      |
+| 3   | wsf_space                     | afsim-2_9 | 695   | 304     | 太空域仿真：开普勒/J2/NORAD 轨道力学、数值积分、姿态控制、星座管理                                   |
+| 4   | test                          | afsim-2_9 | 445   | 268     | 测试基础设施：核心库与插件的单元测试（268 个源码/头文件）                                          |
+| 5   | wsf_p6dof                     | afsim-2_9 | 806   | 191     | 平台六自由度运动插件（191 个源文件）                                                     |
+| 6   | iadsLib                       | afsim-2_9 | 158   | 146     | 综合防空系统（IADS）核心库，供 scene_gen 使用（146 个源文件）                                 |
+| 7   | wsf_parser                    | afsim-2_9 | 150   | 138     | 自定义 DSL 解析器：WsfPProxyStructType、WsfParseAction*、WsfPM_* 解析模型类、PProxy 序列化 |
+| 8   | wsf_l16                       | afsim-2_9 | 181   | 105     | Link-16 战术数据链：J 系列报文（2.x~31.x）、网络武器、PPLI、监视、武器协同                         |
+| 9   | p6dof                         | afsim-2_9 | 103   | 100     | 平台六自由度独立工具（100 个源文件）                                                     |
+| 10  | wsf_cyber                     | afsim-2_9 | 209   | 85      | 网络战仿真：网络攻击、网络防御、网络约束、网络可视化                                               |
+| 11  | wsf_nx                        | afsim-2_9 | 187   | 72      | 下一代扩展：箔条云/箔条包、ALARM 天线、电子战传感器、ESA 天线方向图                                  |
+| 12  | src                           | afsim-2_9 | 2617  | 62      | 附加源码分析元数据（vx.json、markdown）                                              |
+| 13  | lib                           | afsim-2_9 | 55    | 51      | mystic/warlock 共享库（51 个源文件）                                              |
+| 14  | engage                        | afsim-2_9 | 158   | 45      | 主仿真引擎可执行文件：语法定义、源码、测试、插件模块                                               |
+| 15  | sosm                          | afsim-2_9 | 48    | 45      | SOSM 独立工具（45 个源文件）                                                       |
+| 16  | sensor_plot_lib               | afsim-2_9 | 74    | 41      | 传感器绘图库：雷达包络、垂直覆盖、等高线滤波、杂波表、地图投影                                          |
+| 17  | wsf_air_combat                | afsim-2_9 | 143   | 31      | 空战仿真插件                                                                   |
+| 18  | wsf_mtt                       | afsim-2_9 | 50    | 30      | 多目标跟踪：航迹关联、数据融合、MHT（多假设跟踪）                                               |
+| 19  | weapon_tools                  | afsim-2_9 | 91    | 26      | 武器系统分析（26 个源文件）                                                          |
+| 20  | wsf_ripr                      | afsim-2_9 | 62    | 24      | RIPR 数据接口：作业处理、作业板调度、观察者模式                                               |
+| 21  | wsf_fires                     | afsim-2_9 | 44    | 22      | 火力支援插件                                                                   |
+| 22  | wsf_brawler                   | afsim-2_9 | 147   | 15      | Brawler 空战交战模型插件                                                         |
+| 23  | wsf_multiresolution           | afsim-2_9 | 114   | 14      | 多分辨率建模插件                                                                 |
+| 24  | brawler                       | afsim-2_9 | 15    | 12      | Brawler 交战模型独立工具（12 个源文件）                                                |
+| 25  | wsf_alternate_locations       | afsim-2_9 | 22    | 7       | 备选位置与路径规划插件                                                              |
+| 26  | wsf_mil_parser                | afsim-2_9 | 13    | 7       | 军事语法解析扩展                                                                 |
+| 27  | resources                     | afsim-2_9 | 1349  | 6       | 静态资源：地图、模型、着色器（6 个源文件）                                                   |
+| 28  | wsf_sosm                      | afsim-2_9 | 24    | 6       | 特种作战/太空作战模型（SOSM）插件                                                      |
+| 29  | profiling                     | afsim-2_9 | 12    | 5       | 性能分析工具（5 个源文件）                                                           |
+| 30  | wsf_annotation                | afsim-2_9 | 20    | 5       | 场景标注插件                                                                   |
+| 31  | osgdb_osgearth_dted_tms       | afsim-2_9 | 7     | 5       | OSGEarth DTED TMS 数据库插件（5 个源文件）                                          |
+| 32  | wizard                        | afsim-2_9 | 834   | 3       | 场景编辑向导：CRD 文件导入、USMTF 处理、主程序及子插件                                         |
+| 33  | sensor_plot                   | afsim-2_9 | 80    | 3       | 传感器覆盖/探测距离可视化                                                            |
+| 34  | wsf_argo8                     | afsim-2_9 | 18    | 3       | ARGO8 集成插件                                                               |
+| 35  | wsf_iads_c2_lib               | afsim-2_9 | 98    | 3       | 综合防空系统（IADS）C2 库插件                                                       |
+| 36  | mission                       | afsim-2_9 | 28    | 2       | 任务规划工具（2 个源文件）                                                           |
+| 37  | util                          | afsim-2_9 | 6     | 2       | 通用工具（2 个源文件）                                                             |
+| 38  | wsf_grammar_check             | afsim-2_9 | 8     | 2       | 场景脚本语法校验工具                                                               |
+| 39  | wsf_weapon_server             | afsim-2_9 | 16    | 2       | 武器计算服务器                                                                  |
+| 40  | mover                         | afsim-2_9 | 56    | 2       | 运动体工具（2 个源文件）                                                            |
+| 41  | afperf                        | afsim-2_9 | 3     | 1       | 性能测量工具（1 个源文件）                                                           |
+| 42  | cli                           | afsim-2_9 | 3     | 1       | 命令行工具（1 个源文件）                                                            |
+| 43  | ReaderWriterMod               | afsim-2_9 | 3     | 1       | OSG 模型读写插件（1 个源文件）                                                       |
+| 44  | ReaderWriterOGL               | afsim-2_9 | 3     | 1       | OpenGL 读写插件（1 个源文件）                                                      |
+| 45  | exec                          | afsim-2_9 | 3     | 1       | 执行工具（1 个源文件）                                                             |
+| 46  | legacy_test                   | afsim-2_9 | 4     | 1       | 遗留测试支持（1 个源文件）                                                           |
+| 47  | proxy_test                    | afsim-2_9 | 14    | 1       | 代理测试支持（1 个源文件）                                                           |
+| 48  | pack_to_cpp                   | afsim-2_9 | 3     | 1       | Pack 转 C++ 代码生成器（1 个源文件）                                                 |
+| 49  | ARCHITECTURE.md               | afsim-2_9 | 1     | 0       | 项目架构文档                                                                   |
+| 50  | vx.json                       | afsim-2_9 | 1     | 0       | 插件元数据（vx.json 描述文件）                                                      |
+| 51  | documentation                 | afsim-2_9 | 5075  | 0       | HTML 文档与更新日志                                                             |
+| 52  | tools                         | afsim-2_9 | 120   | 0       | 外部 Perl/Python 工具脚本（批处理、事件提取、数据转换、绘图）                                    |
+| 53  | training                      | afsim-2_9 | 1441  | 0       | 培训材料                                                                     |
+| 54  | swdev                         | afsim-2_9 | 448   | 0       | 构建系统：CMake 模块、预设、模板                                                      |
+| 55  | demos                         | afsim-2_9 | 6304  | 0       | 67+ 演示场景（覆盖各作战域）                                                         |
+| 56  | warlock                       | afsim-2_9 | 920   | 0       | 仿真分析与调试工具：warlock_core、warlock_exec、插件                                   |
+| 57  | mover_creator                 | afsim-2_9 | 583   | 0       | 运动体（平台）批量创建工具                                                            |
+| 58  | post_processor                | afsim-2_9 | 64    | 0       | 仿真结果后处理（WizPostProcessor）                                                |
+| 59  | scene_gen                     | afsim-2_9 | 22    | 0       | 场景生成工具                                                                   |
+| 60  | misc                          | afsim-2_9 | 17    | 0       | 杂项工具                                                                     |
+| 61  | util_script                   | afsim-2_9 | 2     | 0       | 工具脚本                                                                     |
+| 62  | geodata                       | afsim-2_9 | 2     | 0       | 地理数据处理                                                                   |
+| 63  | artificer                     | afsim-2_9 | 3     | 0       | 构件生成工具                                                                   |
+| 64  | wsf_simdis                    | afsim-2_9 | 12    | 0       | SIMDIS 3D 可视化集成插件                                                        |
+| 65  | wsf_scenario_analyzer_iads_c2 | afsim-2_9 | 9     | 0       | IADS C2 场景分析插件                                                           |
+| 66  | wsf_oms_uci                   | afsim-2_9 | 163   | 0       | 开放任务系统/通用指挥控制接口插件                                                        |
+| 67  | wsf_coverage                  | afsim-2_9 | 129   | 0       | 覆盖分析插件                                                                   |
+| 68  | wsf_scenario_analyzer         | afsim-2_9 | 10    | 0       | 场景分析插件                                                                   |
+| 69  | wsf_mil                       | afsim-2_9 | 637   | 0       | 军事领域扩展：通信、电子战（EW）、武器、运动体、传感器、观察器、处理器、脚本、DIS                              |
+| 70  | wsf                           | afsim-2_9 | 1237  | 0       | 核心作战仿真框架：应用、场景、仿真、平台、组件、插件、行为树、航迹                                        |
+| 71  | source_plugin                 | afsim-2_9 | 2     | 0       | 源插件元数据（wsf_module 标记）                                                    |
+| 72  | usmtf                         | afsim-2_9 | 4     | 0       | USMTF 报文格式处理                                                             |
+| 73  | observer                      | afsim-2_9 | 26    | 0       | 观察者模式子系统                                                                 |
+| 74  | comm                          | afsim-2_9 | 28    | 0       | 通信框架子系统                                                                  |
+| 75  | component                     | afsim-2_9 | 18    | 0       | 组件模型子系统                                                                  |
+| 76  | xio                           | afsim-2_9 | 124   | 0       | 外部 I/O 子系统                                                               |
+| 77  | sensor                        | afsim-2_9 | 18    | 0       | 传感器框架子系统                                                                 |
+| 78  | weapon                        | afsim-2_9 | 18    | 0       | 武器模型子系统                                                                  |
+| 79  | ResultModelBrowser            | afsim-2_9 | 9     | 0       | 结果模型浏览器                                                                  |
+| 80  | ResultCoverageOverlay         | afsim-2_9 | 7     | 0       | 结果覆盖叠加                                                                   |
+| 81  | ResultMapHoverInfo            | afsim-2_9 | 10    | 0       | 结果地图悬停信息                                                                 |
+| 82  | ResultVideoCapture            | afsim-2_9 | 8     | 0       | 结果视频采集                                                                   |
+| 83  | ResultPerformance             | afsim-2_9 | 8     | 0       | 结果性能显示                                                                   |
+| 84  | ResultVisibility              | afsim-2_9 | 8     | 0       | 结果可见性显示                                                                  |
+| 85  | ResultPositionConverterTool   | afsim-2_9 | 6     | 0       | 结果位置转换器                                                                  |
+| 86  | ResultMapDisplay              | afsim-2_9 | 14    | 0       | 结果地图显示                                                                   |
+| 87  | ResultUnitConverterTool       | afsim-2_9 | 6     | 0       | 结果单位转换器                                                                  |
+| 88  | ResultTerrainTools            | afsim-2_9 | 8     | 0       | 结果地形工具                                                                   |
+| 89  | ResultTetherView              | afsim-2_9 | 9     | 0       | 结果系留视图                                                                   |
+| 90  | Visibility                    | afsim-2_9 | 14    | 0       | 可见性分析工具                                                                  |
+| 91  | MapHoverInfo                  | afsim-2_9 | 20    | 0       | 地图悬停信息显示                                                                 |
+| 92  | ModelBrowser                  | afsim-2_9 | 18    | 0       | 模型浏览器可视化                                                                 |
+| 93  | UnitConverterTool             | afsim-2_9 | 12    | 0       | 单位转换工具                                                                   |
+| 94  | VideoCapture                  | afsim-2_9 | 16    | 0       | 视频采集工具                                                                   |
+| 95  | CoverageOverlay               | afsim-2_9 | 14    | 0       | 覆盖叠加可视化                                                                  |
+| 96  | CRDImporter                   | afsim-2_9 | 15    | 0       | CRD 文件导入向导插件                                                             |
+| 97  | TetherView                    | afsim-2_9 | 18    | 0       | 系留视图可视化                                                                  |
+| 98  | TerrainTools                  | afsim-2_9 | 16    | 0       | 地形分析工具                                                                   |
+| 99  | Performance                   | afsim-2_9 | 15    | 0       | 性能可视化                                                                    |
+| 100 | MapDisplay                    | afsim-2_9 | 35    | 0       | 地图显示可视化                                                                  |
+| 101 | PositionConverterTool         | afsim-2_9 | 12    | 0       | 位置坐标转换器                                                                  |
+| 102 | benchmark                     | afsim-2_9 | 3     | 0       | 性能基准测试基础设施                                                               |
+| 103 | version_lesser_library        | afsim-2_9 | 3     | 0       | 版本比较库（小于测试）                                                              |
+| 104 | version_greater_library       | afsim-2_9 | 3     | 0       | 版本比较库（大于测试）                                                              |
+| 105 | dummy_library                 | afsim-2_9 | 3     | 0       | 构建测试用虚拟库                                                                 |
+| 106 | wsf_prompt                    | afsim-2_9 | 7     | 0       | 提示/命令插件                                                                  |
+| 107 | wsf_plugins                   | src       | 1     | 0       | 插件模块聚合器（元数据）                                                             |
 
 ## 各模块详情
 
@@ -123,49 +123,49 @@
 
 #### 子系统结构 (source umbrella module)
 
-| 子系统 | 位置 | 文件数 | 描述 |
-|-----------|----------|--------|------|
-| core/wsf | `swdev/src/core/wsf/source/` | 1237 | 核心框架：应用、场景、仿真、平台、组件、插件、航迹、事件、传感器、运动体、通信 |
-| core/wsf_util | `swdev/src/core/wsf_util/source/` | -- | 基础工具：缓冲区、打包/反射、矩阵、三维向量、路径、回调 |
-| core/wsf_parser | `swdev/src/core/wsf_parser/source/` | 138 | 自定义 DSL 解析器：WsfPProxyStructType、WsfParseAction*、WsfPM_* 解析模型类 |
-| core/wsf_mil | `swdev/src/core/wsf_mil/source/` | 637 | 军事领域：通信、电子战、武器、运动体、传感器扩展 |
-| core/wsf_space | `swdev/src/core/wsf_space/source/` | 304 | 太空域：轨道力学、姿态控制、星座管理lations, rendezvous |
-| core/wsf_cyber | `swdev/src/core/wsf_cyber/source/` | 85 | 网络战：攻击、防御、约束、网络模型ls |
-| core/wsf_mtt | `swdev/src/core/wsf_mtt/source/` | 30 | 多目标跟踪：关联、融合、MHT |
-| core/wsf_l16 | `swdev/src/core/wsf_l16/source/` | 105 | Link-16：J 系列报文、PPLI、监视、武器协同ation |
-| core/wsf_nx | `swdev/src/core/wsf_nx/source/` | 72 | 下一代：箔条模型、ALARM 天线、ESA 方向图、电子战 |
-| core/wsf_ripr | `swdev/src/core/wsf_ripr/source/` | 24 | RIPR 数据接口：作业处理、调度 |
-| core/wsf_weapon_server | `swdev/src/core/wsf_weapon_server/source/` | 2 | 武器计算服务器 |
-| core/wsf_grammar_check | `swdev/src/core/wsf_grammar_check/source/` | 2 | 语法校验 |
-| core/wsf_mil_parser | `swdev/src/core/wsf_mil_parser/source/` | 7 | 军事解析器扩展 |
-| core/sensor_plot_lib | `swdev/src/core/sensor_plot_lib/source/` | 41 | 传感器绘图：雷达包络、覆盖范围、等高线ours |
-| engage | `swdev/src/engage/source/` | 45 | 主仿真引擎可执行文件及语法定义 |
-| wsf_plugins | `swdev/src/wsf_plugins/*/source/` | -- | 17 个插件模块（空战、brawler、火力、iads_c2、六自由度等） |
-| wizard | `swdev/src/wizard/` | 3+ | 场景编辑器：解析结果、CRD 导入、脚本编辑 |
-| warlock | `swdev/src/warlock/` | 0+ | 分析/调试：核心、执行器、插件 |
-| mystic | `swdev/src/mystic/` | 0+ | Python 分析环境：执行器、库、插件、Python 绑定 |
-| tools | `swdev/src/tools/` | -- | 内部工具：场景生成、地理数据、跟踪滤波器、artificer、性能分析等 |
-| mission | `swdev/src/mission/source/` | 2 | 任务规划与执行 |
-| mover_creator | `swdev/src/mover_creator/source/` | 225 | 平台/运动体批量创建器 |
-| sensor_plot | `swdev/src/sensor_plot/source/` | 3 | 传感器覆盖可视化 |
-| weapon_tools | `swdev/src/weapon_tools/source/` | 26 | 武器分析工具 |
-| post_processor | `swdev/src/post_processor/` | -- | 后处理：WizPostProcessor |
-| evt_reader | `swdev/src/evt_reader/source/` | 5 | 事件日志读取器 |
+| 子系统                    | 位置                                         | 文件数  | 描述                                                            |
+| ---------------------- | ------------------------------------------ | ---- | ------------------------------------------------------------- |
+| core/wsf               | `swdev/src/core/wsf/source/`               | 1237 | 核心框架：应用、场景、仿真、平台、组件、插件、航迹、事件、传感器、运动体、通信                       |
+| core/wsf_util          | `swdev/src/core/wsf_util/source/`          | --   | 基础工具：缓冲区、打包/反射、矩阵、三维向量、路径、回调                                  |
+| core/wsf_parser        | `swdev/src/core/wsf_parser/source/`        | 138  | 自定义 DSL 解析器：WsfPProxyStructType、WsfParseAction*、WsfPM_* 解析模型类 |
+| core/wsf_mil           | `swdev/src/core/wsf_mil/source/`           | 637  | 军事领域：通信、电子战、武器、运动体、传感器扩展                                      |
+| core/wsf_space         | `swdev/src/core/wsf_space/source/`         | 304  | 太空域：轨道力学、姿态控制、星座管理lations, rendezvous                         |
+| core/wsf_cyber         | `swdev/src/core/wsf_cyber/source/`         | 85   | 网络战：攻击、防御、约束、网络模型ls                                           |
+| core/wsf_mtt           | `swdev/src/core/wsf_mtt/source/`           | 30   | 多目标跟踪：关联、融合、MHT                                               |
+| core/wsf_l16           | `swdev/src/core/wsf_l16/source/`           | 105  | Link-16：J 系列报文、PPLI、监视、武器协同ation                              |
+| core/wsf_nx            | `swdev/src/core/wsf_nx/source/`            | 72   | 下一代：箔条模型、ALARM 天线、ESA 方向图、电子战                                 |
+| core/wsf_ripr          | `swdev/src/core/wsf_ripr/source/`          | 24   | RIPR 数据接口：作业处理、调度                                             |
+| core/wsf_weapon_server | `swdev/src/core/wsf_weapon_server/source/` | 2    | 武器计算服务器                                                       |
+| core/wsf_grammar_check | `swdev/src/core/wsf_grammar_check/source/` | 2    | 语法校验                                                          |
+| core/wsf_mil_parser    | `swdev/src/core/wsf_mil_parser/source/`    | 7    | 军事解析器扩展                                                       |
+| core/sensor_plot_lib   | `swdev/src/core/sensor_plot_lib/source/`   | 41   | 传感器绘图：雷达包络、覆盖范围、等高线ours                                       |
+| engage                 | `swdev/src/engage/source/`                 | 45   | 主仿真引擎可执行文件及语法定义                                               |
+| wsf_plugins            | `swdev/src/wsf_plugins/*/source/`          | --   | 17 个插件模块（空战、brawler、火力、iads_c2、六自由度等）                         |
+| wizard                 | `swdev/src/wizard/`                        | 3+   | 场景编辑器：解析结果、CRD 导入、脚本编辑                                        |
+| warlock                | `swdev/src/warlock/`                       | 0+   | 分析/调试：核心、执行器、插件                                               |
+| mystic                 | `swdev/src/mystic/`                        | 0+   | Python 分析环境：执行器、库、插件、Python 绑定                                |
+| tools                  | `swdev/src/tools/`                         | --   | 内部工具：场景生成、地理数据、跟踪滤波器、artificer、性能分析等                          |
+| mission                | `swdev/src/mission/source/`                | 2    | 任务规划与执行                                                       |
+| mover_creator          | `swdev/src/mover_creator/source/`          | 225  | 平台/运动体批量创建器                                                   |
+| sensor_plot            | `swdev/src/sensor_plot/source/`            | 3    | 传感器覆盖可视化                                                      |
+| weapon_tools           | `swdev/src/weapon_tools/source/`           | 26   | 武器分析工具                                                        |
+| post_processor         | `swdev/src/post_processor/`                | --   | 后处理：WizPostProcessor                                          |
+| evt_reader             | `swdev/src/evt_reader/source/`             | 5    | 事件日志读取器                                                       |
 
 #### 核心类（从 4826 个 class/struct 符号中抽取的代表性样本）
 
-| 类名 | 类型 | 基类 | 描述 |
-|-------|------|-------------|-------------|
-| WsfVisualization | class（类） | 无 | 可视化框架基类 |
-| WsfEM_Antenna | class（类） | UtScriptAccessible, WsfSinglePlatformObserver | 电磁天线模型 |
-| WsfFusionStrategy | class（类） | WsfObject | 传感器融合策略基类 |
-| WsfGroup | class（类） | WsfObject, WsfAuxDataEnabled | 平台编组管理 |
-| WsfMultiThreadManager | class（类） | 无 | 多线程仿真管理器 |
-| WsfPlatformPart | class（类） | WsfObject, WsfPlatformComponent, WsfUniqueId, WsfAuxDataEnabled | 平台部件组件 |
-| WsfSolarIlluminationComponent | class（类） | WsfSensorComponent | 太阳光照传感器 |
-| WsfComponentFactoryList | class（类） | 无 | 组件工厂注册表 |
-| SimulationUpdateThread | class（类） | WsfThread | 仿真更新周期线程 |
-| WsfComponentRole | struct（结构体） | 无 | 组件角色定义 |
+| 类名                            | 类型          | 基类                                                              | 描述        |
+| ----------------------------- | ----------- | --------------------------------------------------------------- | --------- |
+| WsfVisualization              | class（类）    | 无                                                               | 可视化框架基类   |
+| WsfEM_Antenna                 | class（类）    | UtScriptAccessible, WsfSinglePlatformObserver                   | 电磁天线模型    |
+| WsfFusionStrategy             | class（类）    | WsfObject                                                       | 传感器融合策略基类 |
+| WsfGroup                      | class（类）    | WsfObject, WsfAuxDataEnabled                                    | 平台编组管理    |
+| WsfMultiThreadManager         | class（类）    | 无                                                               | 多线程仿真管理器  |
+| WsfPlatformPart               | class（类）    | WsfObject, WsfPlatformComponent, WsfUniqueId, WsfAuxDataEnabled | 平台部件组件    |
+| WsfSolarIlluminationComponent | class（类）    | WsfSensorComponent                                              | 太阳光照传感器   |
+| WsfComponentFactoryList       | class（类）    | 无                                                               | 组件工厂注册表   |
+| SimulationUpdateThread        | class（类）    | WsfThread                                                       | 仿真更新周期线程  |
+| WsfComponentRole              | struct（结构体） | 无                                                               | 组件角色定义    |
 
 #### 关键依赖
 
@@ -194,23 +194,23 @@
 
 #### 核心类（来自 57 个 class/struct 符号）
 
-| 类名 | 类型 | 基类 | 描述 |
-|-------|------|-------------|-------------|
-| ObjectManager | class（类） | WsfSimulationExtension | 六自由度仿真对象生命周期管理器 |
-| TypeManager | class（类） | WsfScenarioExtension | 六自由度类型管理 |
-| Environment | class（类） | WsfScenarioExtension | 六自由度环境参数 |
-| EventPipe | class（类） | WsfEventPipeLogger | 六自由度事件管道（日志） |
-| EventPipeInterface | class（类） | WsfSimulationExtension | 六自由度事件管道接口 |
-| RigidBodyControlActuator | class（类） | 无 | 刚体控制执行器基类 |
-| AutopilotWaypointData | struct（结构体） | 无 | 自动驾驶仪导航航路点数据 |
-| AutopilotData | struct（结构体） | 无 | 完整自动驾驶仪配置数据 |
-| PidGainData | struct（结构体） | 无 | PID 控制器增益参数 |
-| FreezeFlags | struct（结构体） | 无 | 六自由度仿真冻结状态标志 |
-| ControlInputValue | struct（结构体） | 无 | 飞行控制输入值 |
-| ControlSurfaceElement | struct（结构体） | 无 | 操纵面定义 |
-| NavWaypointParameters | struct（结构体） | 无 | 导航航路点参数 |
-| AutopilotPidGroupValueData | struct（结构体） | 无 | 自动驾驶仪 PID 组值 |
-| ControlSignalModifier | struct（结构体） | 无 | 控制信号修正器配置 |
+| 类名                         | 类型          | 基类                     | 描述              |
+| -------------------------- | ----------- | ---------------------- | --------------- |
+| ObjectManager              | class（类）    | WsfSimulationExtension | 六自由度仿真对象生命周期管理器 |
+| TypeManager                | class（类）    | WsfScenarioExtension   | 六自由度类型管理        |
+| Environment                | class（类）    | WsfScenarioExtension   | 六自由度环境参数        |
+| EventPipe                  | class（类）    | WsfEventPipeLogger     | 六自由度事件管道（日志）    |
+| EventPipeInterface         | class（类）    | WsfSimulationExtension | 六自由度事件管道接口      |
+| RigidBodyControlActuator   | class（类）    | 无                      | 刚体控制执行器基类       |
+| AutopilotWaypointData      | struct（结构体） | 无                      | 自动驾驶仪导航航路点数据    |
+| AutopilotData              | struct（结构体） | 无                      | 完整自动驾驶仪配置数据     |
+| PidGainData                | struct（结构体） | 无                      | PID 控制器增益参数     |
+| FreezeFlags                | struct（结构体） | 无                      | 六自由度仿真冻结状态标志    |
+| ControlInputValue          | struct（结构体） | 无                      | 飞行控制输入值         |
+| ControlSurfaceElement      | struct（结构体） | 无                      | 操纵面定义           |
+| NavWaypointParameters      | struct（结构体） | 无                      | 导航航路点参数         |
+| AutopilotPidGroupValueData | struct（结构体） | 无                      | 自动驾驶仪 PID 组值    |
+| ControlSignalModifier      | struct（结构体） | 无                      | 控制信号修正器配置       |
 
 #### 关键依赖
 
@@ -317,18 +317,18 @@
 
 #### 核心类（来自 22 个 class/struct 符号）
 
-| 类名 | 类型 | 基类 | 描述 |
-|-------|------|-------------|-------------|
-| WsfP6DOF_TypeManager | class（类） | WsfScenarioExtension, P6DofTypeManager | 平台六自由度类型管理器 |
-| WsfP6DOF_ObjectManager | class（类） | WsfSimulationExtension | P6DOF 对象生命周期管理器 |
-| WsfFormationUpdateStationKeeping | class（类） | 无 | 编队站位保持更新逻辑 |
-| WsfManeuverConstraint | class（类） | 无 | 机动约束执行 |
-| RelativeManeuverState | class（类） | 无 | 相对机动状态基类 |
-| FormUpStationKeepingManeuverState | class（类） | RelativeManeuverState | 编队/站位保持状态基类 |
-| FormUpState | class（类） | FormUpStationKeepingManeuverState | 编队集结状态 |
-| KeepStationState | class（类） | FormUpStationKeepingManeuverState | 站位保持状态 |
-| PursueState | class（类） | FormUpStationKeepingManeuverState | 追击状态 |
-| Constraint | class（类） | UtScriptAccessible | 编队约束定义 |
+| 类名                                | 类型       | 基类                                     | 描述              |
+| --------------------------------- | -------- | -------------------------------------- | --------------- |
+| WsfP6DOF_TypeManager              | class（类） | WsfScenarioExtension, P6DofTypeManager | 平台六自由度类型管理器     |
+| WsfP6DOF_ObjectManager            | class（类） | WsfSimulationExtension                 | P6DOF 对象生命周期管理器 |
+| WsfFormationUpdateStationKeeping  | class（类） | 无                                      | 编队站位保持更新逻辑      |
+| WsfManeuverConstraint             | class（类） | 无                                      | 机动约束执行          |
+| RelativeManeuverState             | class（类） | 无                                      | 相对机动状态基类        |
+| FormUpStationKeepingManeuverState | class（类） | RelativeManeuverState                  | 编队/站位保持状态基类     |
+| FormUpState                       | class（类） | FormUpStationKeepingManeuverState      | 编队集结状态          |
+| KeepStationState                  | class（类） | FormUpStationKeepingManeuverState      | 站位保持状态          |
+| PursueState                       | class（类） | FormUpStationKeepingManeuverState      | 追击状态            |
+| Constraint                        | class（类） | UtScriptAccessible                     | 编队约束定义          |
 
 #### 关键依赖
 
