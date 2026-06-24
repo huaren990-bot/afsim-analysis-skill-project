@@ -82,9 +82,72 @@
 4. 算法所属模块：wsf_six_dof（点质/刚体六自由度飞行器运动学插件 -- 新模块）
 5. 算法对应卡片：[flight-dynamics-autopilot-pid-card.md](flight-dynamics-autopilot-pid-card.md)
 
+### 角速率限制执行机构模型
+1. 算法英文名称：Angular Rate-Limited Control Surface Actuator Model
+2. 算法中文名称：舵机角速率限制执行机构模型
+3. 算法功能：模拟真实舵机的有限角速率驱动——以最大正向/反向角速率将舵面从当前角度驱动到指令角度，受机械止动角约束。P6DOF 和刚体六自由度模块共用相同算法
+4. 算法所属模块：wsf_p6dof 和 wsf_six_dof（飞行器运动学插件）
+5. 算法对应卡片：[flight-dynamics-rate-limited-actuator-card.md](flight-dynamics-rate-limited-actuator-card.md)
+
+### 一阶滞后滤波执行机构模型
+1. 算法英文名称：First-Order Lag Filter Actuator Model
+2. 算法中文名称：一阶滞后滤波执行机构模型
+3. 算法功能：点质模型专属——通过一阶滞后滤波（隐式欧拉离散化）将飞控系统的归一化指令设定值平滑为实际控制面偏度百分比。输出范围为 [0,1]
+4. 算法所属模块：wsf_six_dof（点质/刚体六自由度飞行器运动学插件 -- 新模块）
+5. 算法对应卡片：[flight-dynamics-first-order-lag-actuator-card.md](flight-dynamics-first-order-lag-actuator-card.md)
+
+### 编队汇合/位置保持/追击三状态机动控制
+1. 算法英文名称：Formation Form-Up / Station Keeping / Pursue Three-State Maneuver Control
+2. 算法中文名称：编队汇合/位置保持/追击三状态机动控制
+3. 算法功能：编队飞行中追击者的三状态自主机动控制——FormUp（远距离飞向目标）、KeepStation（ECS 坐标系 P+D+DD 偏差精细控制）、Pursue（圆形航迹模型追击），自动状态转移含防抖计数
+4. 算法所属模块：wsf_p6dof 和 wsf_six_dof（飞行器运动学插件）
+5. 算法对应卡片：[flight-dynamics-station-keeping-card.md](flight-dynamics-station-keeping-card.md)
+
 ---
 
 ## 二、空间/轨道力学（Space / Orbital Mechanics）
+
+### 航天器姿态定向算法系统
+1. 算法英文名称：Spacecraft Orientation Algorithm System (11 Attitude Modes)
+2. 算法中文名称：航天器姿态定向算法系统（11 种卫星姿态模式）
+3. 算法功能：基于 DCM（方向余弦矩阵）+ IEEE 1278.1-1995 DIS 欧拉角提取，提供 11 种航天器姿态定向模式——Nadir对地、Solar对日、Velocity速度矢量、Entity目标追踪、OrbitPlane轨道面约束，含 X-aligned / Z-aligned 双指向轴约定和铰接部件通用姿态计算
+4. 算法所属模块：wsf_space（空间/轨道力学）
+5. 算法对应卡片：[space-orientation-algorithms-card.md](space-orientation-algorithms-card.md)
+
+### 多级火箭——齐奥尔科夫斯基方程与分级管理
+1. 算法英文名称：Multi-Stage Rocket — Tsiolkovsky Equation and Staging Management
+2. 算法中文名称：多级火箭——齐奥尔科夫斯基方程与分级管理
+3. 算法功能：基于齐奥尔科夫斯基火箭方程计算多级火箭的推力、ΔV、燃耗时间关系。支持多级串联火箭的自动分级管理（staging），每级独立配置推力/燃耗率/比冲/排气速度/质量属性
+4. 算法所属模块：wsf_space（空间/轨道力学）
+5. 算法对应卡片：[space-rocket-staging-card.md](space-rocket-staging-card.md)
+
+### JPL 行星历表——切比雪夫多项式插值
+1. 算法英文名称：JPL DE Planetary Ephemeris — Chebyshev Polynomial Interpolation
+2. 算法中文名称：JPL 行星历表——切比雪夫多项式插值
+3. 算法功能：读取 JPL DE 二进制历表文件（支持 DE102-DE438 共 21 个版本），通过切比雪夫多项式插值获取太阳系天体的 ICRF 位置和速度。含地月质心修正和 TDB 时间尺处理
+4. 算法所属模块：wsf_space（空间/轨道力学）
+5. 算法对应卡片：[space-de-ephemeris-card.md](space-de-ephemeris-card.md)
+
+### 地球 J2 带谐项引力摄动
+1. 算法英文名称：Earth J2 Zonal Harmonic Gravitational Perturbation
+2. 算法中文名称：地球 J2 带谐项引力摄动
+3. 算法功能：从 J2 引力势梯度推导 ECI 坐标系下的加速度扰动——在 WCS（地固非旋转）帧中计算 Legendre 多项式梯度 a = ∇U_J2，再纯旋转回 ECI 帧。支持 WGS84/EGM96 常数预设或手动指定 μ/J2/R
+4. 算法所属模块：wsf_space（空间/轨道力学）
+5. 算法对应卡片：[space-earth-j2-perturbation-card.md](space-earth-j2-perturbation-card.md)
+
+### 月球第三体引力摄动
+1. 算法英文名称：Moon Third-Body Gravitational Perturbation
+2. 算法中文名称：月球第三体引力摄动
+3. 算法功能：计算月球引力对地球轨道航天器的第三体摄动加速度——a_total = a_lunar_on_sc - a_lunar_on_earth（扣除 ECI 坐标系原点加速度）。月球位置支持默认模型（UtMoon + 四点三次样条插值）和 JPL DE 历表两大数据源
+4. 算法所属模块：wsf_space（空间/轨道力学）
+5. 算法对应卡片：[space-moon-third-body-card.md](space-moon-third-body-card.md)
+
+### Walker 星座几何布局生成
+1. 算法英文名称：Walker Constellation Geometry Layout Generation (Delta / Star / General)
+2. 算法中文名称：Walker 星座几何布局生成（Delta / Star / General 三种模式）
+3. 算法功能：基于 Walker 编队数学生成卫星星座几何布局——Walker Delta（RAAN 360° 分布）、Walker Star（RAAN 180° 分布）、General 通用布局（自定义 RAAN 范围和近点角相位差），所有轨道为圆轨道，含解体检测
+4. 算法所属模块：wsf_space（空间/轨道力学）
+5. 算法对应卡片：[space-walker-constellation-card.md](space-walker-constellation-card.md)
 
 ### NORAD SGP4/SDP4 轨道传播器
 1. 算法英文名称：NORAD SGP4/SDP4 Orbital Propagator
@@ -183,10 +246,11 @@
 
 | 分类 | 算法数量 | 算法名称 |
 |------|---------|---------|
-| 飞行动力学 (wsf_p6dof, 旧模块) | 2 | P6DOF Heun 积分器, 稳定性导数气动模型 |
-| 飞行动力学 (wsf_six_dof, 新模块) | 8 | 刚体积分器, PointMass 积分器, PointMass SAS, RigidBody 气动, PointMass 气动, 推进燃油, 喷气发动机, 自动驾驶仪 PID |
-| 空间/轨道力学 | 13 | NORAD 传播器, 数值积分传播器, 轨道事件条件, Lambert 求解器, 仅角度 IOD, 分段指数大气, Jacchia-Roberts 大气, NASA 碎片模型, 轨道机动模型, 交会瞄准, 拉格朗日点, 轨道交会判别, 太阳终结线与地影分析 |
-| **合计** | **23** | |
+| 飞行动力学 (wsf_p6dof, 旧模块) | 4 | P6DOF Heun 积分器, 稳定性导数气动模型, 角速率限制执行机构, 编队三状态机动控制 |
+| 飞行动力学 (wsf_six_dof, 新模块) | 12 | 刚体积分器, PointMass 积分器, PointMass SAS, RigidBody 气动, PointMass 气动, 推进燃油, 喷气发动机, 自动驾驶仪 PID, 角速率限制执行机构, 一阶滞后执行机构, 编队三状态机动控制 |
+| 飞行动力学 (跨模块) | 3 | 角速率限制执行机构（p6dof + six_dof）, 编队三状态机动控制（p6dof + six_dof）, 稳定性导数气动模型（p6dof + six_dof） |
+| 空间/轨道力学 | 19 | 姿态定向, 多级火箭, JPL DE 历表, J2 摄动, 月球第三体, Walker 星座, NORAD 传播器, 数值积分传播器, 轨道事件条件, Lambert, 仅角度 IOD, 分段指数大气, Jacchia-Roberts 大气, NASA 碎片, 轨道机动, 交会瞄准, 拉格朗日点, 交会判别, 太阳终结线 |
+| **合计** | **32** | |
 
 ---
 
@@ -204,6 +268,9 @@
 | 推进系统与燃油管理 | 高 | CG 线性插值和传输比例协调均为基本四则运算，无领域黑盒 |
 | 喷气发动机推力模型 | 中 | Spool dynamics 为标准建模技术，但查表种类多（9 表 4 spin rate 格式）耦合重 |
 | 自动驾驶仪 PID 嵌套回路控制 | 中 | PID 为标准控制算法，但嵌套回路架构和 20 个 PID 实例的组装耦合飞行器框架 |
+| 角速率限制执行机构 | **高** | 核心仅条件判断+乘法+加法，两模块算法一致，无外部数学库依赖 |
+| 一阶滞后滤波执行机构 | **高** | 一行隐式欧拉公式，输入输出均为无量纲值，无物理单位依赖 |
+| 编队三状态机动控制 | 中 | 控制律简单（P+D+DD 线性组合），但与 AFSIM 坐标系（ECS/TurnCircle）耦合紧密，大量硬编码经验增益 |
 | NORAD 传播器 | 中 | 核心公式公开，但 WGS72 常数和框架耦合 |
 | 数值积分传播器 | **高** | PD78 Butcher 表为公开常数，模板化设计 |
 | 轨道事件条件 | **高** | 二分搜索极其标准 |
@@ -214,6 +281,12 @@
 | NASA 碎片模型 | **高** | 所有系数来自 NASA 公开文献 |
 | 轨道机动模型 | **高** | 标准航天动力学公式 |
 | 交会瞄准 | **高** | Lambert 求解器 + 一维代价函数优化 |
+| 航天器姿态定向算法系统 | **高** | 核心算法（DCM构造+欧拉角提取）为航天标准方法，100%自包含矢量运算 |
+| 多级火箭模型 | **高** | 齐奥尔科夫斯基方程为航天标准公式，仅基础代数运算 |
+| JPL DE 行星历表 | **高** | Chebyshev多项式+NOVAS C 3.1标准算法，文件格式为JPL公开规范 |
+| 地球 J2 摄动 | **极高** | 完全自包含的J2模型，标准天体力学梯度公式+公开常数(WGS84/EGM96) |
+| 月球第三体摄动 | **高** | 标准第三天体摄动公式，与AFSIM框架解耦 |
+| Walker 星座布局 | **高** | Walker编队数学为标准方法，RAAN/近点角线性分布+归一化 |
 | 拉格朗日点 | **高** | 标准三体问题公式 |
 | 轨道交会判别 | 中 | 核心公式标准（Vallado），但强依赖轨道外推器和样条插值框架 |
 | 太阳终结线与地影分析 | **高** | 标准解析几何方法，直线-椭球求交自包含 |

@@ -5,3 +5,4 @@
 
 # Ignore source_root
 source_root/
+tests/migration_src/
