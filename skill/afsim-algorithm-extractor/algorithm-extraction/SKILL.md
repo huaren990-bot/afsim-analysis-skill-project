@@ -156,7 +156,7 @@ description: 一个专门从 C++ 仿真源码中提取数学公式并还原为�
 - 不能使用省略号省略列举内容，如果列举的条目多于30，而应当新建个文件将省略内容全部列出，并将文件连接放置到原本的省略位置。
 - 所有生成的文档都应当面向母语为中文且没有afsim基础知识的新手程序员。
 
-### `workspace/extracted-algorithms/<algorithm>/<domain>-<algorithm>-interface-spec.md`
+### `docs/extracted-algorithms/<algorithm>/<domain>-<algorithm>-interface-spec.md`
 
 接口规范卡片。要求和格式应当严格遵循模板skill/afsim-algorithm-extractor/template_list/template_interface-spec.md
 

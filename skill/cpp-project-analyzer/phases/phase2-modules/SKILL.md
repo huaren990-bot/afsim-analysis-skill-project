@@ -30,6 +30,8 @@ metadata:
 1. 读取 `project-boundary.json`，获取模块清单和分析边界。
 2. 读取 `file-classification.jsonl`，获取全量文件列表。
 3. 确认目标模块列表（按 `analysis_depth` 决定覆盖范围）。
+4. 建立 `files_to_index` 基线：筛选所有 `file_type` 为 `source` 或 `header` 的条目，作为本阶段 file-index 的覆盖分母。
+5. 若 Phase 1 记录了 `compile_commands.json`，读取其编译单元列表，用于识别真实参与构建的 `.cpp/.cc/.cxx/.c` 文件；未出现在编译数据库但位于源码目录中的文件仍需索引，并在 `notes` 中标记 `"not in compile_commands"`。
 
 ### Step 2: 逐模块 codegraph_explore（批量 + 去重）
 
@@ -66,6 +68,13 @@ metadata:
   - 对于文件数超过 50 的模块，使用 shell 命令 `rg "^#include" <module_dir> --type cpp --type-add 'hpp:*.hpp' -n` **一次性**获取全模块的 include 行，而非逐文件读取。
 - `brief`：从 codegraph 结果中总结一句话职责描述。
 
+生成后必须执行覆盖闭环：
+
+1. 将 `files_to_index` 与 `file-index.jsonl.path` 做集合差。
+2. 对未覆盖文件，写入 `notes` 或 context-handoff 的 `missing_files`，并说明原因：`excluded`、`generated`、`read_failed`、`unsupported_extension`、`unknown`。
+3. 不允许因为文件“看起来不重要”而跳过；测试、示例、插件源码也必须有条目，除非用户明确排除。
+4. 对大模块使用分片时，每个分片输出 `chunk_id` 和输入/输出数量，合并后按 `path` 去重。
+
 ### Step 4: 生成 symbol-index.jsonl（粗版）
 
 对每个模块，提取其核心符号：
@@ -86,18 +95,45 @@ codegraph_explore "<module_name> all classes inheritance hierarchy"
 - 若查询结果未覆盖某个类，**不要单独为该再类调用一次 codegraph_explore**，而是直接读取该类的头文件（仅读一次）提取基类。
 - 维护一个 `已查询集合`，保证同一个查询词绝不发两次。
 
+此外，必须生成 `symbols_to_refine` 候选清单：
+
+1. 来源包括 CodeGraph 发现的符号、头文件文本扫描出的 `class/struct/enum/typedef/using`、源文件中的自由函数和匿名 namespace 符号。
+2. 对头文件中的内联成员函数，只要函数体出现在类声明内，也要在粗符号索引中以 `kind=method` 记录，供 Phase 4 深挖。
+3. 前向声明不进入正式 symbol-index，但应计入 `notes` 统计，避免误判为遗漏。
+4. 粗符号条目必须含 `declaration_path` 或 `path`，否则 Phase 3 无法按文件分组精细化。
+
 ### Step 5: 生成 module-overview.md
 
 按以下结构撰写模块概览文档：
 
+生成前必须先从 `project-boundary.json` 读取 `module_hierarchy` 与 `analysis_boundaries`，明确区分：
+
+- **系统**：项目顶层能力域或构建域。
+- **子系统**：系统下按职责/目录组织的二级分组。
+- **模块**：可被索引、依赖和功能汇总的最小源码目录或构建单元。
+
+`module-overview.md` 开头必须有一段中文总述，写明系统数、子系统数、模块总数、纳入统计的 source/header 文件数，以及哪些路径因边界规则被排除。模块清单必须完整覆盖 Phase 1 识别的模块；如果模块超过 30 个，正文仍给汇总表，并把完整清单放入附录或独立文件，同时在正文给出链接。
+
+每个英文模块名首次出现时必须包含中文用途说明；每个模块行必须有可点击/可搜索的详情锚点（如“见 2.1.3”），避免读者只能看到总表而无法跳转到详情。每个系统或大型子系统必须提供一张 Mermaid 模块关系图；图过大时拆成多张子系统图。
+
 ```markdown
 # 模块概览文档
 
+## 概览说明
+
+本次共识别 X 个系统、Y 个子系统、Z 个模块，覆盖 A 个 source/header 文件。排除路径：按 Phase 1 边界完整列出。
+
 ## 模块清单
 
-| # | 模块名 | 路径 | 文件数 | 核心职责 |
-|---|--------|------|--------|----------|
+| # | 系统 | 子系统 | 模块名 | 中文说明 | 路径 | 文件数 | 核心职责 | 详情 |
+|---|------|--------|--------|----------|------|--------|----------|------|
 | 1 | xxx    | xxx  | xxx    | xxx      |
+
+## 模块关系图
+
+```mermaid
+graph TD
+```
 
 ## 各模块详情
 
@@ -119,14 +155,15 @@ codegraph_explore "<module_name> all classes inheritance hierarchy"
 |----------|----------|------|
 
 ### 模块 2: xxx
-...
+
+继续按同一结构完整列出后续模块；不得使用省略号代替模块详情。
 ```
 
 ## 输出文件
 
 - `source-index/file-index.jsonl`
 - `source-index/symbol-index.jsonl`（粗版，Phase 3 将精细化）
-- `architecture/module-overview.md`
+- `docs/architecture/module-overview.md`
 
 ## 质量门槛
 
@@ -137,6 +174,10 @@ codegraph_explore "<module_name> all classes inheritance hierarchy"
 5. `module-overview.md` 覆盖所有模块，每个模块含核心类清单。
 6. 符号的 `kind` 为 `class`/`struct` 时必须包含 `base_symbols` 信息。
 7. 不含前向声明（`class X;` 形式）条目。
+8. `files_to_index` 覆盖率必须 ≥ 95%，未覆盖项必须列入 `missing_files` 并说明原因。
+9. `symbols_to_refine` 必须包含可追溯路径，供 Phase 3 闭环。
+10. `module-overview.md` 必须包含概览说明、系统/子系统/模块区分规则、完整模块清单、模块详情跳转和 Mermaid 模块图。
+11. 模块清单不得因“条目太多”省略；超过 30 条时必须给出完整清单位置。
 
 ## 并行化策略
 

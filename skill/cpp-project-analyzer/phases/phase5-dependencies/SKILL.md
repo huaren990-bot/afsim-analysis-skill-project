@@ -31,6 +31,15 @@ metadata:
 
 ## 执行步骤
 
+### Step 0: 应用分析边界
+
+依赖提取前必须读取 `project-boundary.json.analysis_boundaries`：
+
+1. 将 `recommended_exclude_paths_for_architecture`、用户明确排除路径、第三方库目录、文档/资源目录加入排除集合。
+2. `training`、`demo`、示例和教程目录不得进入架构级依赖、子系统依赖或最终 Mermaid 图，除非用户明确把它们纳入分析范围。
+3. 若 dependency 候选的 `source` 或 `target` 位于排除集合，只能记录为 `out_of_scope_reference` notes，不写入核心 `dependency-index.jsonl`。
+4. 在 `dependency-graph.md` 开头写明排除路径和原因，避免读者误以为这些路径“没有依赖”。
+
 ### Step 1: 提取 build 依赖
 
 1. 扫描所有 `CMakeLists.txt` 文件。
@@ -120,11 +129,17 @@ metadata:
 2. 使用 Mermaid 语法绘制架构级依赖图（继承+组合+调用）。
 3. 使用 Mermaid 语法绘制子系统间依赖图。
 4. 在同一文件中用表格列出所有高价值依赖（按 `strength` 排序）。
+5. 如果依赖数量过多，不得只写“Top 20”并结束；必须：
+   - 说明筛选标准（如按 relation/strength/跨模块程度抽样）。
+   - 列出未展示模块和未展示原因。
+   - 给出完整依赖清单位置：`source-index/dependency-index.jsonl`，以及最终报告中的 `docs/architecture/module-dependency.md` 链接。
+6. 对零边或孤立模块，单独列出“无核心依赖记录/被边界排除/索引不足”的原因；不得让图中没有边的模块与实际依赖状态混淆。
+7. Mermaid 图必须能渲染：节点 ID 使用安全标识，中文和路径放在 label 中；大图按系统/子系统拆分，避免类继承图缩成不可读小图。
 
 ## 输出文件
 
 - `source-index/dependency-index.jsonl`
-- `architecture/dependency-graph.md`
+- `docs/architecture/dependency-graph.md`
 
 ## 质量门槛
 
@@ -134,6 +149,8 @@ metadata:
 4. `strength` 字段必须填写（`strong`/`medium`/`weak`）。
 5. dependency-graph.md 中的每一条 Mermaid 边可追溯到 dependency-index.jsonl 中的条目。
 6. 每行可被 JSON parser 解析。
+7. 核心依赖不得包含 Phase 1 已排除路径（如 training/demo/docs/resources），除非用户显式纳入。
+8. dependency-graph.md 必须说明筛选/拆图策略、完整依赖清单位置、孤立模块原因，并链接 `docs/architecture/module-dependency.md`。
 
 ## 依赖强度判断标准
 

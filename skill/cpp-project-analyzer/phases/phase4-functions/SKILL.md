@@ -36,6 +36,23 @@ metadata:
 
 从 Phase 3 的 `symbol-index.jsonl` 中筛选 `kind` 为 `function`、`method`、`constructor`、`destructor` 的条目，得到待提取函数清单 F。
 
+候选进入 F 前必须通过函数真实性过滤：
+
+1. `kind` 必须是 `function`、`method`、`constructor`、`destructor` 之一。
+2. `signature` 必须包含函数参数括号 `(` 与 `)`，构造/析构函数也必须有可验证声明行。
+3. `qualified_name`、`function_name`、`owner` 不得匹配 `.*(_EXPORT|_IMPORT|_API|_LIB_EXPORT)(::.*)?$`。
+4. 若条目来自 macro-index 或变量/成员变量扫描结果，不能直接进入 F；只能作为 `macro_generated_unexpanded` 或 `variable_not_function` 跳过原因记录。
+5. 类似 `POST_PROCESSOR_LIB_EXPORT::max` 的条目必须判定为导出宏伪成员/变量污染，不得生成 Method-level 条目。
+
+补充候选来源，避免漏掉 Phase 3 未显式标出的函数：
+
+1. 从 `file-index.jsonl.functions` 合并函数名候选。
+2. 从已记录的头文件 inline 函数、模板函数、operator 重载、匿名 namespace/static 函数中补充候选。
+3. 从 `compile_commands.json` 覆盖的编译单元中识别源文件清单，确保每个编译单元至少被纳入按文件读取分组。
+4. 构建 `functions_to_extract` 基线，唯一键为 `qualified_name + signature + definition_path/declaration_path`。
+5. 对同名重载函数，如果无法确定完整签名，必须在 `qualified_name` 中追加参数类型摘要，例如 `Class::Foo(int,double)`；禁止只用 `Class::Foo` 覆盖多条记录。
+6. 对被真实性过滤剔除的候选，写入跳过统计，原因只能使用：`export_macro_pseudo_symbol`、`variable_not_function`、`macro_generated_unexpanded`、`declaration_only`、`parse_failed`。
+
 ### Step 2: 构建四层功能层次
 
 **由底向上构建**：
@@ -57,6 +74,8 @@ metadata:
    - 识别读/写的成员变量和全局状态（`reads`、`writes`）
    - 分类 `lifecycle_role`
    - 分类 `algorithm_hint`
+   - 记录条件编译上下文（如函数体位于 `#ifdef` 分支内）
+   - 对模板函数记录模板参数；无法实例化时不生成虚假实例化条目
 
    **防重复保护**：
    - 同一 file_path 在 Method-level 阶段只读 1 次（即使含 50 个函数）。
@@ -99,6 +118,20 @@ metadata:
    - 同一 file_path 在本 Step 内绝不重复读取。
    - 若函数体跨多个文件（如 template 特化），每个文件也只读 1 次。
    - 若读取失败，将该函数标记为 `computation_density: "unknown"` 并继续，不重试。
+
+### Step 3.5: 函数覆盖闭环
+
+在生成 `function-index.jsonl` 前必须闭环 `functions_to_extract`：
+
+1. 对每个候选函数，必须生成一个 Method-level 条目，或记录跳过原因：
+   - `declaration_only`：只有声明无函数体。
+   - `implicit_special_member`：隐式构造/析构/赋值函数。
+   - `macro_generated_unexpanded`：宏生成，无法展开。
+   - `template_uninstantiated`：模板声明无法确定实例化。
+   - `parse_failed`：源码解析失败。
+2. 计算函数候选覆盖率：`Method-level 条目数 / functions_to_extract 数量`。
+3. 对未覆盖项列出前 50 项，并把完整清单写入 context-handoff 或验证报告。
+4. 覆盖率低于 90% 时，本阶段不得标记为完全通过，除非用户明确缩小分析范围。
 
 ### Step 4: 参数默认值特殊处理
 
@@ -150,6 +183,10 @@ metadata:
 4. `qualified_name` 全文件唯一。
 5. 每个 `sub_functions` 数组中的 qualified_name 可在本文件的更低层级中找到对应条目。
 6. `lifecycle_role` 为 `unknown` 的 Method-level 条目比例不应超过 50%。
+7. `functions_to_extract` 覆盖率必须 ≥ 90%，未覆盖项必须有跳过原因。
+8. 重载函数的 `qualified_name` 必须唯一且能区分签名；不得静默覆盖。
+9. 头文件 inline 函数、模板函数声明、operator 重载、匿名 namespace/static 函数必须纳入候选或明确记录跳过原因。
+10. `function-index.jsonl` 不得包含导出宏伪函数、变量/成员变量伪函数，且所有 Method-level 条目必须有可验证函数签名。
 
 ## 并行化策略
 

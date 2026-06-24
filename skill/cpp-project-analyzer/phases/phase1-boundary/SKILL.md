@@ -47,6 +47,11 @@ metadata:
    - 子目录引用（`add_subdirectory`）
    - 编译选项和宏定义
 2. 统计 `CMakeLists.txt` 文件数量，识别构建层级。
+3. 查找 `compile_commands.json`：
+   - 优先位置：`<source_root>/compile_commands.json`、`<source_root>/build/compile_commands.json`、`<extract_root>/build/compile_commands.json`。
+   - 若存在，记录路径、编译单元数量、覆盖到的 `.cpp/.cc/.cxx/.c` 文件数量。
+   - 若不存在，在 `project-boundary.json.notes` 中记录 `"compile_commands.json not found; AST-level checks may be incomplete"`。
+   - 禁止为寻找编译数据库递归扫描整个大仓库多次；使用一次 `find <source_root> -name compile_commands.json -maxdepth 4` 即可。
 
 ### Step 3: 模块识别
 
@@ -73,6 +78,16 @@ metadata:
 | `generated` | 自动生成的文件（如 `.pb.h`, `_generated.h`, 由代码生成器产生的文件） |
 | `unknown` | 无法明确分类 |
 
+完成分类后，必须生成覆盖基线统计：
+
+1. `all_file_count`：纳入分析的全部文件数。
+2. `cpp_file_count`：`source` + `header` 文件数。
+3. `build_file_count`：构建文件数量。
+4. `excluded_file_count`：被排除文件数量（如可统计）。
+5. `files_to_index`：后续 Phase 2 必须覆盖的源码/头文件清单，来源为 `file_type in ["source","header"]`。
+
+如果文件数超过 1000，必须在 `notes` 中建议后续 Phase 2-4 按模块或子目录分片；如果超过 10000，必须分片，不允许单 Agent 一次性深挖全部文件。
+
 ### Step 5: 目录树生成
 
 1. 使用 `find <extract_root> -maxdepth 4 -type d` 获取 4 层目录结构。
@@ -90,7 +105,7 @@ metadata:
 
 - `project-boundary/project-boundary.json`
 - `project-boundary/file-classification.jsonl`
-- `project-boundary/directory-tree.md`
+- `docs/project-boundary/directory-tree.md`
 
 ## 质量门槛
 
@@ -101,6 +116,8 @@ metadata:
 5. `total_file_count` 与 file-classification.jsonl 行数一致。
 6. 排除路径下的文件不纳入分类。
 7. `directory-tree.md` 覆盖所有 `extract_roots`，深度为 4 层。
+8. 若存在 `compile_commands.json`，必须记录其路径和编译单元数量；若不存在，必须在 `notes` 中说明。
+9. `source` + `header` 文件必须形成后续 `files_to_index` 覆盖基线。
 
 ## 使用 CodeGraph 的策略
 

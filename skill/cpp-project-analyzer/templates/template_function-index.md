@@ -4,6 +4,17 @@
 
 一行一个函数/方法。**必须同时包含 System-level、Module-level、Class-level、Method-level 四层条目**，不可只有 Method-level 一层。
 
+## 禁止条目
+
+以下候选不得写入 `function-index.jsonl` 的 Method-level：
+
+1. 导出/导入/API 可见性宏伪函数：`qualified_name`、`function_name` 或 `owner` 匹配 `.*(_EXPORT|_IMPORT|_API|_LIB_EXPORT)(::.*)?$`。
+2. 变量、成员变量、枚举值或宏常量，即使文本扫描产生了类似 `X::max` 的名字。
+3. 没有可验证函数签名的条目。Method-level 的 `signature` 必须包含 `(` 和 `)`，构造/析构函数也必须能追溯到声明或定义行。
+4. 未展开宏生成函数。只能在 notes/context-handoff 中记录 `macro_generated_unexpanded`，不得虚构参数、返回值或函数体。
+
+被过滤的候选必须记录跳过原因：`export_macro_pseudo_symbol`、`variable_not_function`、`macro_generated_unexpanded`、`declaration_only` 或 `parse_failed`。
+
 ## Method-level 必填字段
 
 - `schema_version`：固定为 `1`。

@@ -2,8 +2,7 @@
   "schema_version": "1",
   "source_root": "/Users/hjt/afsim/afsim-analysis-skill-project/source_root",
   "extract_roots": [
-    "afsim-2_9",
-    "src"
+    "afsim-2_9"
   ],
   "exclude_paths": [
     ".git",
@@ -14,7 +13,7 @@
   "analysis_depth": "full",
   "language_standard": "C++14",
   "build_system": "CMake",
-  "total_file_count": 43591,
+  "total_file_count": 43586,
   "total_source_count": 17342,
   "module_count": 107,
   "modules": [
@@ -988,14 +987,194 @@
       "file_count": 43633,
       "name": "afsim-2_9",
       "path": "source_root/afsim-2_9"
-    },
-    {
-      "brief": "Plugin analysis metadata and documentation; contains wsf_plugins/wsf_six_dof with vx.json and markdown",
-      "file_count": 5,
-      "name": "src",
-      "path": "source_root/src"
     }
   ],
   "evidence_level": "source-cited",
-  "notes": []
+  "notes": [
+    "Phase 1 supplement 2026-06-24: Markdown outputs moved under docs/; workspace keeps JSON/JSONL only.",
+    "compile_commands.json not found under source_root/afsim-2_9 (maxdepth 5); CMake enables CMAKE_EXPORT_COMPILE_COMMANDS, but no configured build directory is present.",
+    "source_root/src is referenced by legacy Phase 1 output but is absent on disk; existing src/* entries are treated as stale metadata and not a primary analysis root.",
+    "training, demos, documentation, and resources are distribution assets or optional install payloads, not primary architecture/code-analysis modules unless explicitly requested.",
+    "CodeGraph index detected at source_root/afsim-2_9/.codegraph and used for Phase 1 supplement evidence."
+  ],
+  "compile_commands": {
+    "exists": false,
+    "path": null,
+    "translation_unit_count": null,
+    "covered_source_count": null,
+    "cmake_exports_compile_commands": true,
+    "evidence": "source_root/afsim-2_9/swdev/src/CMakeLists.txt:32-36 sets C++14 and CMAKE_EXPORT_COMPILE_COMMANDS ON; no compile_commands.json found under source_root/afsim-2_9 maxdepth 5.",
+    "notes": [
+      "需要先配置一次 CMake build 目录，才会生成 compile_commands.json。"
+    ]
+  },
+  "codegraph": {
+    "exists": true,
+    "path": "source_root/afsim-2_9/.codegraph",
+    "evidence": "find . -maxdepth 4 -name .codegraph found source_root/afsim-2_9/.codegraph; codegraph explore returned symbols under swdev/src/core and swdev/src/wsf_plugins."
+  },
+  "analysis_boundaries": {
+    "primary_code_roots": [
+      {
+        "path": "afsim-2_9/swdev/src/core",
+        "role": "core_framework",
+        "brief": "AFSIM 核心框架、基础仿真服务、解析器、通信、军事/空间等核心库。",
+        "evidence": "swdev/src/CMakeLists.txt:167-169 sets WSF_ROOT to PROJECT_SOURCE_DIR/core."
+      },
+      {
+        "path": "afsim-2_9/swdev/src/wsf_plugins",
+        "role": "plugin_modules",
+        "brief": "AFSIM 可选插件集合，如 wsf_six_dof、wsf_p6dof、wsf_space 等。",
+        "evidence": "swdev/src/CMakeLists.txt:135-164 locates wsf_module files and extension files."
+      },
+      {
+        "path": "afsim-2_9/swdev/src/tools",
+        "role": "developer_tools",
+        "brief": "随源码构建的工具代码，属于工具子系统，不与核心/插件同层。",
+        "evidence": "swdev/src/CMakeLists.txt:171-172 sets TOOLS_DIRECTORY."
+      },
+      {
+        "path": "afsim-2_9/swdev/src/{engage,mission,mover_creator,mystic,post_processor,sensor_plot,warlock,weapon_tools,wizard}",
+        "role": "applications",
+        "brief": "应用和可视化/后处理工具，作为应用层子系统分析。",
+        "evidence": "这些目录包含 CMakeLists.txt 或 wsf_module 标记。"
+      }
+    ],
+    "secondary_reference_roots": [
+      {
+        "path": "afsim-2_9/demos",
+        "role": "scenario_examples",
+        "brief": "示例场景和演示数据；默认不作为 C++ 源码架构模块。",
+        "evidence": "swdev/src/CMakeLists.txt:48 WSF_INSTALL_DEMOS defaults FALSE."
+      },
+      {
+        "path": "afsim-2_9/documentation",
+        "role": "documentation",
+        "brief": "发布文档和 HTML 文档；可作为说明证据，不作为源码模块。",
+        "evidence": "swdev/src/CMakeLists.txt:52-53 documentation/doxygen install defaults FALSE."
+      },
+      {
+        "path": "afsim-2_9/training",
+        "role": "training_labs",
+        "brief": "培训实验和示例代码；默认排除出架构依赖分析，避免 training 路径污染模块依赖。",
+        "evidence": "swdev/src/CMakeLists.txt:51 WSF_INSTALL_TRAINING defaults FALSE.",
+        "source_header_count": 152,
+        "default_phase2_7_policy": "exclude_from_architecture_dependency_analysis_unless_explicit_scope"
+      },
+      {
+        "path": "afsim-2_9/resources",
+        "role": "runtime_resources",
+        "brief": "运行时资源、shader、配置和数据文件；仅在资源/配置流分析中引用。",
+        "evidence": "file-classification shows mostly config/doc/unknown, only 6 header shader files."
+      }
+    ],
+    "stale_or_missing_roots": [],
+    "recommended_exclude_paths_for_architecture": [
+      "afsim-2_9/demos",
+      "afsim-2_9/documentation",
+      "afsim-2_9/training",
+      "afsim-2_9/resources"
+    ],
+    "resolved_stale_roots": [
+      {
+        "path": "src",
+        "resolution": "removed_from_extract_roots_and_file_classification",
+        "removed_record_count": 5,
+        "evidence": "source_root/src does not exist; removed top-level src/* records from workspace/project-boundary/file-classification.jsonl on 2026-06-24."
+      }
+    ]
+  },
+  "module_hierarchy": {
+    "system_level": [
+      {
+        "name": "core_framework",
+        "path": "afsim-2_9/swdev/src/core",
+        "source_header_count": 2439,
+        "brief": "核心框架与基础库"
+      },
+      {
+        "name": "plugin_modules",
+        "path": "afsim-2_9/swdev/src/wsf_plugins",
+        "source_header_count": 9881,
+        "brief": "可选插件与领域扩展"
+      },
+      {
+        "name": "applications",
+        "path": "afsim-2_9/swdev/src/{engage,mission,mover_creator,mystic,post_processor,sensor_plot,warlock,weapon_tools,wizard}",
+        "source_header_count": 2368,
+        "brief": "应用层和可视化/后处理工具"
+      },
+      {
+        "name": "developer_tools",
+        "path": "afsim-2_9/swdev/src/tools",
+        "source_header_count": 2491,
+        "brief": "开发工具和辅助库"
+      }
+    ],
+    "non_architecture_assets": [
+      {
+        "name": "training",
+        "path": "afsim-2_9/training",
+        "source_header_count": 152,
+        "brief": "培训实验代码，默认不进入架构依赖"
+      },
+      {
+        "name": "resources",
+        "path": "afsim-2_9/resources",
+        "source_header_count": 6,
+        "brief": "运行资源和 shader 头文件，默认只作资源/配置证据"
+      },
+      {
+        "name": "legacy_src_metadata",
+        "path": "src",
+        "source_header_count": 0,
+        "brief": "当前不存在的旧元数据根"
+      }
+    ],
+    "module_identification_rule": "优先使用 swdev/src 下的 wsf_module 和 CMakeLists.txt；按 system/subsystem/module 三层组织，不把 demos/documentation/training 与 core/plugin 同层展示。"
+  },
+  "known_issues": [
+    {
+      "source": "phase1-supplement",
+      "severity": "medium",
+      "issue": "training 目录含 152 个 source/header 文件，旧模块分类会把培训实验混入 source/mover 等模块。",
+      "recommendation": "后续 Phase 2-7 默认排除 training；如用户需要培训样例分析，应单独开 analysis_scope。"
+    },
+    {
+      "source": "phase1-supplement",
+      "severity": "low",
+      "issue": "compile_commands.json 未生成。",
+      "recommendation": "执行 CMake configure 后再运行 Phase 3/4，可提升 AST/宏/include path 准确性。"
+    }
+  ],
+  "resolved_issues": [
+    {
+      "id": "phase1-stale-src-root",
+      "source": "phase1-supplement-followup",
+      "resolved_on": "2026-06-24",
+      "resolution": "Removed stale top-level src extract root and 5 src/* JSONL records; source_root/src remains absent and is no longer a Phase 2 input.",
+      "removed_records": [
+        "src/vx.json",
+        "src/wsf_plugins/vx.json",
+        "src/wsf_plugins/wsf_six_dof/vx.json",
+        "src/wsf_plugins/wsf_six_dof/source/vx.json",
+        "src/wsf_plugins/wsf_six_dof/source/WsfSixDOF_CommonController.hpp.md"
+      ]
+    }
+  ],
+  "followup_actions": [
+    {
+      "id": "exclude-training-default",
+      "status": "applied",
+      "scope": "phase2-7",
+      "action": "Use analysis_boundaries.recommended_exclude_paths_for_architecture to exclude afsim-2_9/training from default architecture/dependency/lifecycle reports.",
+      "evidence": "training contains 152 source/header files but CMake WSF_INSTALL_TRAINING defaults FALSE."
+    },
+    {
+      "id": "generate-compile-commands",
+      "status": "pending_external_build_configure",
+      "action": "Run CMake configure under source_root/afsim-2_9/swdev/src or a chosen build directory to generate compile_commands.json before AST-heavy Phase 3/4 reruns.",
+      "evidence": "source_root/afsim-2_9/swdev/src/CMakeLists.txt:32-36 sets C++14 and CMAKE_EXPORT_COMPILE_COMMANDS ON; no compile_commands.json found under source_root/afsim-2_9 maxdepth 5."
+    }
+  ]
 }

@@ -64,7 +64,7 @@ description: 当用户需要对 AFSIM 源码进行总体认知学习、架构分
 ## 输出规则
 
 - 架构认知输出到 `docs/architecture/`。
-- 算法提取输出到 `docs/algorithms/` 和 `workspace/extracted-algorithms/`。
+- 算法提取的 Markdown 文档输出到 `docs/algorithms/` 和 `docs/extracted-algorithms/`。
 - 需求映射输出到 `docs/requirements/`。
 - 迁移方案输出到 `docs/migration/`。
 - 过程记录、人工审查意见和未决问题输出到 `docs/records/`。

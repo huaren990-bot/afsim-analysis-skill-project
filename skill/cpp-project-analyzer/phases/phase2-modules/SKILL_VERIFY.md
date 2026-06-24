@@ -17,7 +17,7 @@ metadata:
 
 - `source-index/file-index.jsonl`
 - `source-index/symbol-index.jsonl`
-- `architecture/module-overview.md`
+- `docs/architecture/module-overview.md`
 
 ## 验证步骤
 
@@ -61,10 +61,29 @@ metadata:
 1. 检查 module-overview.md 是否覆盖 Phase 1 中所有模块。
 2. 检查每个模块是否包含子系统结构、核心类、关键依赖三个子章节。
 3. 检查核心类表格是否可追溯到 symbol-index.jsonl。
+4. 检查开头是否有中文概览段，且写明系统数、子系统数、模块总数、source/header 文件数。
+5. 检查文档是否明确说明“系统/子系统/模块”的区分依据，且与 `project-boundary.json.module_hierarchy` 一致。
+6. 检查模块清单表是否包含 Phase 1 所有模块；若正文为摘要表，必须有完整清单链接或附录。
+7. 检查每个模块清单行是否包含中文说明和详情跳转锚点。
+8. 检查是否至少包含一张 Mermaid 模块关系图；大型项目应按系统/子系统拆图，而不是只给一张过小总图。
+
+### 检查 7: files_to_index 闭环
+
+1. 从 Phase 1 的 `file-classification.jsonl` 中筛选所有 `source` 和 `header` 文件，作为 `files_to_index`。
+2. 从 `file-index.jsonl` 中提取所有 `path`。
+3. 计算覆盖率，必须 ≥ 95%。
+4. 对缺失文件，检查是否在 `notes`、context-handoff 或验证报告中记录明确原因。
+5. 若缺失文件没有原因，判定为遗漏。
+
+### 检查 8: symbols_to_refine 可用性
+
+1. 检查 `symbol-index.jsonl` 中每个正式符号是否有 `qualified_name`、`kind`、`path` 或 `declaration_path`。
+2. 检查是否包含头文件 inline 函数、自由函数、匿名 namespace/static 函数候选的记录或跳过说明。
+3. 若大量符号缺少路径（>5%），判定为 Phase 3 不可可靠精细化。
 
 ## 输出
 
-生成验证报告 `verification/phase2-verify-report.md`。
+生成验证报告 `docs/verification/phase2-verify-report.md`。
 
 ## 质量门槛
 
@@ -73,3 +92,6 @@ metadata:
 3. symbol-index.jsonl 无前向声明、无 EXPORT 宏、无重复条目。
 4. module-overview.md 覆盖所有模块且包含核心类清单。
 5. 检查 4 中核心类未命中率 ≤ 20%。
+6. files_to_index 覆盖率 ≥ 95%，未覆盖项均有原因。
+7. symbols_to_refine 条目具备可追溯路径，缺路径率 ≤ 5%。
+8. module-overview.md 必须有概览说明、层级定义、完整模块清单入口、详情跳转和模块关系图。

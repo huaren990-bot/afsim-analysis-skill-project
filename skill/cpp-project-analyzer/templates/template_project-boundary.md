@@ -13,6 +13,11 @@
 - `analysis_depth`：`full` | `module` | `overview`。
 - `language_standard`：如 `C++14`、`C++17`、`C++20`、`unknown`。
 - `build_system`：`CMake` | `Makefile` | `Bazel` | `Meson` | `Visual Studio` | `Xcode` | `unknown` | `mixed`。
+- `compile_commands`：编译数据库信息对象。不存在时 `exists=false`，并在 `notes` 说明影响。
+  - `exists`：是否找到 `compile_commands.json`。
+  - `path`：编译数据库路径；不存在时为 `null`。
+  - `translation_unit_count`：编译单元数量；未知时为 `null`。
+  - `covered_source_count`：编译数据库覆盖到的源码文件数量；未知时为 `null`。
 - `total_file_count`：纳入分析的文件总数。
 - `total_source_count`：源码文件(.h/.hpp/.c/.cpp/.cxx)总数。
 - `module_count`：识别到的模块数（若有模块结构）。
@@ -39,6 +44,12 @@
   "analysis_depth": "full",
   "language_standard": "C++14",
   "build_system": "CMake",
+  "compile_commands": {
+    "exists": true,
+    "path": "/path/to/project/build/compile_commands.json",
+    "translation_unit_count": 1200,
+    "covered_source_count": 1180
+  },
   "total_file_count": 5000,
   "total_source_count": 3500,
   "module_count": 15,

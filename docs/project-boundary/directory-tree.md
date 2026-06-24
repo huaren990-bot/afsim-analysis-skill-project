@@ -1,6 +1,6 @@
 # Source Root 目录树
 
-> 根路径: `/Users/hjt/afsim/afsim-analysis-skill-project/source_root`
+> 根路径: `source_root`
 > 扫描深度: 4 层 — 2332 个目录
 
 ---
@@ -2368,3 +2368,30 @@ src/
 | 提取根 | 目录数 (≤depth 4) | 总文件数 |
 |--------|-------------------|---------|
 | `afsim-2_9` | 2329 | 43633 |
+
+---
+
+## Phase 1 补充说明（2026-06-24）
+
+本目录树保留原始扫描结果。根据后续人工检查和源码复核，需要对目录角色作如下解释，避免后续阶段把发布资产、培训样例和核心源码混在同一模块层级：
+
+| 路径 | 目录角色 | 后续处理 |
+|------|----------|----------|
+| `afsim-2_9/swdev/src/core` | 核心框架源码根 | Phase 2-7 的主分析范围之一。 |
+| `afsim-2_9/swdev/src/wsf_plugins` | 插件源码根 | Phase 2-7 的主分析范围之一。 |
+| `afsim-2_9/swdev/src/tools` | 开发工具源码根 | 作为工具子系统分析，不与核心框架同层。 |
+| `afsim-2_9/swdev/src/engage`、`mission`、`mover_creator`、`mystic`、`post_processor`、`sensor_plot`、`warlock`、`weapon_tools`、`wizard` | 应用层源码根 | 作为应用/可视化/后处理子系统分析。 |
+| `afsim-2_9/demos` | 示例场景与演示数据 | 默认不进入架构依赖图，可作为配置/场景证据。 |
+| `afsim-2_9/documentation` | 发布文档 | 默认不进入源码模块，可作为文档证据。 |
+| `afsim-2_9/training` | 培训实验与样例代码 | 默认不进入架构依赖图，避免 training 路径污染模块依赖。 |
+| `afsim-2_9/resources` | 运行资源、shader 和数据 | 默认只在资源流/配置流分析中引用。 |
+| `src` | 历史遗留元数据根 | 当前 `source_root/src` 不存在；后续阶段不得将其作为真实源码根。 |
+
+源码证据：
+
+- `source_root/afsim-2_9/swdev/src/CMakeLists.txt:32-36` 设置 C++14 并开启 `CMAKE_EXPORT_COMPILE_COMMANDS`。
+- `source_root/afsim-2_9/swdev/src/CMakeLists.txt:45-53` 显示插件默认构建，但 demos、training、documentation 默认不安装。
+- `source_root/afsim-2_9/swdev/src/CMakeLists.txt:135-164` 使用 `wsf_module` 标记发现扩展模块。
+- `source_root/afsim-2_9/swdev/src/CMakeLists.txt:167-172` 定义核心根 `core` 和工具根 `tools`。
+
+详见补充分析文档：`docs/project-boundary/phase1-boundary-supplement.md`。

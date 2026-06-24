@@ -2,6 +2,7 @@
 
 > **日期**：2026-06-16
 > **验证对象**：project-boundary.json, file-classification.jsonl, directory-tree.md
+> **后续更新**：2026-06-24 已处理顶层 `src` 遗留根问题，当前可消费状态见 `docs/verification/phase1-followup-fix-report.md`。
 
 ## 检查结果汇总
 

@@ -15,6 +15,7 @@ metadata:
 
 ## 验证对象
 
+- `source-index/symbol-index-phase2.jsonl`（Phase 2 粗版快照）
 - `source-index/symbol-index.jsonl`（精细化版）
 - `source-index/macro-index.jsonl`
 - `source-index/enum-index.jsonl`
@@ -35,7 +36,7 @@ metadata:
 
 ### 检查 3: macro-index.jsonl 过滤正确性
 
-1. 遍历 macro-index.jsonl 所有条目，检查是否存在 `macro_name` 匹配 `*_EXPORT` 或 `*_HPP` 或 `*_H_` 模式。
+1. 遍历 macro-index.jsonl 所有条目，检查是否存在 `macro_name` 匹配 `*_EXPORT`、`*_IMPORT`、`*_API`、`*_LIB_EXPORT`、`*_HPP` 或 `*_H_` 模式。
 2. 如有，记录为"过滤不完整"。
 
 ### 检查 4: macro-index.jsonl 抽样验证
@@ -65,9 +66,34 @@ metadata:
 2. 在 Phase 3 精细化版 symbol-index.jsonl 中逐一查找。
 3. 覆盖率必须 = 100%（所有 Phase 2 条目在 Phase 3 中都有对应条目）。
 
+### 检查 7: C++ 易漏符号检查
+
+1. 检查是否存在重载函数因 `qualified_name` 相同而被覆盖的情况；同名函数必须能通过 `signature` 或签名摘要区分。
+2. 抽样检查模板类/模板函数条目是否记录模板参数或在 `notes` 中说明无法解析。
+3. 检查头文件 inline 函数、operator 重载、匿名 namespace/static 函数是否有条目或跳过说明。
+4. 检查条件编译相关条目是否记录条件或使用 `evidence_level: "inferred"`。
+
+### 检查 8: 精细化合并质量
+
+1. 按 `qualified_name + kind + declaration_path` 检查重复率，重复率必须 ≤ 1%。
+2. 统计 `evidence_level=unknown` 的条目比例，若 >20% 标记为质量问题。
+3. 若存在分片输出，检查合并后的条目数是否等于各分片去重后的数量。
+
+### 检查 9: Phase 2 粗版快照保留
+
+1. 检查 `source-index/symbol-index-phase2.jsonl` 是否存在且可逐行 JSON 解析。
+2. 对比 `symbol-index-phase2.jsonl` 与精细版 `symbol-index.jsonl`：粗版条目必须能在精细版找到对应、替代或跳过说明。
+3. 若只存在精细版而没有粗版快照，判定为“无法人工追溯 Phase 2 → Phase 3 精细化变化”。
+
+### 检查 10: 导出宏伪符号过滤
+
+1. 扫描 `symbol-index.jsonl` 的 `name`、`qualified_name`、`owner`、`signature`、`members` 字段。
+2. 若发现匹配 `.*(_EXPORT|_IMPORT|_API|_LIB_EXPORT)(::.*)?$` 的 class/function/method/variable 条目，判定为伪符号污染。
+3. 特别检查类似 `POST_PROCESSOR_LIB_EXPORT::max` 或 `POST_PROCESSOR_LIB_EXPORT` 带成员函数/签名的条目，必须不存在。
+
 ## 输出
 
-生成验证报告 `verification/phase3-verify-report.md`。
+生成验证报告 `docs/verification/phase3-verify-report.md`。
 
 ## 质量门槛
 
@@ -77,3 +103,7 @@ metadata:
 4. enum-index.jsonl 每个枚举含 values 数组。
 5. Phase 2 → Phase 3 追溯覆盖率 = 100%。
 6. 三个 JSONL 文件每行可通过 JSON 解析。
+7. 重载、模板、inline、operator、匿名 namespace/static 函数无明显静默遗漏。
+8. 精细化结果重复率 ≤ 1%，unknown 比例 ≤ 20%。
+9. `symbol-index-phase2.jsonl` 存在且可追溯。
+10. `symbol-index.jsonl` 无导出宏伪符号污染。

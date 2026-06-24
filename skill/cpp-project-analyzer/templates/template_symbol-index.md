@@ -4,6 +4,16 @@
 
 一行一个符号。覆盖所有 class、struct、enum、typedef、using、macro、variable 定义（剔除前向声明和 `*_EXPORT` 宏）。
 
+## 导出宏与伪符号过滤
+
+匹配 `.*(_EXPORT|_IMPORT|_API|_LIB_EXPORT)$` 的标识符是编译/链接可见性宏，不是 C++ 业务符号：
+
+1. 不得作为 `class`、`struct`、`function`、`method`、`constructor`、`destructor`、`variable` 写入 `symbol-index.jsonl`。
+2. 不得作为 `owner` 生成 `POST_PROCESSOR_LIB_EXPORT::max` 这类伪限定名。
+3. 不得为导出宏生成 `signature`、`members`、`member_functions`。
+4. 如需记录，只能在 macro 过滤统计或 notes 中说明“导出宏已过滤”，不得进入正式符号索引。
+5. 写出前必须扫描 `name`、`qualified_name`、`owner`、`signature`、`members` 字段，发现导出宏伪符号即删除或标记跳过原因。
+
 ## 模板
 
 
@@ -497,4 +507,3 @@
   "access_modifier": "private"
 }
 ```
-

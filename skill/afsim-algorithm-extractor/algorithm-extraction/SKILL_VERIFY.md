@@ -27,7 +27,7 @@ description: 一个专门检验 algorithm-extractor 产出质量的 skill。
 
 - `docs/algorithms/` 目录下的全部算法卡片（`<domain>-<algorithm>-card.md`）。
 - `docs/algorithms/CompendiumofAlgorithms.md` 算法汇总文档。
-- `workspace/extracted-algorithms/<algorithm>/` 目录下的全部接口规格文件（`<domain>-<algorithm>-interface-spec.md`）。
+- `docs/extracted-algorithms/<algorithm>/` 目录下的全部接口规格文件（`<domain>-<algorithm>-interface-spec.md`）。
 - `workspace/source-index/` 中的索引文件（`function-index.jsonl`、`file-index.jsonl`、`symbol-index.jsonl`、`dependency-index.jsonl`）。
 - `skill/afsim-algorithm-extractor/template_list/` 中的全部模板文件（用于格式对照）。
 - `skill/afsim-analyst/references/output-contracts.md` 中的算法卡片必填字段定义。
@@ -37,7 +37,7 @@ description: 一个专门检验 algorithm-extractor 产出质量的 skill。
 ### 第 1 步：收件与范围确认
 
 1. 列出 `docs/algorithms/` 下所有算法卡片文件（排除 `CompendiumofAlgorithms.md` 和 `vx.json` 等非卡片文件），统计总数 N。
-2. 列出 `workspace/extracted-algorithms/` 下所有子目录，统计包含 `interface-spec.md` 的目录数 M。
+2. 列出 `docs/extracted-algorithms/` 下所有子目录，统计包含 `interface-spec.md` 的目录数 M。
 3. 列出 `workspace/source-index/` 中各模块的 `function-index.jsonl`，提取所有 `algorithm_hint=math` 的函数名及其所属模块。
 4. 将以上清单记录为"质检范围"，作为后续检查的基准。
 
@@ -140,7 +140,7 @@ description: 一个专门检验 algorithm-extractor 产出质量的 skill。
 
 ### 第 5 步：接口规格完整性检查
 
-1. 遍历 `workspace/extracted-algorithms/` 下所有子目录。
+1. 遍历 `docs/extracted-algorithms/` 下所有子目录。
 2. 检查每个子目录是否包含 `<domain>-<algorithm>-interface-spec.md` 文件。
 3. 检查接口规格文件是否包含 6 个标准章节（总体架构、核心接口定义、典型调用模式、坐标系约定、单位约定、框架依赖解耦），参考 `template_interface-spec.md`。
 4. 检查接口规格文件中的"对应算法卡"字段是否正确引用存在的卡片文件名。

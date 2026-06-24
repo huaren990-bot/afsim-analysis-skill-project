@@ -148,7 +148,7 @@ metadata:
 
 ## 输出
 
-生成验证报告，保存到 `workspace/verification/migration-generation-verify-report.md`，包含：
+生成验证报告，保存到 `docs/verification/migration-generation-verify-report.md`，包含：
 
 ```markdown
 # migration-generation 验证报告

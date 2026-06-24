@@ -29,7 +29,11 @@ metadata:
 ### Step 1: 读取上游产物
 
 1. 读取 Phase 2 的 `symbol-index.jsonl`（粗版），获取已有符号清单。
-2. 读取 `file-index.jsonl`，获取文件到模块的映射。
+2. 在覆盖精细版前，先把 Phase 2 粗版原样保存为 `source-index/symbol-index-phase2.jsonl`。该文件作为追溯快照，不再被 Phase 3 改写。
+3. 读取 `file-index.jsonl`，获取文件到模块的映射。
+4. 建立 `symbols_to_refine` 基线：以 Phase 2 粗符号的 `qualified_name + kind + declaration_path/path` 为唯一键，作为本阶段必须闭环的输入清单。
+5. 若存在 `compile_commands.json`，记录可用的 include path、宏定义和编译单元；若不可读取，继续使用 CodeGraph + 文本扫描，并在 `notes` 中说明。
+6. 建立导出宏黑名单：标识符匹配 `.*(_EXPORT|_IMPORT|_API|_LIB_EXPORT)$` 时，只能作为编译可见性宏处理，不得创建 class/function/method/variable 条目，也不得作为类 owner 生成成员函数。
 
 ### Step 2: 按文件分组批量精细化
 
@@ -58,6 +62,8 @@ for each file_path in 文件分组.keys():
      - 成员函数签名
      - 嵌套类型
    - **禁止**对同一 file_path 调用第二次 codegraph_node（即使是查询不同符号）。
+   - 对模板类必须记录模板参数列表（如 `template <typename T>`）；无法解析完整约束时在 `notes` 中标记。
+   - 对条件编译包裹的成员，记录条件表达式（如 `#ifdef XXX`），不确定激活状态时使用 `evidence_level: "inferred"`。
 
 2. **enum/enum_class 精细化**：
    - 复用 Step 2.1 已读过的文件内容（不要重新读）。
@@ -78,6 +84,12 @@ for each file_path in 文件分组.keys():
    - 从已读过的文件内容中提取全局变量/静态成员的初始值、类型和用途。
    - 不发起新的工具调用。
 
+5. **C++ 易漏符号补扫**：
+   - 使用已读文件内容补充匿名 namespace、`static` 文件内函数、operator 重载、conversion operator、头文件 inline 函数、模板函数声明。
+   - 对宏生成的类/注册符号，记录宏调用位置与宏名；不可凭空展开未知宏。
+   - 对同名重载函数，`qualified_name` 必须结合参数签名或签名摘要保持唯一。
+   - 对 `POST_PROCESSOR_LIB_EXPORT`、`WSF_EXPORT` 这类导出宏，即使 CodeGraph 或文本扫描返回类似 `MACRO::member` 的伪限定名，也必须丢弃该符号条目，并在 `notes` 统计“疑似导出宏伪符号已过滤”。
+
 ### Step 3: 独立生成 macro-index.jsonl（批量 grep 模式）
 
 **⚠️ 关键规则：使用 shell 批量 grep，禁止逐宏读取源文件。**
@@ -90,6 +102,7 @@ for each file_path in 文件分组.keys():
 
 2. **过滤排除**（基于宏名模式匹配，不需要读源码）：
    - `*_EXPORT` 模式（如 `WSF_MIL_EXPORT`、`WSF_EXPORT`）— 这是 DLL 导出宏
+   - `*_IMPORT`、`*_API`、`*_LIB_EXPORT` 模式 — 这是导入/导出或 API 可见性宏
    - Include guards（`_HPP`、`_H_` 结尾的宏）
    - 空替换体宏（如 `#define FOO`）— 通常是 feature flag，可选保留
 
@@ -132,8 +145,20 @@ for each file_path in 文件分组.keys():
 - `is_virtual`、`is_static`、`is_const`：成员函数必须有
 - `declaration_path`、`definition_path`：声明与实现分离时分别记录
 
+写入前必须执行追溯闭环：
+
+1. 将 `symbols_to_refine` 与精细版 `symbol-index.jsonl` 做集合比对。
+2. Phase 2 中每个粗符号都必须在 Phase 3 中有对应条目，或在 `notes` 中记录明确替代/跳过原因。
+3. 对新增符号按 `qualified_name + kind + declaration_path` 去重。
+4. 输出覆盖率、重复率、`unknown` 比例到 context-handoff。
+5. 扫描精细版 `symbol-index.jsonl`，确保不存在导出宏伪符号：
+   - `qualified_name` 或 `name` 匹配 `.*(_EXPORT|_IMPORT|_API|_LIB_EXPORT)(::.*)?$`
+   - `signature` 把导出宏当作 class/struct 声明
+   - `members` / `member_functions` 挂在导出宏 owner 下
+
 ## 输出文件
 
+- `source-index/symbol-index-phase2.jsonl`（Phase 2 粗版快照）
 - `source-index/symbol-index.jsonl`（覆盖 Phase 2 粗版，精细化）
 - `source-index/macro-index.jsonl`
 - `source-index/enum-index.jsonl`
@@ -146,6 +171,9 @@ for each file_path in 文件分组.keys():
 4. `enum-index.jsonl` 中每个枚举含完整的 `values` 数组。
 5. 三个 JSONL 文件每行可被 JSON parser 解析。
 6. Phase 2 粗版中的符号 100% 在精细化版本中有对应条目。
+7. 重载、模板、inline、匿名 namespace、operator 重载不得因命名冲突被静默覆盖；必须保留唯一键或记录冲突。
+8. `symbol-index.jsonl` 不得包含导出宏伪符号或挂在导出宏 owner 下的成员。
+9. 必须保留 `symbol-index-phase2.jsonl` 作为粗版快照，便于人工对比 Phase 2 → Phase 3 精细化变化。
 
 ## 并行化策略
 

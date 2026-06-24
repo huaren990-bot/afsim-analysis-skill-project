@@ -1,5 +1,7 @@
 # 模块概览：AFSIM 2.9
 
+> **历史说明**：本文件是旧 Phase 2 产物，仍保留 107 个同层模块的历史视图。2026-06-24 起，Phase 2 改为按 Phase 1 的 `module_hierarchy` 和目录树最小单元逐步补强；新的增量入口见 `docs/architecture/module-overview-v2-incremental.md`，工作清单见 `workspace/source-index/phase2-analysis-unit-worklist.jsonl`。
+
 ## 模块清单
 
 | #   | 模块名                           | 路径        | 文件总数  | 源码/头文件数 | 核心职责                                                                     |

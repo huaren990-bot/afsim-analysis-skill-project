@@ -95,6 +95,9 @@ for each file_path:
 - **每阶段自带验证**：每个分析 Agent 执行完后，立即启动验证 Agent 检查输出质量。验证不通过则分析 Agent 修正后重新验证。
 - **输入输出明确**：每个阶段都有严格定义的输入文件（依赖上游产出）和输出文件（供下游消费）。
 - **CodeGraph 优先**：所有代码查询优先使用 CodeGraph MCP 工具（`codegraph_explore`、`codegraph_node`、`codegraph_search`），仅在 CodeGraph 未覆盖时回退到 grep/read。
+- **覆盖清单驱动**：大型 C++ 项目不可只按“看起来重要”的文件分析。必须先生成全量文件清单、全量源码清单、全量候选符号清单、全量候选函数清单，再按清单逐步消化。任何跳过项都必须写入 `notes` 或 known-issue。
+- **多证据交叉校验**：关键结论应由高优先级证据直接支持，或由两类弱证据交叉支持（CodeGraph/AST/编译数据库/源码 grep/上游 JSONL 索引）。若只有单一弱证据，必须标记 `evidence_level: "inferred"` 并说明推断依据。
+- **分片可合并**：大项目按模块、目录或文件批次分片执行时，每个分片必须记录输入清单、输出条目数、未处理项。合并阶段必须基于唯一键去重，并生成覆盖率统计。
 - **中文面向新手**：所有生成的 .md 报告面向母语为中文、无项目背景知识的程序员。具体要求如下：
   - **章节标题与表格表头**：必须使用中文（如“检查结果汇总”而非“Check Results Summary”）。
   - **描述性文字与评价**：必须使用中文撰写（如“总体评价”“结果：✅ 通过”而非“Overall Assessment”“Result: PASS”）。
@@ -103,6 +106,107 @@ for each file_path:
   - **JSONL 数据文件中的描述字段**：`brief`、`notes`、`responsibility` 等面向人类的字段内容应使用中文撰写。
   - **验证报告**：章节、表格、结论全部使用中文。
 - **绝不重复调用**：任何工具调用都必须推进认知，重复调用是严重违规。
+
+## 人工复核反馈采纳规则
+
+当存在人工检查报告（如 `人工检查report*.md`）时，总控必须先把其中可执行的建议转化为阶段约束和验证项。以下规则对所有阶段生效：
+
+1. **Markdown 产物位置**：所有 `.md` 产物必须写入 `docs/` 下对应目录；`workspace/` 只允许存放机器可读中间数据。若旧版 Markdown 已在 `workspace/` 中存在，允许覆盖、移动到 `docs/` 或归档到项目回收站目录，但不得继续作为交付入口。
+2. **英文标识中文说明**：报告中的英文目录名、模块名、类名、函数名、宏名首次出现时，必须给出中文名称或中文用途说明。说明不能只重复标识符本身，例如 `WsfSimulation` 应解释为“仿真运行上下文/调度核心（按源码证据确认）”。
+3. **分析边界优先**：Phase 1 的 `analysis_boundaries` 是后续阶段的硬边界。`training`、`demo`、文档、资源、第三方或用户明确排除路径，不得进入架构级依赖、生命周期或最终报告的核心结论；如必须引用，只能作为“非分析范围证据”并标注原因。
+4. **图表不可误导**：图过大时必须拆成子图或摘要图，并给出完整清单/索引文件链接；不得只展示“Top N”后让未入选模块看起来没有依赖。零依赖、孤立或未展示的模块必须单独列出原因。
+5. **未知项可处理**：所有 `unknown`、`inferred`、无法确认项必须写明“问题描述、影响、当前证据、建议人工确认的问题、建议确认对象/文件”。不能只写“未知”。
+6. **关键符号摘要化**：最终报告不应堆砌大量符号。正文只保留总体性结论和代表性符号，完整符号清单链接到 `source-index/symbol-index.jsonl` 或独立附录。
+7. **扩展点用途说明**：任何 `extension-points.md` 或架构报告扩展点章节，必须先解释扩展点分析的作用：识别插件/工厂/注册/事件订阅等可扩展边界，帮助判断外部能力如何接入、哪些接口稳定、哪些注册路径会影响运行时行为。
+8. **C++ 导出宏硬过滤**：匹配 `.*(_EXPORT|_IMPORT|_API|_LIB_EXPORT)$` 的标识符属于编译/链接可见性宏，默认不得作为 class、function、method、variable 或成员容器进入 `symbol-index.jsonl` 与 `function-index.jsonl`；只可在宏索引中作为过滤统计或 notes 出现。
+
+## 大型 C++ 项目准确性与防遗漏协议
+
+本协议是所有阶段的强制补充要求，目标是避免在大型 C++ 项目中因文件量大、宏条件编译、模板、重载、生成代码或跨目录依赖而漏分析。
+
+### 1. 先建覆盖基线，再做理解
+
+Phase 1 必须建立以下基线，并在后续阶段持续引用：
+
+| 基线 | 来源 | 用途 |
+|------|------|------|
+| 全量文件清单 | `file-classification.jsonl` | 判断哪些文件纳入/排除 |
+| C++ 源码清单 | `source` + `header` 文件 | Phase 2-4 的覆盖分母 |
+| 构建入口清单 | CMake/Makefile/Bazel 等 | 判断真实编译目标 |
+| 编译数据库 | `compile_commands.json`（如存在） | 判断宏、include path、编译单元 |
+| CodeGraph 索引状态 | `.codegraph/` | 判断语义查询是否可用 |
+
+若存在 `compile_commands.json`，Phase 1 必须记录路径和涉及的编译单元数量；若不存在，必须记录为 known-issue，并说明后续 C++ 解析只能采用 CodeGraph + 文本启发式。
+
+### 2. 三张“待处理清单”必须闭环
+
+大型项目分析时，每阶段必须维护并输出或在 handoff 中汇总以下清单：
+
+| 清单 | 生成阶段 | 闭环阶段 | 完成判定 |
+|------|----------|----------|----------|
+| `files_to_index` | Phase 1 | Phase 2 | 每个源码/头文件在 file-index 中有条目 |
+| `symbols_to_refine` | Phase 2 | Phase 3 | 每个粗符号在精细 symbol-index 中有同名或明确替代项 |
+| `functions_to_extract` | Phase 3 | Phase 4 | 每个函数/方法候选在 function-index 中有 Method-level 条目或跳过原因 |
+
+闭环时必须生成覆盖率：
+
+```
+coverage = 已完成条目数 / 待处理条目数
+missing = 待处理清单 - 已完成清单 - 已记录跳过清单
+```
+
+`missing` 非空时不得直接声称“全量覆盖”，必须在验证报告和 context-handoff 中列出前 50 项，并说明完整清单所在文件。
+
+### 3. 符号与函数抽取的证据优先级
+
+对 C++ 符号/函数，按以下证据优先级填充字段：
+
+1. **AST 或编译数据库驱动结果**：如 clang 工具、compile_commands、CodeGraph 解析出的定义位置。
+2. **CodeGraph 节点源码**：`codegraph_node(file_path)` 或 `codegraph_explore` 返回的源代码和调用路径。
+3. **源码文本批量扫描**：`rg` 批量提取 class/function/include/macro 模式。
+4. **上游索引推断**：从 file-index、symbol-index、function-index 的交叉引用推断。
+
+若出现冲突，以更高优先级证据为准；冲突本身必须写入 `notes`，格式为：
+
+```
+"conflict: CodeGraph says X, grep says Y, chose X because <reason>"
+```
+
+### 4. C++ 易漏点强制检查
+
+Phase 3-4 必须显式处理以下 C++ 易漏点：
+
+- 重载函数：`qualified_name` 必须追加稳定签名摘要，避免 `Class::Foo` 多次冲突。
+- 模板函数/模板类：记录模板参数；无法完全实例化时标记 `notes: ["template not fully instantiated"]`。
+- 内联函数：头文件中的函数体也必须纳入 Method-level 候选。
+- 构造/析构函数：包含默认、拷贝、移动构造与析构；若源码未显式定义，仅在 `notes` 中说明隐式存在，不生成伪源码条目。
+- 宏生成代码：识别明显的注册宏、声明宏、工厂宏；无法展开时记录宏名、使用位置和影响。
+- 条件编译：遇到 `#if/#ifdef/#ifndef` 时记录条件表达式；不确定激活分支时标记 `evidence_level: "inferred"`。
+- 匿名 namespace 与 static 函数：限定名中加入文件作用域前缀，避免跨文件重名。
+- operator 重载与 conversion operator：使用原始签名保留语义。
+
+### 5. 分片执行与合并规则
+
+当源码文件超过 1000 个或函数候选超过 10000 个时，必须分片执行：
+
+1. 按模块优先分片；模块过大时按子目录分片；仍过大时按文件列表范围分片。
+2. 每个分片必须写出 `chunk_id`、输入文件数、输出条目数、失败项数。
+3. 合并时使用以下唯一键：
+   - 文件：`path`
+   - 符号：`qualified_name + kind + declaration_path`
+   - 函数：`qualified_name + signature + definition_path`
+   - 依赖：`source + target + relation + path + line_start`
+4. 合并后必须重新计算覆盖率、重复率和 unknown 比例。
+
+### 6. 完成判定
+
+只有同时满足以下条件，才可对用户表述“完整分析”：
+
+- Phase 2 文件覆盖率 ≥ 95%，且缺失文件均有跳过原因。
+- Phase 3 粗符号追溯覆盖率 = 100%，新增符号已去重。
+- Phase 4 函数候选覆盖率 ≥ 90%，未覆盖项均列入 known-issue。
+- Phase 5 依赖至少覆盖 build、include、inheritance、composition、call、registration 六类关系。
+- Phase 7 最终报告中的关键断言均能追溯到索引或源码证据。
 
 ## CodeGraph 配置与优先策略
 
@@ -307,17 +411,17 @@ docs/records/<序号>-phase<N>-<阶段名称>.md
 
 | 参数 | 值 |
 |------|-----|
-| source_root | ... |
-| extract_roots | ... |
-| exclude_paths | ... |
-| analysis_depth | ... |
+| source_root | 按实际源码根目录填写 |
+| extract_roots | 按实际纳入目录完整填写 |
+| exclude_paths | 按实际排除目录完整填写 |
+| analysis_depth | 按实际分析深度填写 |
 
 ## 执行方式
 
 | 子阶段 | Agent 数 | 职责 |
 |--------|----------|------|
-| Phase <N>A: ... | N | ... |
-| Phase <N>B: ... | N | ... |
+| Phase <N>A: <子任务名称> | N | <职责说明> |
+| Phase <N>B: <子任务名称> | N | <职责说明> |
 
 **总耗时**：约 X 分钟
 **总 Agent 数**：N
@@ -327,7 +431,7 @@ docs/records/<序号>-phase<N>-<阶段名称>.md
 
 | 文件 | 路径 | 大小 |
 |------|------|------|
-| ... | workspace/... | ... |
+| <产物名称> | `workspace/<json-or-jsonl-path>` 或 `docs/<markdown-path>` | <大小> |
 
 ## 关键统计数据
 
@@ -337,7 +441,7 @@ docs/records/<序号>-phase<N>-<阶段名称>.md
 
 | # | 检查项 | 结果 | 详情 |
 |---|--------|------|------|
-| 1 | ... | ✅/❌ | ... |
+| 1 | <检查项名称> | ✅/❌ | <具体证据与结论> |
 
 ## 已知问题与备注
 
@@ -358,21 +462,30 @@ docs/records/<序号>-phase<N>-<阶段名称>.md
 
 ## 输出文件规范
 
-所有输出文件放置在用户当前工作区下的workspace文件夹下，按以下目录组织：
+输出文件按类型分离存放：
+
+- 机器可读中间产物（`.json`、`.jsonl`）放在 `workspace/` 下。
+- 所有 Markdown 文档产物（`.md`）放在 `docs/` 下，禁止再写入 `workspace/`。
+- 阶段执行记录继续放在 `docs/records/` 下。
 
 ```
-<workspace>/
+workspace/
 ├── project-boundary/
 │   ├── project-boundary.json        # Phase 1 产出
 │   └── file-classification.jsonl    # Phase 1 产出
-├── source-index/
-│   ├── file-index.jsonl             # Phase 2 产出
-│   ├── symbol-index.jsonl           # Phase 3 产出（精细版）
-│   ├── macro-index.jsonl            # Phase 3 产出
-│   ├── enum-index.jsonl             # Phase 3 产出
-│   ├── function-index.jsonl         # Phase 4 产出
-│   ├── function-body-summary.jsonl  # Phase 4 产出
-│   └── dependency-index.jsonl       # Phase 5 产出
+└── source-index/
+    ├── file-index.jsonl             # Phase 2 产出
+    ├── symbol-index.jsonl           # Phase 3 产出（精细版）
+    ├── macro-index.jsonl            # Phase 3 产出
+    ├── enum-index.jsonl             # Phase 3 产出
+    ├── function-index.jsonl         # Phase 4 产出
+    ├── function-body-summary.jsonl  # Phase 4 产出
+    └── dependency-index.jsonl       # Phase 5 产出
+
+docs/
+├── project-boundary/
+│   ├── directory-tree.md            # Phase 1 产出
+│   └── context-handoff-phase<N>.md  # 阶段间上下文传递
 ├── architecture/
 │   ├── module-overview.md           # Phase 2 产出
 │   ├── dependency-graph.md          # Phase 5 产出
@@ -382,14 +495,16 @@ docs/records/<序号>-phase<N>-<阶段名称>.md
 │   ├── afsim-architecture.md        # Phase 7 产出
 │   ├── x-level-capabilities.md      # Phase 7 产出
 │   └── module-dependency.md         # Phase 7 产出
-└── verification/
-    ├── phase1-verify-report.md      # Phase 1 验证报告
-    ├── phase2-verify-report.md      # Phase 2 验证报告
-    ├── phase3-verify-report.md      # Phase 3 验证报告
-    ├── phase4-verify-report.md      # Phase 4 验证报告
-    ├── phase5-verify-report.md      # Phase 5 验证报告
-    ├── phase6-verify-report.md      # Phase 6 验证报告
-    └── phase7-final-verify-report.md # Phase 7 全量验证报告
+├── verification/
+│   ├── phase1-verify-report.md      # Phase 1 验证报告
+│   ├── phase2-verify-report.md      # Phase 2 验证报告
+│   ├── phase3-verify-report.md      # Phase 3 验证报告
+│   ├── phase4-verify-report.md      # Phase 4 验证报告
+│   ├── phase5-verify-report.md      # Phase 5 验证报告
+│   ├── phase6-verify-report.md      # Phase 6 验证报告
+│   └── phase7-final-verify-report.md # Phase 7 全量验证报告
+└── records/
+    └── <序号>-phase<N>-<name>.md    # 阶段完成记录
 ```
 
 ## 证据等级
@@ -410,8 +525,8 @@ docs/records/<序号>-phase<N>-<阶段名称>.md
 
 ```
 本阶段输入文件：
-  - xxx.jsonl （来自 Phase N，路径：...）
-  - yyy.md   （来自 Phase M，路径：...）
+  - xxx.jsonl （来自 Phase N，路径：<实际路径>）
+  - yyy.md   （来自 Phase M，路径：<实际路径>）
 
 本阶段输出要求：
   - 输出文件 1：路径、格式、模板参考
@@ -420,22 +535,22 @@ docs/records/<序号>-phase<N>-<阶段名称>.md
 本阶段质量门槛：
   - 检查项 1
   - 检查项 2
-  ...
+  - 继续完整列出本阶段全部检查项
 ```
 
 验证 Agent 启动时，必须在其 prompt 中明确列出：
 
 ```
 本阶段验证对象：
-  - 分析 Agent 输出文件 1（路径：...）
-  - 分析 Agent 输出文件 2（路径：...）
+  - 分析 Agent 输出文件 1（路径：<实际路径>）
+  - 分析 Agent 输出文件 2（路径：<实际路径>）
 
 验证依据：
   - 本阶段 Skill 定义的质量门槛
   - 对应模板文件（如有）
 
 验证输出：
-  - verification/phaseN-verify-report.md
+  - docs/verification/phaseN-verify-report.md
 ```
 
 ## 错误处理与重试策略
@@ -548,7 +663,7 @@ Agent({
     对照模板：
     - skill/cpp-project-analyzer/templates/template_<xxx>.md
 
-    输出：verification/phase<N>-verify-report.md
+    输出：docs/verification/phase<N>-verify-report.md
 
     对每个检查项给出 ✅ 或 ❌ 判定，并说明理由。
 
@@ -616,7 +731,7 @@ const PHASES = [
     verify: 'phase1-boundary',
     model: 'sonnet',
     inputs: [],
-    outputs: ['project-boundary/project-boundary.json', 'project-boundary/file-classification.jsonl'],
+    outputs: ['project-boundary/project-boundary.json', 'project-boundary/file-classification.jsonl', 'docs/project-boundary/directory-tree.md'],
   },
   {
     id: 2,
@@ -625,7 +740,7 @@ const PHASES = [
     verify: 'phase2-modules',
     model: 'sonnet',
     inputs: ['project-boundary/project-boundary.json', 'project-boundary/file-classification.jsonl'],
-    outputs: ['source-index/file-index.jsonl', 'source-index/symbol-index.jsonl', 'architecture/module-overview.md'],
+    outputs: ['source-index/file-index.jsonl', 'source-index/symbol-index.jsonl', 'docs/architecture/module-overview.md'],
   },
   {
     id: 3,
@@ -652,7 +767,7 @@ const PHASES = [
     verify: 'phase5-dependencies',
     model: 'sonnet',
     inputs: ['source-index/file-index.jsonl', 'source-index/symbol-index.jsonl', 'source-index/function-index.jsonl'],
-    outputs: ['source-index/dependency-index.jsonl', 'architecture/dependency-graph.md'],
+    outputs: ['source-index/dependency-index.jsonl', 'docs/architecture/dependency-graph.md'],
   },
   {
     id: 6,
@@ -661,7 +776,7 @@ const PHASES = [
     verify: 'phase6-lifecycle',
     model: 'opus',
     inputs: ['source-index/function-index.jsonl', 'source-index/dependency-index.jsonl', 'source-index/symbol-index.jsonl'],
-    outputs: ['architecture/lifecycle.md', 'architecture/dataflow.md', 'architecture/extension-points.md'],
+    outputs: ['docs/architecture/lifecycle.md', 'docs/architecture/dataflow.md', 'docs/architecture/extension-points.md'],
   },
   {
     id: 7,
@@ -669,8 +784,8 @@ const PHASES = [
     skill: 'phase7-report',
     verify: 'phase7-report',
     model: 'sonnet',
-    inputs: ['source-index/file-index.jsonl', 'source-index/symbol-index.jsonl', 'source-index/function-index.jsonl', 'source-index/dependency-index.jsonl', 'architecture/lifecycle.md', 'architecture/dataflow.md'],
-    outputs: ['architecture/afsim-architecture.md', 'architecture/x-level-capabilities.md', 'architecture/module-dependency.md'],
+    inputs: ['source-index/file-index.jsonl', 'source-index/symbol-index.jsonl', 'source-index/function-index.jsonl', 'source-index/dependency-index.jsonl', 'docs/architecture/lifecycle.md', 'docs/architecture/dataflow.md'],
+    outputs: ['docs/architecture/afsim-architecture.md', 'docs/architecture/x-level-capabilities.md', 'docs/architecture/module-dependency.md'],
   },
 ]
 
@@ -697,7 +812,7 @@ for (const phase of PHASES) {
   const verifyPrompt = `验证 Phase ${phase.id} 产出质量。
      读取验证 Skill: skill/cpp-project-analyzer/phases/${phase.verify}/SKILL_VERIFY.md
      验证对象: ${phase.outputs.join(', ')}
-     输出验证报告: verification/phase${phase.id}-verify-report.md
+     输出验证报告: docs/verification/phase${phase.id}-verify-report.md
      ${ANTI_REPETITION_REMINDER}
      额外要求：抽样验证时每个源文件最多读取 1 次，命中已读文件则跳过。`
 
@@ -710,7 +825,7 @@ for (const phase of PHASES) {
 
 步骤：
 1. 运行 ls docs/records/ 确定当前最大序号 N，新记录序号为 N+1。
-2. 读取验证报告: verification/phase${phase.id}-verify-report.md，提取检查结果汇总表。
+2. 读取验证报告: docs/verification/phase${phase.id}-verify-report.md，提取检查结果汇总表。
 3. 读取本阶段产出文件列表，用 ls -lh 获取大小。
 4. 按以下模板写入 docs/records/<序号>-phase${phase.id}-${phase.name}-analysis.md：
 

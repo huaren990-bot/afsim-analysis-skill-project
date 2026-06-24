@@ -86,7 +86,7 @@ metadata:
 
 ## 输出
 
-生成验证报告 `workspace/verification/FU-design-generation-verify-report.md`，包含：
+生成验证报告 `docs/verification/FU-design-generation-verify-report.md`，包含：
 
 ```markdown
 # FU-design-generation 验证报告

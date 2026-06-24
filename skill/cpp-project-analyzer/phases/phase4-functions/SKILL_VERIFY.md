@@ -89,9 +89,30 @@ metadata:
 2. 检查这些条目在 function-index.jsonl 中对应的 `algorithm_hint` 是否为 `math`、`state_update` 或 `integration`。
 3. 如果 `computation_density=high` 但 `algorithm_hint=none` 或 `algorithm_hint=io`，标记为"交叉不一致"。
 
+### 检查 10: functions_to_extract 覆盖闭环
+
+1. 从 Phase 3 `symbol-index.jsonl` 中筛选 `kind=function/method/constructor/destructor`，并补充头文件 inline、模板函数、operator、匿名 namespace/static 函数候选。
+2. 从 `function-index.jsonl` 中提取 Method-level 条目。
+3. 计算候选覆盖率，必须 ≥ 90%。
+4. 对未覆盖候选，检查是否记录跳过原因：`declaration_only`、`implicit_special_member`、`macro_generated_unexpanded`、`template_uninstantiated`、`parse_failed`。
+5. 未覆盖且无原因的条目判定为遗漏。
+
+### 检查 11: 重载与签名唯一性
+
+1. 检查 Method-level 中是否存在相同 `qualified_name` 但不同 `signature` 的重载。
+2. 若存在，`qualified_name` 或唯一键必须能区分签名；否则判定为静默覆盖风险。
+3. 检查 `function-body-summary.jsonl` 与 `function-index.jsonl` 的配对是否使用同一唯一键，避免只按短名误配。
+
+### 检查 12: 函数真实性与导出宏过滤
+
+1. 扫描 `function-index.jsonl` 中所有 Method-level 条目，检查 `qualified_name`、`function_name`、`owner` 是否匹配 `.*(_EXPORT|_IMPORT|_API|_LIB_EXPORT)(::.*)?$`。
+2. 检查每个 Method-level 条目的 `signature` 是否含 `(` 与 `)`，且不是变量声明、宏替换体或成员变量描述。
+3. 特别检查 `POST_PROCESSOR_LIB_EXPORT::max` 这类导出宏伪成员名，必须不存在。
+4. 对从候选中过滤掉的项，检查是否在 notes/context-handoff/验证报告中记录 `export_macro_pseudo_symbol` 或 `variable_not_function` 等跳过原因。
+
 ## 输出
 
-生成验证报告 `verification/phase4-verify-report.md`。
+生成验证报告 `docs/verification/phase4-verify-report.md`。
 
 ## 质量门槛
 
@@ -103,3 +124,6 @@ metadata:
 6. 参数抽样验证通过率 ≥ 80%（5 个中至少 4 个一致）。
 7. `lifecycle_role` 分布合理：`utility` ≤ 60%，`unknown` ≤ 50%，至少有 2 种不同值。
 8. `computation_density=high` 与 `algorithm_hint` 交叉不一致率 ≤ 10%。
+9. functions_to_extract 覆盖率 ≥ 90%，未覆盖项均有跳过原因。
+10. 重载函数和函数体摘要配对不存在静默覆盖风险。
+11. Method-level 条目无导出宏伪函数、变量伪函数，且签名可验证。

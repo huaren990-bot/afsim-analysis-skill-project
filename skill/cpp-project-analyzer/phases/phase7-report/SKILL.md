@@ -26,10 +26,10 @@ metadata:
   - `source-index/symbol-index.jsonl`
   - `source-index/function-index.jsonl`
   - `source-index/dependency-index.jsonl`
-  - `architecture/lifecycle.md`
-  - `architecture/dataflow.md`
-  - `architecture/extension-points.md`
-  - `architecture/module-overview.md`
+  - `docs/architecture/lifecycle.md`
+  - `docs/architecture/dataflow.md`
+  - `docs/architecture/extension-points.md`
+  - `docs/architecture/module-overview.md`
 
 ## 执行步骤
 
@@ -70,26 +70,29 @@ metadata:
 ```
 
 对各章节要求：
-- **目录结构总览**：从 project-boundary.json 提取，含中文说明。
-- **模块总览**：从 module-overview.md 汇总，按系统/子系统/模块三级组织。
+- **目录结构总览**：从 project-boundary.json 提取，含中文说明。不得使用省略号；目录过多时拆为“正文摘要 + 完整目录附录/链接”。
+- **总框架图**：在目录结构之后必须给出一张总体框架 Mermaid 图，展示系统、子系统、核心模块、生命周期/配置/扩展关系。
+- **模块总览**：从 module-overview.md 汇总，按系统/子系统/模块三级组织，含模块图和详情跳转链接。
 - **仿真生命周期**：从 lifecycle.md 提取要点，含 Mermaid 图和关联表。
-- **数据流**：从 dataflow.md 提取要点，含 Mermaid 图。
-- **配置流**：从 dataflow.md 提取配置流向，含 Mermaid 图。
-- **扩展点**：从 extension-points.md 汇总。
-- **关键符号**：从 symbol-index.jsonl 提取最重要的 30 个符号。
-- **未知项**：汇总所有阶段尚为 unknown 的问题。
+- **数据流**：从 dataflow.md 提取要点，含 Mermaid 图、关键数据对象到节点的映射表、链路中文说明。
+- **配置流**：从 dataflow.md 提取配置流向，含 Mermaid 图，并解释配置流的作用和每条链路如何影响运行时对象/行为。
+- **扩展点**：从 extension-points.md 汇总，并解释扩展点分析的作用。
+- **关键符号**：正文只做总体性陈述和代表性符号表；完整清单链接到 `source-index/symbol-index.jsonl` 或独立附录。
+- **未知项**：汇总所有阶段尚为 unknown 的问题，必须包含问题描述、影响、当前证据、建议人工确认的问题、建议确认对象/文件。
 - **源码证据**：列出所有产出文件及其统计数据。
 
 ### Step 3: 生成 x-level-capabilities.md
 
 参照模板 `skill/cpp-project-analyzer/templates/template_x-level-capabilities.md` 的结构。
 
-**必须按四层展开**：
+**必须以仿真模型相关功能为主线**，过滤纯测试、训练、示例、文档工具和 Phase 1 边界外功能。必须先提供“功能总览”章节，概述 System/Module/Class 层能力数量与主要能力域。
+
+**默认按三层详述、方法级摘要处理**：
 
 1. **System-level**：列出所有系统级功能，每个系统级功能下列出其 Module-level 子功能。
 2. **Module-level**：每个模块级功能下列出其 Class-level 子功能。
 3. **Class-level**：每个类级功能下列出其 Method-level 子功能。
-4. **Method-level**：每个方法级功能包含其 `qualified_name`、`brief`、`lifecycle_role`、`algorithm_hint`。
+4. **Method-level**：仅在方法数量可读（建议 ≤ 30）时列出代表性方法；方法级功能过多时，正文不展开完整方法表，只提供统计、代表性样例和完整 `function-index.jsonl`/附录链接。
 
 **关键要求**：
 - 文档标题为 `# AFSIM 仿真框架架构文档`，不可擅自修改。
@@ -111,20 +114,25 @@ metadata:
 **关键要求**：
 - Mermaid 图中的每一条边可追溯到 dependency-index.jsonl 或源码位置。
 - 依赖强度分类：`build` → strong, 继承/组合 → strong/medium, 调用→ medium/weak。
+- 子系统名称和层级必须与 afsim-architecture.md、module-overview.md 保持一致。
+- 架构级依赖过多时允许正文摘要，但必须说明完整条目查询位置。
+- `strong`、`medium`、`weak` 必须在正文解释，并说明它们与“依赖强度说明”章节完全对应。
+- 必须覆盖所有子系统；如果某子系统无核心依赖或被排除，必须列出原因。
+- 关键全局常量表必须解释为什么选这些常量、完整清单在哪里；`说明`列必须放在`定义位置`之前，且不能只重复常量名。
 
 ### Step 5: 生成最终验证报告
 
-汇总 Phase 1-6 所有验证报告的结论，生成 `verification/phase7-final-verify-report.md`：
+汇总 Phase 1-6 所有验证报告的结论，生成 `docs/verification/phase7-final-verify-report.md`：
 - 各阶段验证通过/不通过统计
 - 仍存在的 known-issues
 - 整体质量评分
 
 ## 输出文件
 
-- `architecture/afsim-architecture.md`
-- `architecture/x-level-capabilities.md`
-- `architecture/module-dependency.md`
-- `verification/phase7-final-verify-report.md`
+- `docs/architecture/afsim-architecture.md`
+- `docs/architecture/x-level-capabilities.md`
+- `docs/architecture/module-dependency.md`
+- `docs/verification/phase7-final-verify-report.md`
 
 ## 质量门槛
 
@@ -135,3 +143,6 @@ metadata:
 5. 三份报告中的模块名、符号名、函数名统一一致，无歧义。
 6. 所有 `.md` 文件中英文标识均有中文翻译说明。
 7. 不得使用省略号省略内容；条目超过 30 条时新建独立文件完整列出。
+8. afsim-architecture.md 必须包含总框架图、模块详情跳转、数据对象节点映射、配置流/扩展点用途说明和可处理未知项。
+9. x-level-capabilities.md 只纳入仿真模型相关功能；方法级过多时必须摘要化并链接完整索引。
+10. module-dependency.md 必须无边界外 training/demo 核心依赖，Mermaid 可渲染，且覆盖所有子系统。
