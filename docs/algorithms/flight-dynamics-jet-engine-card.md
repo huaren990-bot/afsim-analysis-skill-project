@@ -17,23 +17,23 @@
 
 ```mermaid
 flowchart TD
-    A["开始 CalculateThrust"] --> step1["1. 重置引擎状态标志（运行/冒烟/AB/尾迹）"]
-    step1 --> step2{"2. dT < minDTime?"}
+    A["开始 CalculateThrust"] --> step1["(1) 重置引擎状态标志（运行/冒烟/AB/尾迹）"]
+    step1 --> step2{"(2) dT < minDTime?"}
     step2 -->|"是"| step2a["返回当前推力，不更新状态"]
-    step2 -->|"否"| step3["3. 确定油门指令：直设指令 > 父对象指令（Mil+AB组合）"]
-    step3 --> step4["4. 查表获取加减速率限幅（spin-up/spin-down table）"]
-    step4 --> step5["5. 计算有效油门 = 上一帧有效油门 + clamp(delta, -maxDown, +maxUp)"]
-    step5 --> step6["6. 分解有效油门 → throttleMil (0-1) + throttleAB (0-1)"]
-    step6 --> step7["7. 三层查表获取各工况推力基准"]
-    step7 --> step8["8. 推力 = Idle + throttleMil * (Mil-Idle) + throttleAB * (AB-Mil)"]
-    step8 --> step9["9. 燃油消耗 = 有效TSFC × 推力分量 × dT"]
-    step9 --> step10{"10. 有燃油/有燃油路径/InjectFuel?"}
-    step10 -->|"全部满足"| step11["11. 有效推力 = 计算推力，正常运转"]
-    step10 -->|"任一不满足"| step12["12. 熄机：推力=0，但加进气口阻力"]
-    step11 --> step13["13. 仅部分燃油（flame-out）：推力×burnRatio + 死机阻力×(1-burnRatio)"]
+    step2 -->|"否"| step3["(3) 确定油门指令：直设指令 > 父对象指令（Mil+AB组合）"]
+    step3 --> step4["(4) 查表获取加减速率限幅（spin-up/spin-down table）"]
+    step4 --> step5["(5) 计算有效油门 = 上一帧有效油门 + clamp(delta, -maxDown, +maxUp)"]
+    step5 --> step6["(6) 分解有效油门 → throttleMil (0-1) + throttleAB (0-1)"]
+    step6 --> step7["(7) 三层查表获取各工况推力基准"]
+    step7 --> step8["(8) 推力 = Idle + throttleMil * (Mil-Idle) + throttleAB * (AB-Mil)"]
+    step8 --> step9["(9) 燃油消耗 = 有效TSFC × 推力分量 × dT"]
+    step9 --> step10{"(10) 有燃油/有燃油路径/InjectFuel?"}
+    step10 -->|"全部满足"| step11["(11) 有效推力 = 计算推力，正常运转"]
+    step10 -->|"任一不满足"| step12["(12) 熄机：推力=0，但加进气口阻力"]
+    step11 --> step13["(13) 仅部分燃油（flame-out）：推力×burnRatio + 死机阻力×(1-burnRatio)"]
     step12 --> step13
-    step13 --> step14["14. 设置引擎标志（运行/AB/冒烟/尾迹）"]
-    step14 --> step15["15. 更新状态变量（有效油门/RPM/当前推力/燃油速率）"]
+    step13 --> step14["(14) 设置引擎标志（运行/AB/冒烟/尾迹）"]
+    step14 --> step15["(15) 更新状态变量（有效油门/RPM/当前推力/燃油速率）"]
     step15 --> F["结束"]
 ```
 

@@ -47,13 +47,25 @@
 - `evidence_level`：证据等级。
 - `notes`：补充说明数组。
 
-## System/Module/Class-level 必填字段
+## Class-level 必填字段
+
+- `schema_version`：固定为 `1`。
+- `function_name`：函数短名称。
+- `qualified_name`：限定名（含命名空间::类名），全文件唯一。
+- `level`：`Class-level`。
+- `brief`：中文简单描述功能，**不可为空**。
+- `sub_functions`：包含下一级别功能的 qualified_name 数组。
+- `evidence_level`：证据等级。
+- `notes`：补充说明数组。
+
+
+## System/Module-level 必填字段
 
 - `schema_version`：固定为 `1`。
 - `function_name`：功能名称（中文）。
 - `qualified_name`：限定名，全文件唯一。
-- `level`：`System-level` | `Module-level` | `Class-level`。
-- `brief`：简单描述功能，**不可为空**。
+- `level`：`System-level` | `Module-level`。
+- `brief`：中文简单描述功能，**不可为空**。
 - `sub_functions`：包含下一级别功能的 qualified_name 数组。
 - `evidence_level`：证据等级。
 - `notes`：补充说明数组。
