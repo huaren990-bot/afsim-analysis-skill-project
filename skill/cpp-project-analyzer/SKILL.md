@@ -484,7 +484,7 @@ workspace/
 
 docs/
 ├── project-boundary/
-│   ├── directory-tree.md            # Phase 1 产出
+│   ├── directory-tree.md            # Phase 1 目录树产出（放在 docs/architecture/）
 │   └── context-handoff-phase<N>.md  # 阶段间上下文传递
 ├── architecture/
 │   ├── module-overview.md           # Phase 2 产出
@@ -731,7 +731,7 @@ const PHASES = [
     verify: 'phase1-boundary',
     model: 'sonnet',
     inputs: [],
-    outputs: ['project-boundary/project-boundary.json', 'project-boundary/file-classification.jsonl', 'docs/project-boundary/directory-tree.md'],
+    outputs: ['project-boundary/project-boundary.json', 'project-boundary/file-classification.jsonl', 'docs/architecture/directory-tree.md'],
   },
   {
     id: 2,

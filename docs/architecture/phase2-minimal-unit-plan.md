@@ -28,8 +28,8 @@ Phase 2 后续分析按“系统 -> 子系统 -> 最小目录单元”推进：
 |------|-----|
 | 最小目录单元数 | 237 |
 | 默认范围内 source/header 数 | 17,179 |
-| 已完成单元 | 1 |
-| 当前完成单元 | `afsim-2_9/swdev/src/core/wsf_weapon_server/source` |
+| 已完成单元 | 2 |
+| 当前完成单元 | `afsim-2_9/swdev/src/core/wsf_grammar_check/source` |
 
 ## 3. 批次规则
 
@@ -47,13 +47,14 @@ Phase 2 后续分析按“系统 -> 子系统 -> 最小目录单元”推进：
 
 | 优先级 | 最小目录单元 | source/header 数 | 说明 |
 |--------|--------------|------------------|------|
-| 1 | `afsim-2_9/swdev/src/core/wsf_grammar_check/source` | 2 | 核心语法检查工具，1 个 `.cpp` + 1 个 `.hpp`。 |
-| 2 | `afsim-2_9/swdev/src/mission/source` | 2 | 应用层任务入口，边界小。 |
-| 3 | `afsim-2_9/swdev/src/wsf_plugins/wsf_simdis/source` | 2 | 插件层 SIMDIS 接口，边界小。 |
-| 4 | `afsim-2_9/swdev/src/wsf_plugins/wsf_scenario_analyzer_iads_c2/source` | 2 | 插件层 IADS C2 场景分析接口。 |
+| 1 | `afsim-2_9/swdev/src/mission/source` | 2 | 应用层任务入口，边界小。 |
+| 2 | `afsim-2_9/swdev/src/wsf_plugins/wsf_simdis/source` | 2 | 插件层 SIMDIS 接口，边界小。 |
+| 3 | `afsim-2_9/swdev/src/wsf_plugins/wsf_scenario_analyzer_iads_c2/source` | 2 | 插件层 IADS C2 场景分析接口。 |
+| 4 | `afsim-2_9/swdev/src/mystic/plugins/ResultAcesDisplay/source` | 2 | Mystic 结果显示插件，1 个 `.cpp` + 1 个 `.hpp`。 |
 
 ## 5. 已知注意事项
 
 1. `workspace/source-index/symbol-index.jsonl` 是 Phase 3 精细索引，当前只修 Phase 2 粗索引 `symbol-index-phase2.jsonl`。Phase 3 后续应按新的 Phase 2 单元结果重跑或增量修正。
 2. `compile_commands.json` 仍未生成，因此本阶段以 CodeGraph + 源码文本证据为主，AST/include path 精确性仍受限。
 3. 旧 `module-overview.md` 中的 107 同层模块清单属于历史 Phase 2 视图，不再作为新的架构模块组织依据。
+4. batch02 发现旧 Phase 3 精细索引中存在 `WsfGrammarCheckExtension` 成员被错误挂到 `ParseSourceProvider` 下的问题；本轮只修 Phase 2 粗索引，Phase 3 后续应按最小单元重新精修。

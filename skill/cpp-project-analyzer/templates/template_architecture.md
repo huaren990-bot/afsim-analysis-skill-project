@@ -42,7 +42,7 @@ xxx #介绍
         │     └── xxx #介绍
 ```
 
-> 若目录超过正文可读范围，正文保留到分析边界所需层级，并在此处链接完整目录清单：`docs/project-boundary/directory-tree.md`。不得使用省略号代替未展示目录。
+> 若目录超过正文可读范围，正文保留到分析边界所需层级，并在此处链接完整目录清单：`docs/architecture/directory-tree.md`。不得使用省略号代替未展示目录。
 
 ## 1.1 总框架图
 

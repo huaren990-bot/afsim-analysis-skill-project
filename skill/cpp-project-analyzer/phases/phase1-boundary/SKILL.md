@@ -105,7 +105,7 @@ metadata:
 
 - `project-boundary/project-boundary.json`
 - `project-boundary/file-classification.jsonl`
-- `docs/project-boundary/directory-tree.md`
+- `docs/architecture/directory-tree.md`
 
 ## 质量门槛
 
