@@ -24,7 +24,7 @@ metadata:
 - `project-boundary/file-classification.jsonl`（Phase 1 产出）
 
 ## 执行步骤
-
+采用./phase2-minimal-unit-plan.md中定义的“最小目录单元”作为 Phase 2 的原子分析粒度，按模块逐步推进。
 ### Step 1: 读取 Phase 1 产出
 
 1. 读取 `project-boundary.json`，获取模块清单和分析边界。
