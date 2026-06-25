@@ -8,12 +8,13 @@
 
 Phase 2 v2 不再沿用旧版“107 个同层模块”组织方式，而是以 Phase 1 的 `module_hierarchy` 为准，按系统、子系统、最小目录单元逐步分析。
 
-当前默认范围内共有 237 个最小目录单元、17,179 个 source/header 文件。已完成 2 个单元：
+当前默认范围内共有 237 个最小目录单元、17,179 个 source/header 文件。已完成 3 个单元：
 
 | # | 系统 | 子系统 | 最小目录单元 | 文件数 | 状态 | 详情 |
 |---|------|--------|--------------|--------|------|------|
 | 1 | core_framework | core/wsf_weapon_server | `afsim-2_9/swdev/src/core/wsf_weapon_server/source` | 2 | 已完成 batch01 | 见第 1 节 |
 | 2 | core_framework | core/wsf_grammar_check | `afsim-2_9/swdev/src/core/wsf_grammar_check/source` | 2 | 已完成 batch02 | 见第 2 节 |
+| 3 | applications | mission/source | `afsim-2_9/swdev/src/mission/source` | 2 | 已完成 batch03 | 见第 3 节 |
 
 默认边界外路径：
 
@@ -135,3 +136,60 @@ Phase 2 v2 不再沿用旧版“107 个同层模块”组织方式，而是以 P
 | `WSF_GRAMMAR_CHECK_EXPORT` 存在误识别风险。 | 导出宏仅保留在 `signature` 中，不作为 `symbol_name` 或 `qualified_name`。 |
 
 下游注意：旧 Phase 3 精细索引曾将 `WsfGrammarCheckExtension` 的成员错误归属到 `ParseSourceProvider`。Phase 3 后续应以本节为依据重新精修该最小单元。
+
+## 3. mission/source
+
+### 3.1 单元信息
+
+| 字段 | 值 |
+|------|-----|
+| 系统 | `applications`（应用层） |
+| 子系统 | `mission/source`（Mission 标准仿真应用入口） |
+| 最小目录单元 | `afsim-2_9/swdev/src/mission/source` |
+| 文件数 | 2 |
+| 源文件 | `mission.cpp` |
+| 头文件 | `MissionVersion.hpp` |
+| 证据 | CodeGraph node + 源码行号 |
+
+### 3.2 职责说明
+
+`mission` 是 AFSIM 的标准核心仿真应用入口。它读取包含 WSF 命令的文本输入文件，创建 `WsfStandardApplication`，注册内置扩展、可选扩展和 `xio_interface`，再创建 `WsfScenario` 与 `WsfSimulation`，按命令行选项执行事件步进、帧步进、实时/非实时或 Monte-Carlo 多轮仿真。
+
+### 3.3 文件清单
+
+| 文件 | 中文说明 | 关键符号 | 关键函数 |
+|------|----------|----------|----------|
+| `mission.cpp` | Mission 可执行程序入口；负责应用初始化、扩展注册、命令行处理、输入文件处理、仿真创建/初始化/运行。 | `main`, `WsfStandardApplication`, `WsfScenario`, `WsfSimulation` | `main`, `RegisterBuiltinExtensions`, `RegisterOptionalExtensions`, `CreateSimulation`, `InitializeSimulation`, `RunEventLoop` |
+| `MissionVersion.hpp` | Mission 可执行文件版本与产品信息宏定义。 | `MISSION_VERSION_MAJOR`, `MISSION_VERSION_MINOR`, `MISSION_VERSION_PATCH`, `VER_FILEVERSION_STR`, `VER_PRODUCTNAME_STR` | 无函数 |
+
+### 3.4 核心符号
+
+| 符号 | 类型 | 基类 | 源码位置 | 中文说明 |
+|------|------|------|----------|----------|
+| `main(int,char**)` | function（函数） | 无 | `mission.cpp:80` | Mission 进程入口；负责从应用初始化到仿真事件循环的主流程。 |
+| `MISSION_VERSION_MAJOR` | macro（宏） | 无 | `MissionVersion.hpp:14` | Mission 应用主版本号。 |
+| `MISSION_VERSION_MINOR` | macro（宏） | 无 | `MissionVersion.hpp:15` | Mission 应用次版本号。 |
+| `MISSION_VERSION_PATCH` | macro（宏） | 无 | `MissionVersion.hpp:16` | Mission 应用补丁版本号。 |
+| `VER_FILEVERSION_STR` | macro（宏） | 无 | `MissionVersion.hpp:18` | 可执行文件版本字符串。 |
+| `VER_PRODUCTVERSION_STR` | macro（宏） | 无 | `MissionVersion.hpp:19` | 产品版本字符串。 |
+| `VER_PRODUCTNAME_STR` | macro（宏） | 无 | `MissionVersion.hpp:31` | 产品名称字符串，值为 `AFSIM Mission Application`。 |
+
+### 3.5 关键关系
+
+| 关系 | 说明 | 证据 |
+|------|------|------|
+| 应用初始化 | `main` 设置异常处理和应用日志，然后创建 `WsfStandardApplication app("mission", argc, argv)`。 | `mission.cpp:80-88` |
+| 扩展注册 | `RegisterBuiltinExtensions(app)`、`RegisterOptionalExtensions(app)` 和 `WSF_REGISTER_EXTENSION(app, xio_interface)` 装配运行时扩展。 | `mission.cpp:90-101` |
+| 命令行处理 | `app.ProcessCommandLine(options)` 解析运行模式和输入文件参数。 | `mission.cpp:102-116` |
+| 场景输入 | 创建 `WsfScenario scenario(app)` 后调用 `app.ProcessInputFiles(scenario, options.mInputFiles)` 读取 WSF 输入文件。 | `mission.cpp:131-149` |
+| 仿真循环 | 对每个 run number 创建 simulation、初始化 simulation，并调用 `app.RunEventLoop` 执行事件循环。 | `mission.cpp:151-192` |
+
+### 3.6 修正记录
+
+旧 Phase 2 对该单元只有笼统 `key_symbols=["mission"]`，没有把应用入口和版本宏拆开。batch03 已补充：
+
+| 旧状态 | 修正后 |
+|--------|--------|
+| `mission.cpp` 只有泛化符号 `mission`。 | 记录 `main`、应用初始化、扩展注册、输入处理和仿真运行关键调用。 |
+| `MissionVersion.hpp` 只有泛化符号 `MissionVersion`。 | 记录版本号、版本字符串和产品名称宏，供 Phase 3 macro-index 精修。 |
+| `symbol-index-phase2.jsonl` 无 mission/source 条目。 | 新增 `main(int,char**)` 和 6 个版本/产品宏候选。 |
