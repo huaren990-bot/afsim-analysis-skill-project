@@ -29,8 +29,8 @@ Phase 2 后续分析按“系统 -> 子系统 -> 最小目录单元”推进：
 |------|-----|
 | 最小目录单元数 | 237 |
 | 默认范围内 source/header 数 | 17,179 |
-| 已完成单元 | 3 |
-| 当前完成单元 | `afsim-2_9/swdev/src/mission/source` |
+| 已完成单元 | 7 |
+| 当前完成单元 | batch04：`wsf_simdis/source`、`wsf_scenario_analyzer_iads_c2/source`、`ResultAcesDisplay/source`、`ResultAirCombatVisualization/source` |
 
 ## 3. 批次规则
 
@@ -70,16 +70,18 @@ Phase 2 后续分析按“系统 -> 子系统 -> 最小目录单元”推进：
 
 ## 5. 下一批候选
 
-按“文件少、边界清晰、优先核心源码”排序，下一批建议可作为一个多目录批次处理；实际执行时根据 CodeGraph 证据复杂度动态拆分：
+batch04 已按本计划完成 4 个小目录的子 agent 并行分析。按“文件少、边界清晰、优先核心源码”排序，下一批建议可继续作为一个多目录批次处理；实际执行时根据 CodeGraph 证据复杂度动态拆分：
 
 | 优先级 | 最小目录单元 | source/header 数 | 说明 |
 |--------|--------------|------------------|------|
-| 1 | `afsim-2_9/swdev/src/wsf_plugins/wsf_simdis/source` | 2 | 插件层 SIMDIS 接口，边界小。 |
-| 2 | `afsim-2_9/swdev/src/wsf_plugins/wsf_scenario_analyzer_iads_c2/source` | 2 | 插件层 IADS C2 场景分析接口。 |
-| 3 | `afsim-2_9/swdev/src/mystic/plugins/ResultAcesDisplay/source` | 2 | Mystic 结果显示插件，1 个 `.cpp` + 1 个 `.hpp`。 |
-| 4 | `afsim-2_9/swdev/src/mystic/plugins/ResultAirCombatVisualization/source` | 2 | Mystic 空战可视化插件，1 个 `.cpp` + 1 个 `.hpp`。 |
+| 1 | `afsim-2_9/swdev/src/core/wsf_parser/legacy_test/source` | 1 | 核心 parser legacy 测试入口，文件数极小；需确认是否纳入架构模块还是仅记录测试工具职责。 |
+| 2 | `afsim-2_9/swdev/src/core/wsf_util` | 1 | 核心 util 下单文件工具单元，需先确认该目录的最小单元边界。 |
+| 3 | `afsim-2_9/swdev/src/mystic/exec/source` | 1 | Mystic 应用入口，适合与其他 exec 小入口组成批次。 |
+| 4 | `afsim-2_9/swdev/src/post_processor/exec/source` | 1 | Post Processor 应用入口，适合与 Mystic exec 对照分析。 |
+| 5 | `afsim-2_9/swdev/src/wsf_plugins/wsf_p6dof` | 1 | 插件层 p6dof 小单元，需确认是否只有入口或包装源码。 |
+| 6 | `afsim-2_9/swdev/src/wsf_plugins/wsf_six_dof` | 1 | 插件层 six_dof 小单元，可与 p6dof 同批但需防止混淆。 |
 
-建议 batch04 尝试以上 2-4 个小目录并行分析：由主 agent 统一批次范围和验证标准，子 agent 分别负责单目录证据采集；若任一目录出现复杂跨模块语义，则拆出为独立后续批次。
+建议 batch05 先尝试以上 3-6 个小目录并行分析：由主 agent 统一批次范围和验证标准，子 agent 分别负责单目录证据采集；若 `core/wsf_util` 或 six-dof 相关目录出现跨目录耦合，则拆出为独立后续批次。
 
 ## 6. 已知注意事项
 
@@ -88,3 +90,4 @@ Phase 2 后续分析按“系统 -> 子系统 -> 最小目录单元”推进：
 3. 旧 `module-overview.md` 中的 107 同层模块清单属于历史 Phase 2 视图，不再作为新的架构模块组织依据。
 4. batch02 发现旧 Phase 3 精细索引中存在 `WsfGrammarCheckExtension` 成员被错误挂到 `ParseSourceProvider` 下的问题；本轮只修 Phase 2 粗索引，Phase 3 后续应按最小单元重新精修。
 5. batch03 的 `MissionVersion.hpp` 只有版本/产品宏，无 class/struct；本轮将版本宏作为 Phase 3 macro-index 候选，而不是伪造类符号。
+6. batch04 首次按“多个最小目录单元 + 子 agent 并行 + 主 agent 合并”执行；对共享 JSONL 仍由主 agent 串行写入，子 agent 只提供目录级证据摘要。
