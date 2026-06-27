@@ -51,19 +51,19 @@ description: 当用户需要把自有项目需求、规范文档、接口定义�
    - **缺失（AFSIM无参考）**：自有系统缺失，且 AFSIM 中也找不到对应功能，需 novel 全新设计
 
 6. 生成输出：
-    - **需求追溯矩阵**：生成`<requirement_index>-requirement-to-afsim-trace.md`，（REQ -> AFSIM 源 -> FU）展示每条需求对应的 AFSIM 实现函数和生成的功能单元。按模板 `skill/afsim-requirement-mapper/tamplate_list/template_requirement-to-afsim-trace.md` 格式输出。
-    - **功能映射矩阵**：生成`<requirement_index>-function-mapping-matrix.md`，（需求 -> AFSIM 功能 -> 目标系统功能）展示每条需求对应的 AFSIM 功能和目标系统当前的能力状态。按模板 `skill/afsim-requirement-mapper/tamplate_list/template_function-mapping-matrix.md` 格式输出。
-    - **缺口分析报告**：生成`<requirement_index>-requirement-gap-analysis.md`，总结需求缺口，给出迁移建议和优先级排序。按模板 `skill/afsim-requirement-mapper/tamplate_list/template_requirement-gap-analysis.md` 格式输出。
-    - **结构化缺口规格**：生成 `<requirement_index>-gap-specs.jsonl`，供下游迁移 Skill 使用。按模板 `skill/afsim-requirement-mapper/tamplate_list/template_gap-specs.md` 格式输出。
+    - **需求追溯矩阵**：生成`3_<requirement_index>-requirement-to-afsim-trace.md`，（REQ -> AFSIM 源 -> FU）展示每条需求对应的 AFSIM 实现函数和生成的功能单元。按模板 `skill/requirement-mapper/tamplate_list/template_requirement-to-afsim-trace.md` 格式输出。
+    - **功能映射矩阵**：生成`3_<requirement_index>-function-mapping-matrix.md`，（需求 -> AFSIM 功能 -> 目标系统功能）展示每条需求对应的 AFSIM 功能和目标系统当前的能力状态。按模板 `skill/requirement-mapper/tamplate_list/template_function-mapping-matrix.md` 格式输出。
+    - **缺口分析报告**：生成`3_<requirement_index>-requirement-gap-analysis.md`，总结需求缺口，给出迁移建议和优先级排序。按模板 `skill/requirement-mapper/tamplate_list/template_requirement-gap-analysis.md` 格式输出。
+    - **结构化缺口规格**：生成 `3_<requirement_index>-gap-specs.jsonl`，供下游迁移 Skill 使用。按模板 `skill/requirement-mapper/tamplate_list/template_gap-specs.md` 格式输出。
 
 7. 过程留痕：把每一步的决策依据和执行计划生成文档进行记录归档，放在目录docs/records里面，以便人工追溯。
 
 ## 输出文件
 
-- `docs/requirements/confirmed_requirement_doc/<requirement_index>-requirement-gap-analysis.md` — 完整缺口报告
-- `docs/requirements/confirmed_requirement_doc/<requirement_index>-function-mapping-matrix.md` — 功能映射矩阵
-- `docs/requirements/confirmed_requirement_doc/<requirement_index>-requirement-to-afsim-trace.md` — 需求到AFSIM的追溯矩阵
-- `workspace/requirements/<requirement_index>-gap-specs.jsonl` — 结构化缺口规格（供下游迁移 Skill 使用）
+- `docs/requirements/<requirement_index>/3_<requirement_index>-requirement-gap-analysis.md` — 完整缺口报告
+- `docs/requirements/<requirement_index>/3_<requirement_index>-function-mapping-matrix.md` — 功能映射矩阵
+- `docs/requirements/<requirement_index>/3_<requirement_index>-requirement-to-afsim-trace.md` — 需求到AFSIM的追溯矩阵
+- `workspace/requirements/<requirement_index>/<requirement_index>-gap-specs.jsonl` — 结构化缺口规格（供下游迁移 Skill 使用）
 
 ## 质量要求
 

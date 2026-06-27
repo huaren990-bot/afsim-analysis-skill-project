@@ -3,7 +3,7 @@
 **日期**：2026-06-10
 **状态**：首轮完成（3 张算法卡片 + 2 份支撑文件）
 **对应阶段**：阶段 2 — 算法提取
-**使用的 Skill**：`afsim-algorithm-extractor`
+**使用的 Skill**：`algorithm-extractor`
 
 ---
 

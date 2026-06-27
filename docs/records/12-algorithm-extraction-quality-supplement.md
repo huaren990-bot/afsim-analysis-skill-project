@@ -2,14 +2,14 @@
 
 **日期**：2026-06-12
 **状态**：完成
-**关联 Skill**：`afsim-algorithm-extractor`、`afsim-source-cognition`
+**关联 Skill**：`algorithm-extractor`、`afsim-source-cognition`
 **触发来源**：对阶段 2 全部产出进行系统性质量检查后，发现 4 类结构性缺失
 
 ---
 
 ## 背景
 
-在阶段 2（算法提取）产出 23 张算法卡片 + 8 份接口规格后，通过逐项对照 `skill/afsim-analyst/references/output-contracts.md` 和 `skill/afsim-algorithm-extractor/template_list/template_algorithm-card.md` 中的要求，发现以下系统性质量问题：
+在阶段 2（算法提取）产出 23 张算法卡片 + 8 份接口规格后，通过逐项对照 `skill/afsim-analyst/references/output-contracts.md` 和 `skill/algorithm-extractor/template_list/template_algorithm-card.md` 中的要求，发现以下系统性质量问题：
 
 1. **所有 23 张卡片系统性缺失 4 个必填章节**：内部状态（Internal State）、变量映射表（Variable Mapping）、边界条件（Edge Cases）、提取策略（Extraction Strategy）
 2. **2 张卡片内容严重不足**：space-orbital-event-condition（119行）和 space-piecewise-exponential-atmosphere（106行），缺失伪代码、入口点、验证计划
@@ -169,7 +169,7 @@ Phase C-alt: 增强 wsf_plugins dependency-index
 
 ## 关联文件
 
-- `skill/afsim-algorithm-extractor/SKILL.md` — 算法提取 skill（168 行，已在上次完善中增强）
+- `skill/algorithm-extractor/SKILL.md` — 算法提取 skill（168 行，已在上次完善中增强）
 - `skill/afsim-analyst/references/output-contracts.md` — 输出合约（定义了 14 个必填章节）
 - `docs/algorithms/` — 23 张算法卡片
 - `docs/algorithms/CompendiumofAlgorithms.md` — 汇总文档（已更新计数）

@@ -54,13 +54,13 @@ flowchart TB
         IV["index-verification<br/>（检验 Skill）"]
     end
 
-    subgraph AlgoExtract["afsim-algorithm-extractor（算法提取 Agent）"]
+    subgraph AlgoExtract["algorithm-extractor（算法提取 Agent）"]
         direction LR
         AE["algorithm-extraction<br/>（产出 Skill）"]
         AV["algorithm-verification<br/>（检验 Skill）"]
     end
 
-    subgraph ReqMap["afsim-requirement-mapper（需求映射 Agent）"]
+    subgraph ReqMap["requirement-mapper（需求映射 Agent）"]
         direction LR
         RM["requirement-mapping<br/>（产出 Skill）"]
         RV["requirement-verification<br/>（检验 Skill）"]
@@ -85,8 +85,8 @@ flowchart TB
 | --------------------------------------- | ---------------------------------------------------- | ------------------------------------ | ----------------------------------------- |
 | `afsim-analyst`                         | 总控入口，判断任务类型并协调其他 skill                               | 阶段计划、路由决策、综合报告                       | ✅ SKILL.md + references 就绪                |
 | `afsim-source-cognition`(源码分析 Agent)    | 快速学习 AFSIM 源码，总结架构，提取函数、类、数据流                        | 源码索引、架构报告、模块依赖                       | ✅ 已执行两轮基线（core/ 14模块 + wsf_plugins/ 16模块） |
-| `afsim-algorithm-extractor`(数学解析 Agent) | 识别并解释源码中的算法、公式、变量映射，转化为标准数学表示和伪代码                    | 算法卡片、伪代码、接口规格                        | ✅ 已执行，产出 23 张算法卡片 + 24 份接口规格              |
-| `afsim-requirement-mapper`(需求分析 Agent)  | 阅读规范需求文档，推断自有仿真器缺少的功能，生成待补充功能列表                      | 需求缺口报告、功能映射矩阵                        | ⏳ SKILL.md 就绪，待执行                         |
+| `algorithm-extractor`(数学解析 Agent) | 识别并解释源码中的算法、公式、变量映射，转化为标准数学表示和伪代码                    | 算法卡片、伪代码、接口规格                        | ✅ 已执行，产出 23 张算法卡片 + 24 份接口规格              |
+| `requirement-mapper`(需求分析 Agent)  | 阅读规范需求文档，推断自有仿真器缺少的功能，生成待补充功能列表                      | 需求缺口报告、功能映射矩阵                        | ⏳ SKILL.md 就绪，待执行                         |
 | `afsim-migration-builder`(代码迁移 Agent)   | 在 AFSIM 源码中定位所需功能，进行代码切片、简化、适配，生成迁移方案、适配接口、代码原型和测试计划 | 迁移记录、适配方案、测试计划                       | ⏳ SKILL.md 就绪，待执行                         |
 | `afsim-knowledge-curator`(知识记录 Agent)   | 整理知识库、追溯矩阵、决策记录和后续任务，全程记录每一步的输入、思考链、决策、输出，生成阶段性文档    | 知识地图、追溯矩阵、过程记录、文档模板、Markdown 生成、版本快照 | ⏳ SKILL.md 就绪，待执行                         |
 
@@ -146,11 +146,11 @@ afsim-analysis-skill-project/
 │   │                                           #   输出规范：4 个 JSONL 索引文件(file/symbol/function/dependency) + 架构文档
 │   │                                           #   质量门槛 + 基线记录（已完成 core/ 全 14 模块深度分析）
 │   │
-│   ├── afsim-algorithm-extractor/              # 【算法提取 Skill】从源码中识别并抽取算法与数学公式
+│   ├── algorithm-extractor/              # 【算法提取 Skill】从源码中识别并抽取算法与数学公式
 │   │   └── SKILL.md                            #   7 步执行：定位→区分→抽取→转换→映射→评估→验证
 │   │                                           #   输出：算法卡片 + 伪代码 + 接口规格 + 原型代码
 │   │
-│   ├── afsim-requirement-mapper/               # 【需求映射 Skill】自有需求与 AFSIM 能力的缺口分析
+│   ├── requirement-mapper/               # 【需求映射 Skill】自有需求与 AFSIM 能力的缺口分析
 │   │   └── SKILL.md                            #   6 步执行：抽取需求→识别能力→拆分原子能力→查找候选→判断状态→推荐下一步
 │   │                                           #   四类判断：已满足/部分满足/缺失/未知
 │   │
@@ -301,7 +301,7 @@ afsim-analysis-skill-project/
 
 ### 2. 算法与功能提取
 
-使用 `afsim-algorithm-extractor` 对关键模块进行算法抽取。重点区分：
+使用 `algorithm-extractor` 对关键模块进行算法抽取。重点区分：
 
 - 数学和算法核心
 - AFSIM 框架封装
@@ -330,7 +330,7 @@ afsim-analysis-skill-project/
 [下游] 代码迁移 Agent
 ```
 
-使用 `afsim-requirement-mapper` 读取自有项目需求文档、接口定义或源码，形成需求到 AFSIM 能力的映射。每条需求分类为：
+使用 `requirement-mapper` 读取自有项目需求文档、接口定义或源码，形成需求到 AFSIM 能力的映射。每条需求分类为：
 
 - 已满足
 - 部分满足
@@ -431,8 +431,8 @@ afsim-analysis-skill-project/
 
 1. ~~先完善 `tools/indexers/`，实现 C/C++ 源码扫描和 JSONL 索引输出。~~ → 首轮分析已通过 Agent 直接扫描完成
 2. ~~用 `afsim-source-cognition` 生成第一版 AFSIM 架构报告。~~ → ✅ 已完成（core/ + wsf_plugins/ 两轮基线）
-3. ~~选择一个小功能，用 `afsim-algorithm-extractor` 生成算法卡片。~~ → ✅ 已完成（23 张算法卡片 + 24 份接口规格，经全面质量补全）
-4. 输入一个自有项目需求，用 `afsim-requirement-mapper` 做缺口分析。
+3. ~~选择一个小功能，用 `algorithm-extractor` 生成算法卡片。~~ → ✅ 已完成（23 张算法卡片 + 24 份接口规格，经全面质量补全）
+4. 输入一个自有项目需求，用 `requirement-mapper` 做缺口分析。
 5. 用 `afsim-migration-builder` 生成迁移方案和最小代码原型。
 6. 用 `afsim-knowledge-curator` 更新追溯矩阵和知识地图。
 

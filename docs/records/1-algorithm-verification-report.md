@@ -118,7 +118,7 @@
 
 **问题描述**：上述卡片使用了替代布局——将「源码位置」和「可移植性评分」提升为顶级章节（`###`），省略了 `算法伪代码`、`入口和调用链`、`测试和验证计划`。所有 11 张飞行动力学卡片和其余 5 张空间卡片正确遵循模板结构。
 
-**修复指引**（参考 `skill/afsim-algorithm-extractor/template_list/template_algorithm-card.md`）：
+**修复指引**（参考 `skill/algorithm-extractor/template_list/template_algorithm-card.md`）：
 1. 在 `### 关键数学公式` 之后插入 `### 算法伪代码` 章节（伪代码块，每 3-5 行一句中文注释）
 2. 插入 `### 源码使用说明` 章节，将现有 `### 源码位置` 和 `### 可移植性评分` 降级移入
 3. 补全 `#### 入口和调用链`、`#### 框架依赖`、`#### 测试和验证计划`
@@ -209,8 +209,8 @@ wsf (~16), wsf_mil (~22), wsf_nx (~24), wsf_space (~8), sensor_plot_lib (3), wsf
 - `workspace/source-index/wsf_plugins/function-index.jsonl`（无 math 标记函数）
 
 ### A.2 使用的模板文件
-- `skill/afsim-algorithm-extractor/template_list/template_algorithm-card.md`
-- `skill/afsim-algorithm-extractor/template_list/template_interface-spec.md`
+- `skill/algorithm-extractor/template_list/template_algorithm-card.md`
+- `skill/algorithm-extractor/template_list/template_interface-spec.md`
 - `skill/afsim-analyst/references/output-contracts.md`
 
 ### A.3 检测方法

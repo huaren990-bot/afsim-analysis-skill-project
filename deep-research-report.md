@@ -79,8 +79,8 @@
 |------------|----------|-----------|------------|
 | `afsim-analyst` | 总控调度 | `task-orchestration` | `plan-validation` |
 | `afsim-source-cognition` | 源码认知 | `source-indexing` | `index-verification` |
-| `afsim-algorithm-extractor` | 算法提取 | `algorithm-extraction` | `algorithm-verification` |
-| `afsim-requirement-mapper` | 需求映射 | `requirement-mapping` | `requirement-verification` |
+| `algorithm-extractor` | 算法提取 | `algorithm-extraction` | `algorithm-verification` |
+| `requirement-mapper` | 需求映射 | `requirement-mapping` | `requirement-verification` |
 | `afsim-migration-builder` | 迁移构建 | `migration-generation` | `migration-verification` |
 | `afsim-knowledge-curator` | 知识策展 | `knowledge-curation` | `knowledge-verification` |
 
@@ -136,7 +136,7 @@
 
 ---
 
-### 3.3 算法提取 Agent：`afsim-algorithm-extractor`
+### 3.3 算法提取 Agent：`algorithm-extractor`
 
 #### 产出 Skill：`algorithm-extraction`（算法识别与公式提取）
 
@@ -159,7 +159,7 @@
 
 ---
 
-### 3.4 需求映射 Agent：`afsim-requirement-mapper`
+### 3.4 需求映射 Agent：`requirement-mapper`
 
 #### 产出 Skill：`requirement-mapping`（需求提取与能力缺口分析）
 
@@ -189,7 +189,7 @@
 | 属性 | 说明 |
 |------|------|
 | **职责** | 根据能力缺口 FU，在 AFSIM 索引中搜索最匹配实现，评估耦合度，生成适配方案和代码原型 |
-| **输入** | 缺口规格 FU（来自 `afsim-requirement-mapper`）；AFSIM 源码索引与源码 |
+| **输入** | 缺口规格 FU（来自 `requirement-mapper`）；AFSIM 源码索引与源码 |
 | **工作步骤** | 1. 对每个 FU，在 AFSIM 索引中语义搜索候选实现；2. 获取候选源码及依赖信息；3. 评估耦合度（简单/中等/困难）；4. 选择迁移方式（直接适配/局部重写/Clean-room 重实现）；5. 生成适配方案（需保留代码、需替换接口、需移除依赖）；6. 生成代码原型（.h/.cpp）；7. 输出迁移记录与测试计划 |
 | **输出** | `docs/migration/` 下迁移方案文档；`src/migration/` 下代码原型；`workspace/migration/` 下迁移日志 |
 | **关联人工校准点** | HCP-6：迁移方案审核（可行性、合规性）；HCP-7：代码审查 |
@@ -338,14 +338,14 @@ afsim-analysis-skill-project/
 │   │   │   └── index-verification.md           #     检验 Skill：索引验证
 │   │   └── references/
 │   │
-│   ├── afsim-algorithm-extractor/              # 算法提取 Agent
+│   ├── algorithm-extractor/              # 算法提取 Agent
 │   │   ├── SKILL.md
 │   │   ├── skills/
 │   │   │   ├── algorithm-extraction.md         #     产出 Skill：算法提取
 │   │   │   └── algorithm-verification.md       #     检验 Skill：算法验证
 │   │   └── references/
 │   │
-│   ├── afsim-requirement-mapper/               # 需求映射 Agent
+│   ├── requirement-mapper/               # 需求映射 Agent
 │   │   ├── SKILL.md
 │   │   ├── skills/
 │   │   │   ├── requirement-mapping.md          #     产出 Skill：需求映射

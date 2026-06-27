@@ -29,7 +29,7 @@ description: 一个专门检验 algorithm-extractor 产出质量的 skill。
 - `docs/algorithms/CompendiumofAlgorithms.md` 算法汇总文档。
 - `docs/extracted-algorithms/<algorithm>/` 目录下的全部接口规格文件（`<domain>-<algorithm>-interface-spec.md`）。
 - `workspace/source-index/` 中的索引文件（`function-index.jsonl`、`file-index.jsonl`、`symbol-index.jsonl`、`dependency-index.jsonl`）。
-- `skill/afsim-algorithm-extractor/template_list/` 中的全部模板文件（用于格式对照）。
+- `skill/algorithm-extractor/template_list/` 中的全部模板文件（用于格式对照）。
 - `skill/afsim-analyst/references/output-contracts.md` 中的算法卡片必填字段定义。
 
 ## 执行步骤
@@ -243,7 +243,7 @@ description: 一个专门检验 algorithm-extractor 产出质量的 skill。
 质检报告。格式遵循第 8 步中定义的报告结构，包含检测概要、逐项结果、不通过项详情与修复指引、统计汇总、未覆盖 math 函数清单。
 
 - 报告文件名中的序号取 `docs/records/` 目录下已有记录的最大序号 +1。
-- 修复指引中必须引用具体模板文件路径（如 `skill/afsim-algorithm-extractor/template_list/template_algorithm-card.md`）和对应章节名称。
+- 修复指引中必须引用具体模板文件路径（如 `skill/algorithm-extractor/template_list/template_algorithm-card.md`）和对应章节名称。
 - 报告面向母语为中文且没有 AFSIM 基础知识的新手程序员——所有术语需附带中文解释。
 
 ## 过程留痕

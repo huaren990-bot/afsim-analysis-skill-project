@@ -52,7 +52,7 @@ description: 本 skill 负责将模糊的功能需求文档转化为一份高度
     - 优先级排序
     - 非功能需求的确认
     - 其他修改要求
-  - 人工确认无需再修改后，生成最终的需求规范文档（docs/requirements/<requirement_index>/2_<requirement_index>-requirement-<name>.md）。
+  - 人工确认无需再修改后，生成最终的需求规范文档（docs/requirements/<requirement_index>/2_<requirement_index>-requirement-<name>.md），最终的需求规范文档中只保留人工选择的方案即可。
     
 4. 过程留痕：把每一步的决策依据和执行计划生成文档进行记录归档，放在目录docs/records里面，以便人工追溯。
 
@@ -73,4 +73,4 @@ description: 本 skill 负责将模糊的功能需求文档转化为一份高度
 
 ### `docs/requirements/<requirement_index>/1_<requirement_index>-requirement-<name>.md` / `docs/requirements/<requirement_index>/2_<requirement_index>-requirement-<name>.md`
 
-需求规范文档。要求和格式应当严格遵循模板`skill/afsim-requirement-mapper/template_list/template_requirement-specification.md`
+需求规范文档。要求和格式应当严格遵循模板`skill/requirement-mapper/template_list/template_requirement-specification.md`

@@ -1,8 +1,8 @@
-# 11 — afsim-algorithm-extractor Skill 完善记录
+# 11 — algorithm-extractor Skill 完善记录
 
 **日期**：2026-06-11
 **状态**：完成
-**关联 Skill**：`afsim-algorithm-extractor`
+**关联 Skill**：`algorithm-extractor`
 **触发来源**：第二轮 wsf_space + wsf_six_dof + wsf_p6dof 算法提取过程中发现系统性质量问题
 
 ---
@@ -18,7 +18,7 @@
 
 上述问题在修正过程中又发现了更深层的遗漏（wsf_six_dof 5 个高优先级子系统、wsf_space 2 个遗漏算法），总计经历了 3 轮修正才达到完整覆盖。
 
-为避免下次使用本 skill 时重复出现同类问题，对 `skill/afsim-algorithm-extractor/SKILL.md` 进行了系统性完善。
+为避免下次使用本 skill 时重复出现同类问题，对 `skill/algorithm-extractor/SKILL.md` 进行了系统性完善。
 
 ---
 
@@ -88,7 +88,7 @@
 
 ## 关联文件
 
-- `skill/afsim-algorithm-extractor/SKILL.md` — 完善后的 skill 文档（57 行 → 168 行）
+- `skill/algorithm-extractor/SKILL.md` — 完善后的 skill 文档（57 行 → 168 行）
 - `docs/records/10-wsf-space-algorithm-extraction.md` — 本轮空间算法提取记录
 - `docs/records/09-algorithm-extraction-kickoff.md` — 首轮算法提取记录
 - `docs/algorithms/CompendiumofAlgorithms.md` — 23 张卡片的汇总文档

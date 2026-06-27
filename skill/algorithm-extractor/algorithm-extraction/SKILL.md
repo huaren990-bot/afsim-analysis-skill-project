@@ -158,12 +158,12 @@ description: 一个专门从 C++ 仿真源码中提取数学公式并还原为�
 
 ### `docs/extracted-algorithms/<algorithm>/<domain>-<algorithm>-interface-spec.md`
 
-接口规范卡片。要求和格式应当严格遵循模板skill/afsim-algorithm-extractor/template_list/template_interface-spec.md
+接口规范卡片。要求和格式应当严格遵循模板skill/algorithm-extractor/template_list/template_interface-spec.md
 
 ### `docs/algorithms/<domain>-<algorithm>-card.md`
 
-算法卡片。要求和格式应当严格遵循模板skill/afsim-algorithm-extractor/template_list/template_algorithm-card.md
+算法卡片。要求和格式应当严格遵循模板skill/algorithm-extractor/template_list/template_algorithm-card.md
 
 ### `docs/algorithms/CompendiumofAlgorithms.md`
 
-afsim源代码中所有算法的汇总文档。一章对应一个算法卡片表示的算法，要求和格式应当严格遵循模板skill/afsim-algorithm-extractor/template_list/template_algorithm-card.md
+afsim源代码中所有算法的汇总文档。一章对应一个算法卡片表示的算法，要求和格式应当严格遵循模板skill/algorithm-extractor/template_list/template_algorithm-card.md

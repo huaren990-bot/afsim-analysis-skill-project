@@ -4,7 +4,7 @@ Store reusable prompt templates for the five skill roles:
 
 - `afsim-source-cognition`
 - `afsim-algorithm-extractor`
-- `afsim-requirement-mapper`
+- `requirement-mapper`
 - `afsim-migration-builder`
 - `afsim-knowledge-curator`
 
