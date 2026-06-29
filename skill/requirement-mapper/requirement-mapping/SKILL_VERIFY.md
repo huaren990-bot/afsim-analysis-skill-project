@@ -24,12 +24,15 @@ description: 检验requirement-mapping skill生成产物的质量。
 # requirement-gap-analysis
 1. 报告是否符合模板格式、模板结构
 2. 报告是否覆盖了确认后的所有需求
+3. 管线完整性：每个 FU 的输入参数是否有上游 FU 提供，输出参数是否有下游 FU 消费，不存在"孤儿参数"（即输入变量无人产出、输出变量无人消费）。
+4. 算法卡片一致性：每个 FU 的 AFSIM 参考描述是否与对应完整算法卡片正文（`docs/algorithms/flight-dynamics-*.md`）一致，不可仅凭 `CompendiumofAlgorithms.md` 的一句话摘要替代。
 
 # 总体
 1. 不同文档中是否FU ID统一
 2. 不同文档中是否需求ID统一
 3. 不同文档中是否覆盖状态统一
 4. gap-specs.jsonl是否与文档内容相符
+5. 算法卡片覆盖率：所有被引用的 AFSIM 算法卡片是否均已逐张打开阅读，不存在仅凭摘要引用的卡片。
 
 # 输入
 - `3_<requirement_index>-requirement-gap-analysis.md` — 完整缺口报告

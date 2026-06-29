@@ -15,7 +15,7 @@ description: 本 skill 负责将模糊的功能需求文档转化为一份高度
 1. 加载上下文：
   - 读取 AFSIM 架构报告（docs/architecture/afsim-architecture.md）
   - 读取算法卡片概览（docs/algorithms/CompendiumofAlgorithms.md）
-  - 加载 AFSIM 源码功能索引摘要（workspace/source-index/function-index.jsonl 中高等级函数）
+  - 加载 AFSIM 源码功能索引（workspace/source-index/function-index.jsonl）
   - 若已有目标系统功能索引，也一并加载。
 
 2. 解析用户模糊的功能需求文档：
@@ -24,8 +24,10 @@ description: 本 skill 负责将模糊的功能需求文档转化为一份高度
   - 解析用户自然语言，将模糊表述拆解为可验证的功能陈述。
 
 3. 将需求拆分为算法流水线
-  1. AFSIM 能力匹配：对于每一条细化需求，在 AFSIM 索引中通过语义搜索找到最相关的函数或类。
+  1. AFSIM 能力匹配：对于每一条细化需求，在 AFSIM 源码功能索引`function-index.jsonl`和算法卡片概览`CompendiumofAlgorithms.md`中通过语义搜索找到最相关的函数或类。
     - 若找到匹配：评估匹配函数的接口、依赖、输入输出是否与需求吻合。
+      - 注意：不可仅依赖 `CompendiumofAlgorithms.md` 的一句话摘要替代卡片正文。若在CompendiumofAlgorithms.md中找到需求涉及的各 AFSIM 参考算法，必须打开对应的完整算法卡片（`docs/algorithms/flight-dynamics-*.md`）逐张阅读。
+      - 注意：不可仅依赖 `function-index.jsonl` 的函数名和简要描述来判断匹配度，必须打开对应的源码文件逐行阅读，确认输入输出、依赖关系和功能实现。
     - 记录候选函数的证据（路径、函数名、行号、功能摘要）。
     - **若未找到匹配**：标记为 🆕 AFSIM 无参考实现，该需求的算法流程需从领域文献或算法教材中寻找设计依据，不可依赖 AFSIM 源码。
 
@@ -42,7 +44,7 @@ description: 本 skill 负责将模糊的功能需求文档转化为一份高度
         - 可移植性：评估是否依赖特定平台或库，是否需要适配层。
         - 其他非功能需求：如内存限制、性能要求等。
   
-  3. 为除了”✅ 完全满足”之外的需求设计算法简化方案，生成结构化需求草稿，将所有的Y/N选项留给人工确认。
+  3. 为除了”✅ 完全满足”之外的需求设计算法简化方案，生成结构化需求草稿，将所有的`勾选框`和`Y/N选项`留给人工确认。
 
 4. 等待人工确认：
   - 将生成的结构化需求草稿（docs/requirements/<requirement_index>/1_<requirement_index>-requirement-<name>.md）交给人工确认。
