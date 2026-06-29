@@ -36,7 +36,7 @@
 
 ## 1. 系统级功能总览
 
-**功能总览**：说明本次识别的 System-level、Module-level、Class-level、Method-level 条目数量，概述主要仿真模型能力域，并说明完整 Method-level 清单位置。
+**功能总览**：说明本次识别的 System-level、Module-level、Class-level、Method-level 条目数量，概述主要仿真模型能力域，并说明完整 Method-level 清单位置。系统级和模块级功能应说明其对应的候选业务域或业务流程入口，供 `business-logic-readiness.md` 复用。
 
 | # | 系统级功能 | 核心职责 |
 |---|-----------|----------|
@@ -107,3 +107,4 @@
 8. 每个方法级功能的 `qualified_name` 必须可在 function-index.jsonl 中查到。
 9. 必须包含“功能总览”章节，说明功能数量和主要能力域。
 10. 只包含仿真模型相关功能；边界外功能必须过滤或说明用户显式纳入。
+11. System-level 和 Module-level 功能说明必须标注可承接的业务域、流程入口或“待确认”，但不得修改模板表格列。

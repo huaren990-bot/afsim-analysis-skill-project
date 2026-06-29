@@ -1,7 +1,7 @@
 # Phase 2 最小目录单元分析计划
 
 > **日期**：2026-06-24
-> **最近更新**：2026-06-25，补充多最小目录单元批次与子 agent 并行规则。
+> **最近更新**：2026-06-29，batch06 采用 3 个子 agent 并行分析 6 个 Mystic 小插件目录，并由主 agent 统一合并 JSONL 与文档。
 > **依据**：`workspace/project-boundary/project-boundary.json` 的 `analysis_boundaries` 与 `module_hierarchy`
 > **目标**：面对大型 AFSIM C++ 源码，按目录树中的最小可验证源码单元逐步补强 Phase 2，而不是一次性重写全部模块。
 
@@ -29,8 +29,8 @@ Phase 2 后续分析按“系统 -> 子系统 -> 最小目录单元”推进：
 |------|-----|
 | 最小目录单元数 | 237 |
 | 默认范围内 source/header 数 | 17,179 |
-| 已完成单元 | 7 |
-| 当前完成单元 | batch04：`wsf_simdis/source`、`wsf_scenario_analyzer_iads_c2/source`、`ResultAcesDisplay/source`、`ResultAirCombatVisualization/source` |
+| 已完成单元 | 16 |
+| 当前完成单元 | batch06：`ResultAnnotation/source`、`ResultComment/source`、`ResultEngagementAnalysis/source`、`ResultEventMarker/source`、`ResultHeadDownView/source`、`ResultHeadUpView/source` |
 
 ## 3. 批次规则
 
@@ -70,18 +70,20 @@ Phase 2 后续分析按“系统 -> 子系统 -> 最小目录单元”推进：
 
 ## 5. 下一批候选
 
-batch04 已按本计划完成 4 个小目录的子 agent 并行分析。按“文件少、边界清晰、优先核心源码”排序，下一批建议可继续作为一个多目录批次处理；实际执行时根据 CodeGraph 证据复杂度动态拆分：
+batch06 已完成 6 个 Mystic 小插件目录。batch05 已按实际源码展开数修正执行范围：`core/wsf_util`、`wsf_p6dof`、`wsf_six_dof` 虽在工作清单中显示为小计数，但按路径前缀会覆盖大量 source/header，因此未并入 batch05。后续候选必须同时检查工作清单计数和实际 file-index 路径展开数。
+
+按“文件少、边界清晰、优先核心源码”排序，下一批建议可继续作为一个多目录批次处理；实际执行时根据 CodeGraph 证据复杂度动态拆分：
 
 | 优先级 | 最小目录单元 | source/header 数 | 说明 |
 |--------|--------------|------------------|------|
-| 1 | `afsim-2_9/swdev/src/core/wsf_parser/legacy_test/source` | 1 | 核心 parser legacy 测试入口，文件数极小；需确认是否纳入架构模块还是仅记录测试工具职责。 |
-| 2 | `afsim-2_9/swdev/src/core/wsf_util` | 1 | 核心 util 下单文件工具单元，需先确认该目录的最小单元边界。 |
-| 3 | `afsim-2_9/swdev/src/mystic/exec/source` | 1 | Mystic 应用入口，适合与其他 exec 小入口组成批次。 |
-| 4 | `afsim-2_9/swdev/src/post_processor/exec/source` | 1 | Post Processor 应用入口，适合与 Mystic exec 对照分析。 |
-| 5 | `afsim-2_9/swdev/src/wsf_plugins/wsf_p6dof` | 1 | 插件层 p6dof 小单元，需确认是否只有入口或包装源码。 |
-| 6 | `afsim-2_9/swdev/src/wsf_plugins/wsf_six_dof` | 1 | 插件层 six_dof 小单元，可与 p6dof 同批但需防止混淆。 |
+| 1 | `afsim-2_9/swdev/src/mystic/plugins/ResultInteractionLines/source` | 2 | Mystic interaction lines 显示插件，小目录。 |
+| 2 | `afsim-2_9/swdev/src/mystic/plugins/ResultOrbit/source` | 2 | Mystic orbit 显示插件，小目录。 |
+| 3 | `afsim-2_9/swdev/src/mystic/plugins/ResultProjector/source` | 2 | Mystic projector 显示插件，小目录。 |
+| 4 | `afsim-2_9/swdev/src/mystic/plugins/ResultRoute/source` | 2 | Mystic route 显示插件，小目录。 |
+| 5 | `afsim-2_9/swdev/src/mystic/plugins/ResultSituationAwarenessDisplay/source` | 2 | Mystic situation awareness display 插件，小目录。 |
+| 6 | `afsim-2_9/swdev/src/mystic/plugins/ResultVisualEffects/source` | 2 | Mystic visual effects 插件，小目录。 |
 
-建议 batch05 先尝试以上 3-6 个小目录并行分析：由主 agent 统一批次范围和验证标准，子 agent 分别负责单目录证据采集；若 `core/wsf_util` 或 six-dof 相关目录出现跨目录耦合，则拆出为独立后续批次。
+建议 batch07 继续按 3-6 个 Mystic 小插件目录并行分析：由主 agent 统一批次范围和验证标准，子 agent 分别负责单目录证据采集；如果某插件存在复杂 UI/数据链路，则缩小到 2-3 个目录。
 
 ## 6. 已知注意事项
 
@@ -91,3 +93,5 @@ batch04 已按本计划完成 4 个小目录的子 agent 并行分析。按“�
 4. batch02 发现旧 Phase 3 精细索引中存在 `WsfGrammarCheckExtension` 成员被错误挂到 `ParseSourceProvider` 下的问题；本轮只修 Phase 2 粗索引，Phase 3 后续应按最小单元重新精修。
 5. batch03 的 `MissionVersion.hpp` 只有版本/产品宏，无 class/struct；本轮将版本宏作为 Phase 3 macro-index 候选，而不是伪造类符号。
 6. batch04 首次按“多个最小目录单元 + 子 agent 并行 + 主 agent 合并”执行；对共享 JSONL 仍由主 agent 串行写入，子 agent 只提供目录级证据摘要。
+7. batch05 发现工作清单中部分 `analysis_unit` 与实际 file-index 路径展开不一致；后续批次选择必须先计算实际展开的 source/header 数，避免把大目录误当成小单元。
+8. batch06 发现多个 Mystic 插件依赖 generated event-pipe headers 或 ResultData 插件；Phase 2 只记录显示/聚合入口，消息字段精确定义留给后续业务逻辑或 Phase 3/4 深挖。

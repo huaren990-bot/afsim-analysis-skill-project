@@ -8,7 +8,7 @@
 
 Phase 2 v2 不再沿用旧版“107 个同层模块”组织方式，而是以 Phase 1 的 `module_hierarchy` 为准，按系统、子系统、最小目录单元逐步分析。
 
-当前默认范围内共有 237 个最小目录单元、17,179 个 source/header 文件。已完成 7 个单元：
+当前默认范围内共有 237 个最小目录单元、17,179 个 source/header 文件。已完成 10 个单元：
 
 | # | 系统 | 子系统 | 最小目录单元 | 文件数 | 状态 | 详情 |
 |---|------|--------|--------------|--------|------|------|
@@ -19,6 +19,9 @@ Phase 2 v2 不再沿用旧版“107 个同层模块”组织方式，而是以 P
 | 5 | plugin_modules | wsf_plugins/wsf_scenario_analyzer_iads_c2 | `afsim-2_9/swdev/src/wsf_plugins/wsf_scenario_analyzer_iads_c2/source` | 2 | 已完成 batch04 | 见第 5 节 |
 | 6 | applications | mystic/plugins | `afsim-2_9/swdev/src/mystic/plugins/ResultAcesDisplay/source` | 2 | 已完成 batch04 | 见第 6 节 |
 | 7 | applications | mystic/plugins | `afsim-2_9/swdev/src/mystic/plugins/ResultAirCombatVisualization/source` | 2 | 已完成 batch04 | 见第 7 节 |
+| 8 | core_framework | core/wsf_parser | `afsim-2_9/swdev/src/core/wsf_parser/legacy_test/source` | 1 | 已完成 batch05 | 见第 8 节 |
+| 9 | applications | mystic/exec | `afsim-2_9/swdev/src/mystic/exec/source` | 1 | 已完成 batch05 | 见第 9 节 |
+| 10 | applications | post_processor/exec | `afsim-2_9/swdev/src/post_processor/exec/source` | 1 | 已完成 batch05 | 见第 10 节 |
 
 默认边界外路径：
 
@@ -386,3 +389,420 @@ Phase 2 v2 不再沿用旧版“107 个同层模块”组织方式，而是以 P
 ### 7.6 修正记录
 
 旧 Phase 2 记录了 namespace/class，但 `Plugin` 缺少 `rv::Plugin` 基类，方法级职责和插件注册入口也未显式索引。batch04 已补充 class 基类、匿名命名空间辅助函数、插件注册宏和主要方法。
+
+## 8. core/wsf_parser/legacy_test/source
+
+### 8.1 单元信息
+
+| 字段 | 值 |
+|------|-----|
+| 系统 | `core_framework`（核心框架） |
+| 子系统 | `core/wsf_parser`（WSF parser legacy 测试） |
+| 最小目录单元 | `afsim-2_9/swdev/src/core/wsf_parser/legacy_test/source` |
+| 文件数 | 1 |
+| 源文件 | `wsf_core_parse_test.cpp` |
+| 证据 | 子 agent 证据采集 + CodeGraph node + 源码行号 |
+
+### 8.2 职责说明
+
+`wsf_core_parse_test` 是 WSF legacy parser 的命令行测试入口。它加载 grammar 文件，构造 `WsfParseDefinitions` 和 `WsfParser`，逐个解析输入文件，统计 parser error 与无法识别的 token，并可通过 `-v` 输出 include 进入事件。
+
+### 8.3 文件清单
+
+| 文件 | 中文说明 | 关键符号 | 关键函数 |
+|------|----------|----------|----------|
+| `wsf_core_parse_test.cpp` | Parser legacy 测试可执行入口；加载 grammar，解析输入文件并打印错误。 | `ParseSourceProvider`, `GetLineNumber`, `CheckFile`, `PrintInclude`, `main` | `ParseSourceProvider::FindSource`, `GetLineNumber`, `CheckFile`, `PrintInclude`, `main` |
+
+### 8.4 核心符号
+
+| 符号 | 类型 | 基类 | 源码位置 | 中文说明 |
+|------|------|------|----------|----------|
+| `ParseSourceProvider` | class | `WsfParseSourceProvider` | `wsf_core_parse_test.cpp:22-32` | 测试本地 source provider，按文件路径创建 `WsfParseSource`。 |
+| `ParseSourceProvider::FindSource` | method | 无 | `wsf_core_parse_test.cpp:26-31` | 在路径是文件时返回 file-backed parse source。 |
+| `GetLineNumber` | function | 无 | `wsf_core_parse_test.cpp:33-42` | 根据 parse range 起点前的换行符计算错误行号。 |
+| `CheckFile` | function | 无 | `wsf_core_parse_test.cpp:43-87` | 重置 parser、push 输入文件、读取 root node 并收集错误。 |
+| `PrintInclude` | function | 无 | `wsf_core_parse_test.cpp:88-94` | 输出 include 进入信息。 |
+| `main(int,char**)` | function | 无 | `wsf_core_parse_test.cpp:95-125` | 测试可执行入口。 |
+
+### 8.5 关键关系
+
+| 关系 | 说明 | 证据 |
+|------|------|------|
+| grammar 初始化 | `main` 读取 `argv[1]`，调用 `AddGrammar` 和 `Initialize`。 | `wsf_core_parse_test.cpp:103-107` |
+| 输入文件检查 | `main` 对 `argv[2..]` 调用 `CheckFile`；`-v` 连接 include 事件。 | `wsf_core_parse_test.cpp:109-120` |
+| parser 错误采集 | `CheckFile` 调用 root `Read`、`ReadWord` 和 `GetErrors`，合并 parser error 与未识别 token。 | `wsf_core_parse_test.cpp:43-87` |
+
+### 8.6 修正记录
+
+旧 Phase 2 对该文件只有泛化 `wsf_core_parse_test` 符号。batch05 补入测试本地 provider 类、辅助函数和 `main`。保留复核项：该文件使用 `std::vector`、`std::string` 但未直接 include 对应标准头，且测试代码中存在 `new` 对象和注释掉的 `treePtr` delete。
+
+## 9. mystic/exec/source
+
+### 9.1 单元信息
+
+| 字段 | 值 |
+|------|-----|
+| 系统 | `applications`（Mystic GUI 应用） |
+| 子系统 | `mystic/exec` |
+| 最小目录单元 | `afsim-2_9/swdev/src/mystic/exec/source` |
+| 文件数 | 1 |
+| 源文件 | `mystic.cpp` |
+| 证据 | 子 agent 证据采集 + CodeGraph node + 源码行号 |
+
+### 9.2 职责说明
+
+`mystic.cpp` 是 Mystic GUI 可执行入口。它设置 Qt 应用元数据和日志/异常处理，解析配置文件与控制台相关命令行参数，创建 WKF/VTK/Mystic 环境，打开 `.aer` event recording 或显示启动对话框，进入 Qt event loop，并在退出时关闭运行管理器和环境对象。
+
+### 9.3 文件清单
+
+| 文件 | 中文说明 | 关键符号 | 关键函数 |
+|------|----------|----------|----------|
+| `mystic.cpp` | Mystic GUI 应用入口和主运行流程。 | `main`, `(anonymous namespace)::rvExecute`, `ShowUsageDialog`, `IsFileReadable`, `associateFileTypes` | `main`, `rvExecute`, `ShowUsageDialog`, `IsFileReadable`, `associateFileTypes` |
+
+### 9.4 核心符号
+
+| 符号 | 类型 | 基类 | 源码位置 | 中文说明 |
+|------|------|------|----------|----------|
+| `(anonymous namespace)::associateFileTypes` | function | 无 | `mystic.cpp:42-71` | Windows-only `.aer` 文件关联 helper。 |
+| `(anonymous namespace)::IsFileReadable` | function | 无 | `mystic.cpp:74-77` | 校验命令行文件参数可读性。 |
+| `(anonymous namespace)::ShowUsageDialog` | function | 无 | `mystic.cpp:79-105` | 显示 Mystic 命令行用法对话框。 |
+| `(anonymous namespace)::rvExecute` | function | 无 | `mystic.cpp:107-263` | Mystic 主运行流程。 |
+| `main(int,char**)` | function | 无 | `mystic.cpp:266-291` | Mystic 应用入口，设置异常处理和 Qt attributes 后调用 `rvExecute`。 |
+
+### 9.5 关键关系
+
+| 关系 | 说明 | 证据 |
+|------|------|------|
+| 应用初始化 | `main` 设置异常处理、日志、Qt attributes，并创建 `QApplication`。 | `mystic.cpp:266-279` |
+| 环境装配 | `rvExecute` 调用 `wkf::VtkEnvironment::Create(new rv::Factory)`、`wkf::Environment::Create`、`rv::Environment::Create`、`rv::RunManager::Create`。 | `mystic.cpp:207-213` |
+| 输入记录打开 | 命令行有文件时直接 `rvEnv.OpenEventRecording(args[1])`，否则显示 `rv::StartupDialog`。 | `mystic.cpp:238-250` |
+| 退出清理 | Qt event loop 返回后关闭 `RunManager`、`rvEnv` 和 `wkfEnv`。 | `mystic.cpp:253-262` |
+
+### 9.6 修正记录
+
+旧 Phase 2 对该文件只有泛化 `mystic` 符号。batch05 补入 `main`、`rvExecute` 和匿名命名空间 helper。保留复核项：`associateFileTypes` 在本文件内未发现调用；注释提到 `-ups`，但本文件未解析该参数；`mystic_version_defines.hpp` 未在源码树中发现，按构建生成头处理。
+
+## 10. post_processor/exec/source
+
+### 10.1 单元信息
+
+| 字段 | 值 |
+|------|-----|
+| 系统 | `applications`（Post Processor CLI 应用） |
+| 子系统 | `post_processor/exec` |
+| 最小目录单元 | `afsim-2_9/swdev/src/post_processor/exec/source` |
+| 文件数 | 1 |
+| 源文件 | `post_processor.cpp` |
+| 证据 | 子 agent 证据采集 + CodeGraph node + 源码行号 |
+
+### 10.2 职责说明
+
+`post_processor.cpp` 是 Post Processor 命令行可执行入口。它打印版本和构建时间，构造 `Configuration` 解析命令行/配置，执行 CSV 事件输出后处理报表生成，输出耗时，并将 `UtException` 转换为失败退出码。
+
+### 10.3 文件清单
+
+| 文件 | 中文说明 | 关键符号 | 关键函数 |
+|------|----------|----------|----------|
+| `post_processor.cpp` | Post Processor CLI 入口和报表生成调用链起点。 | `main`, `Configuration`, `UtWallClock`, `UtException`, `POST_PROCESSOR_VERSION` | `main`, `Configuration::Execute`, `Configuration::GetReportTypeStr`, `UtWallClock::GetClock` |
+
+### 10.4 核心符号
+
+| 符号 | 类型 | 基类 | 源码位置 | 中文说明 |
+|------|------|------|----------|----------|
+| `main(int,char**)` | function | 无 | `post_processor.cpp:27-51` | Post Processor CLI 入口；构造配置、执行报表生成、输出耗时并处理异常。 |
+
+### 10.5 关键关系
+
+| 关系 | 说明 | 证据 |
+|------|------|------|
+| 版本输出 | `main` 打印 `POST_PROCESSOR_VERSION` 和构建日期/时间。 | `post_processor.cpp:31-32` |
+| 配置执行 | `Configuration config({argv, argc})` 后调用 `config.Execute()`。 | `post_processor.cpp:34-39` |
+| 耗时输出 | 成功或未生成报表后输出 `UtWallClock::GetClock()`。 | `post_processor.cpp:29-43` |
+| 异常处理 | 捕获 `UtException`，输出错误并返回 1。 | `post_processor.cpp:45-50` |
+
+### 10.6 修正记录
+
+旧 Phase 2 对该文件只有泛化 `post_processor` 符号。batch05 补入真实 `main` 入口，并在 file-index 记录 `Configuration::Execute`、`UtWallClock`、`UtException` 等跨模块调用关系。`post_processor_version_defines.hpp` 未在源码树中发现，按构建生成头处理；`Report.hpp` 直接 include 但 `main` 未直接引用，保留为 include hygiene 复核项。
+
+## 11. mystic/plugins/ResultAnnotation/source
+
+### 11.1 单元信息
+
+| 字段 | 值 |
+|------|-----|
+| 系统 | `applications`（Mystic 结果查看应用插件） |
+| 子系统 | `mystic/plugins` |
+| 最小目录单元 | `afsim-2_9/swdev/src/mystic/plugins/ResultAnnotation/source` |
+| source/header 数 | 2 |
+| 源文件 | `RvPluginAnnotation.cpp`、`RvPluginAnnotation.hpp` |
+| 证据 | 子 agent 证据采集 + CodeGraph node + 源码行号 |
+
+### 11.2 职责说明
+
+`ResultAnnotation` 是 Mystic 注记显示插件。它消费 annotation event-pipe 消息，将 POI、bullseye、decoration 和 range ring 转换为 WKF 地图注记对象；平台相关 annotation 可能先于平台激活到达，因此插件维护 deferred decoration/range-ring 状态，并在平台激活后补挂显示对象。
+
+### 11.3 文件清单
+
+| 文件 | 中文说明 | 关键符号 | 关键函数 |
+|------|----------|----------|----------|
+| `RvPluginAnnotation.hpp` | Annotation 插件声明；继承 `rv::PluginT<Annotation::Plugin>` 并维护延迟显示状态。 | `RvAnnotation::Plugin` | `AnnotationReadCB`, `PlatformActiveChangedCB` |
+| `RvPluginAnnotation.cpp` | Annotation 插件实现与注册；处理 annotation 消息并驱动 WKF annotation display interface。 | `WKF_PLUGIN_DEFINE_SYMBOLS`, `Vec3fToQColor`, `GetRangeRingProperties` | `RvAnnotation::Plugin::Plugin`, `AnnotationReadCB`, `PlatformActiveChangedCB` |
+
+### 11.4 核心符号
+
+| 符号 | 类型 | 基类 | 源码位置 | 中文说明 |
+|------|------|------|----------|----------|
+| `RvAnnotation::Plugin` | class | `rv::PluginT<Annotation::Plugin>` | `RvPluginAnnotation.hpp:26-42` | Mystic Annotation 插件主体。 |
+| `(anonymous namespace)::Vec3fToQColor` | function | 无 | `RvPluginAnnotation.cpp:21-26` | 将 result message 颜色向量转换为 `QColor`。 |
+| `(anonymous namespace)::GetRangeRingProperties` | function | 无 | `RvPluginAnnotation.cpp:28-49` | 将 `MsgAnnotationRangeRing` 转换为 WKF range ring 属性。 |
+| `RvAnnotation::Plugin::AnnotationReadCB` | method | 无 | `RvPluginAnnotation.cpp:68-138` | 处理 decoration、POI、bullseye 和 range-ring 消息。 |
+| `RvAnnotation::Plugin::PlatformActiveChangedCB` | method | 无 | `RvPluginAnnotation.cpp:140-183` | 平台激活后补挂 deferred decoration/range-ring。 |
+
+### 11.5 关键关系
+
+| 关系 | 说明 | 证据 |
+|------|------|------|
+| 插件注册 | `WKF_PLUGIN_DEFINE_SYMBOLS` 注册显示名 `Annotation`、tag `mystic`。 | `RvPluginAnnotation.cpp:52-55` |
+| 消息输入 | 构造函数连接 `rvEnv.AnnotationRead` 到 `AnnotationReadCB`。 | `RvPluginAnnotation.cpp:57-64` |
+| 显示输出 | `AnnotationReadCB` 调用 `mDisplayInterface` 添加 POI、bullseye、decoration 和 range ring。 | `RvPluginAnnotation.cpp:68-138` |
+
+### 11.6 修正记录
+
+旧 Phase 2 只记录了泛化 `RvPluginAnnotation`。batch06 补入 `RvAnnotation::Plugin`、匿名命名空间 helper、注册宏调用和两个核心回调。保留复核项：generated annotation event-pipe headers 未在当前源码树中找到；`mLastTime` 在本单元内未发现使用；`PlatformActiveChangedCB` 中 deferred range ring 平台路径缺少显式空指针保护。
+
+## 12. mystic/plugins/ResultComment/source
+
+### 12.1 单元信息
+
+| 字段 | 值 |
+|------|-----|
+| 系统 | `applications`（Mystic 结果查看应用插件） |
+| 子系统 | `mystic/plugins` |
+| 最小目录单元 | `afsim-2_9/swdev/src/mystic/plugins/ResultComment/source` |
+| source/header 数 | 2 |
+| 源文件 | `RvCommentPlugin.cpp`、`RvCommentPlugin.hpp` |
+| 证据 | 子 agent 证据采集 + CodeGraph node + 源码行号 |
+
+### 12.2 职责说明
+
+`ResultComment` 是 Mystic comment bubble 插件。它读取 `MsgComment`，按仿真时间缓存评论，向 comment dock 转发日志文本，并在地图平台对象上创建/更新/删除限时 comment bubble attachment。
+
+### 12.3 文件清单
+
+| 文件 | 中文说明 | 关键符号 | 关键函数 |
+|------|----------|----------|----------|
+| `RvCommentPlugin.hpp` | Comment 插件声明；定义 `CommentData` 缓存和 `FindCommentByIndex` 匹配谓词。 | `RvComment::Plugin`, `CommentData`, `FindCommentByIndex` | `CommentRead`, `ClearComments`, `AdvanceTimeRead` |
+| `RvCommentPlugin.cpp` | Comment 插件实现与注册；处理评论输入、偏好变化和地图气泡重绘。 | `WKF_PLUGIN_DEFINE_SYMBOLS`, `RvComment::Plugin` | `CommentRead`, `Redraw`, `PreferencesChanged`, `FormatMessage` |
+
+### 12.4 核心符号
+
+| 符号 | 类型 | 基类 | 源码位置 | 中文说明 |
+|------|------|------|----------|----------|
+| `RvComment::CommentData` | using | 无 | `RvCommentPlugin.hpp:28` | 按 sim time 存储 attachment id 与 `MsgComment` 的缓存。 |
+| `RvComment::FindCommentByIndex` | struct | 无 | `RvCommentPlugin.hpp:31-45` | 用于查找同平台/同 attachment id 的 comment。 |
+| `RvComment::Plugin` | class | `rv::Plugin` | `RvCommentPlugin.hpp:47-71` | Mystic Comment Bubbles 插件主体。 |
+| `RvComment::Plugin::CommentRead` | method | 无 | `RvCommentPlugin.cpp:36-66` | 接收 comment 消息并更新缓存。 |
+| `RvComment::Plugin::Redraw` | method | 无 | `RvCommentPlugin.cpp:104-173` | 根据当前时间、timeout 和偏好更新平台 comment bubble。 |
+| `RvComment::Plugin::FormatMessage` | method | 无 | `RvCommentPlugin.cpp:202-215` | 根据偏好在评论前附加时间戳。 |
+
+### 12.5 关键关系
+
+| 关系 | 说明 | 证据 |
+|------|------|------|
+| 插件注册 | `WKF_PLUGIN_DEFINE_SYMBOLS` 注册显示名 `Comment Bubbles`、tag `mystic`。 | `RvCommentPlugin.cpp:31-34` |
+| 消息输入 | `rv::PluginT` 将 `rvEnv.CommentRead` 接入 `CommentRead` override。 | `RvCommentPlugin.hpp:55`, `RvCommentPlugin.cpp:36-66` |
+| 双路输出 | `CommentRead` 调用 `CommentForwardingService::CommentReceived`；`Redraw` 创建 `wkf::AttachmentDecorator`。 | `RvCommentPlugin.cpp:41-43`, `RvCommentPlugin.cpp:104-173` |
+
+### 12.6 修正记录
+
+旧 Phase 2 只记录了泛化 `RvCommentPlugin`。batch06 补入 comment 缓存类型、匹配谓词和插件核心方法。保留复核项：`MsgComment` generated 定义未在普通源码头中展开；`FindCommentByIndex` 使用 attachment id 匹配，重复同一 simTime/platform comment 的替换行为需要后续确认；显示窗口使用严格 `currentTime > creationTime && currentTime < creationTime + timeout`。
+
+## 13. mystic/plugins/ResultEngagementAnalysis/source
+
+### 13.1 单元信息
+
+| 字段 | 值 |
+|------|-----|
+| 系统 | `applications`（Mystic 结果查看应用插件） |
+| 子系统 | `mystic/plugins` |
+| 最小目录单元 | `afsim-2_9/swdev/src/mystic/plugins/ResultEngagementAnalysis/source` |
+| source/header 数 | 2 |
+| 源文件 | `RvPluginEngagement.cpp`、`RvPluginEngagement.hpp` |
+| 证据 | 子 agent 证据采集 + CodeGraph node + 源码行号 |
+
+### 13.2 职责说明
+
+`ResultEngagementAnalysis` 是 Mystic 交战统计插件。它缓存 weapon fired/terminated 事件，在用户打开 Tools 菜单中的 engagement statistics 窗口后，将事件转换为统计行；右键 trace 可从 weapon/track id 回溯武器发射、终止、task update、track 创建/相关/去相关等事件时间线。
+
+### 13.3 文件清单
+
+| 文件 | 中文说明 | 关键符号 | 关键函数 |
+|------|----------|----------|----------|
+| `RvPluginEngagement.hpp` | Engagement Analysis 插件声明；维护统计窗口、事件缓存和互斥锁。 | `RvEngagement::Plugin` | `WeaponFiredEventRead`, `WeaponTerminatedEventRead`, `TraceEvent` |
+| `RvPluginEngagement.cpp` | Engagement Analysis 插件实现与注册；处理统计窗口、事件聚合和 trace 对话框。 | `WKF_PLUGIN_DEFINE_SYMBOLS`, `RvEngagement::Plugin` | `ShowEngagements`, `ProcessWeaponFired`, `ProcessWeaponTerminated`, `TraceEvent`, `EngageSort` |
+
+### 13.4 核心符号
+
+| 符号 | 类型 | 基类 | 源码位置 | 中文说明 |
+|------|------|------|----------|----------|
+| `RvEngagement::Plugin` | class | `rv::Plugin` | `RvPluginEngagement.hpp:29-60` | Mystic Engagement Analysis 插件主体。 |
+| `RvEngagement::Plugin::ShowEngagements` | method | 无 | `RvPluginEngagement.cpp:52-76` | 创建 engagement statistics 窗口并连接过滤/右键信号。 |
+| `RvEngagement::Plugin::WeaponFiredEventRead` | method | 无 | `RvPluginEngagement.cpp:87-96` | 缓存 weapon fired 事件并在窗口存在时立即处理。 |
+| `RvEngagement::Plugin::ProcessWeaponTerminated` | method | 无 | `RvPluginEngagement.cpp:148-186` | 将 weapon terminated 事件加入统计模型。 |
+| `RvEngagement::Plugin::TraceEvent` | method | 无 | `RvPluginEngagement.cpp:218-435` | 构建 weapon/track 相关事件时间线。 |
+| `RvEngagement::Plugin::EngageSort` | method | 无 | `RvPluginEngagement.cpp:437-464` | 按时间与事件优先级排序 trace 事件。 |
+
+### 13.5 关键关系
+
+| 关系 | 说明 | 证据 |
+|------|------|------|
+| 插件注册 | `WKF_PLUGIN_DEFINE_SYMBOLS` 注册显示名 `Engagement Analysis`、tag `mystic`。 | `RvPluginEngagement.cpp:32` |
+| 统计入口 | 构造函数向 Tools 菜单插入 `Show Engagement Statistics`。 | `RvPluginEngagement.cpp:34-50` |
+| 事件聚合 | `WeaponFiredEventRead` 和 `WeaponTerminatedEventRead` 将事件缓存到 `mEngagementEvents`，并在窗口存在时处理。 | `RvPluginEngagement.cpp:87-107` |
+| 事件追踪 | `TraceEvent` 调用 `FindWeaponTerminationByWeaponId`、`FindWeaponFireByWeaponId` 和 `TraceTrackId`。 | `RvPluginEngagement.cpp:218-267` |
+
+### 13.6 修正记录
+
+旧 Phase 2 只记录了泛化 `RvPluginEngagement`。batch06 补入统计窗口、事件读取、事件处理和 trace 相关方法。保留复核项：`ProcessWeaponFired` / `ProcessWeaponTerminated` 查询 `tplat` 后检查变量疑似写成 `aplat`；`TraceEvent` 中对 eventList 指针执行 `delete` 的所有权需要确认；`mUnprocessedEngagementEvents` 声明后未发现使用。
+
+## 14. mystic/plugins/ResultEventMarker/source
+
+### 14.1 单元信息
+
+| 字段 | 值 |
+|------|-----|
+| 系统 | `applications`（Mystic 结果查看应用插件） |
+| 子系统 | `mystic/plugins` |
+| 最小目录单元 | `afsim-2_9/swdev/src/mystic/plugins/ResultEventMarker/source` |
+| source/header 数 | 2 |
+| 源文件 | `RvEventMarkerPlugin.cpp`、`RvEventMarkerPlugin.hpp` |
+| 证据 | 子 agent 证据采集 + CodeGraph node + 源码行号 |
+
+### 14.2 职责说明
+
+`ResultEventMarker` 是 Mystic 事件标记插件。它在结果回放时间推进时读取平台状态、武器终止和 data extension 自定义事件，在 viewer 上创建 DAMAGED、REMOVED、WEAPON_HIT、WEAPON_MISSED 或自定义事件 marker，并用最近的 entity state 推算事件位置。
+
+### 14.3 文件清单
+
+| 文件 | 中文说明 | 关键符号 | 关键函数 |
+|------|----------|----------|----------|
+| `RvEventMarkerPlugin.hpp` | Event Marker 插件声明；维护上次处理时间和自定义事件 handler。 | `RvEventMarker::Plugin`, `rv::DataExtension::EventHandler` | `AdvanceTimeRead`, `GetPositionAtTime`, `PluginsLoaded` |
+| `RvEventMarkerPlugin.cpp` | Event Marker 插件实现与注册；按时间窗口读取事件并创建 marker。 | `WKF_PLUGIN_DEFINE_SYMBOLS`, `RvEventMarker::Plugin` | `AdvanceTimeRead`, `ClearScenario`, `GetPositionAtTime`, `PluginsLoaded` |
+
+### 14.4 核心符号
+
+| 符号 | 类型 | 基类 | 源码位置 | 中文说明 |
+|------|------|------|----------|----------|
+| `RvEventMarker::Plugin` | class | `rv::PluginT<wkf::EventMarkerPluginBase>` | `RvEventMarkerPlugin.hpp:29-45` | Mystic Event Markers 插件主体。 |
+| `RvEventMarker::Plugin::AdvanceTimeRead` | method | 无 | `RvEventMarkerPlugin.cpp:33-211` | 读取近期事件并创建 marker。 |
+| `RvEventMarker::Plugin::GetPositionAtTime` | method | 无 | `RvEventMarkerPlugin.cpp:220-244` | 按事件时间推算平台位置。 |
+| `RvEventMarker::Plugin::PluginsLoaded` | method | 无 | `RvEventMarkerPlugin.cpp:246-257` | 从已加载 data extension 注册自定义事件 handler。 |
+
+### 14.5 关键关系
+
+| 关系 | 说明 | 证据 |
+|------|------|------|
+| 插件注册 | `WKF_PLUGIN_DEFINE_SYMBOLS` 注册显示名 `Event Markers`、tag `mystic`。 | `RvEventMarkerPlugin.cpp:25` |
+| 时间窗口 | 仅当 `time > mLastTime` 时处理 `[max(mLastTime, time-timeout), time)`。 | `RvEventMarkerPlugin.cpp:33-73` |
+| 内置事件分类 | 平台 broken/removed 生成 DAMAGED/REMOVED；武器终止按 `geometryResult()` 映射为 WEAPON_HIT/WEAPON_MISSED。 | `RvEventMarkerPlugin.cpp:73-207` |
+| 自定义事件 | `PluginsLoaded` 遍历 `rvEnv.GetExtensions()` 并注册 `EventHandler`。 | `RvEventMarkerPlugin.cpp:246-257` |
+
+### 14.6 修正记录
+
+旧 Phase 2 只记录了泛化 `RvEventMarkerPlugin`。batch06 补入内置事件、自定义事件和位置推算相关方法。保留复核项：custom event marker 是否被 `ClearScenario` 完整删除需要确认；DAMAGED/REMOVED 分支直接解引用 `FindPlatformByIndex` 结果；`GetPositionAtTime` 找不到平台或状态时返回原点。
+
+## 15. mystic/plugins/ResultHeadDownView/source
+
+### 15.1 单元信息
+
+| 字段 | 值 |
+|------|-----|
+| 系统 | `applications`（Mystic 结果查看应用插件） |
+| 子系统 | `mystic/plugins` |
+| 最小目录单元 | `afsim-2_9/swdev/src/mystic/plugins/ResultHeadDownView/source` |
+| source/header 数 | 2 |
+| 源文件 | `RvHeadDownViewPlugin.cpp`、`RvHeadDownViewPlugin.hpp` |
+| 证据 | 子 agent 证据采集 + CodeGraph node + 源码行号 |
+
+### 15.2 职责说明
+
+`ResultHeadDownView` 是 Mystic head-down-display 插件。它只对有 SA 数据的平台添加 Air Combat 右键菜单入口，打开 `HDD::Dockable` 窗口，并把 ResultData 中平台、飞控、导航、燃油、武器、航迹和资产消息转换为 `HDD::HDD_Data`，再推送给打开的 HDD 窗口。
+
+### 15.3 文件清单
+
+| 文件 | 中文说明 | 关键符号 | 关键函数 |
+|------|----------|----------|----------|
+| `RvHeadDownViewPlugin.hpp` | Head Down View 插件声明；维护 `HDD::DataContainer`、平台到 HDD 窗口映射和偏好控件。 | `RvHeadsDownDisplay::Plugin`, `HDD::DataContainer`, `HDD::Dockable` | `AdvanceTimeRead`, `ConnectToPlatform`, `UpdateDataContainer`, `HasSA_Data` |
+| `RvHeadDownViewPlugin.cpp` | Head Down View 插件实现与注册；处理右键菜单、HDD 窗口生命周期和数据转换。 | `WKF_PLUGIN_DEFINE_SYMBOLS`, `RvHeadsDownDisplay::Plugin` | `BuildEntityContextMenu`, `GuiUpdate`, `UpdateDataContainer`, `HasSituationAwarenessProcessor`, `HasSA_Data` |
+
+### 15.4 核心符号
+
+| 符号 | 类型 | 基类 | 源码位置 | 中文说明 |
+|------|------|------|----------|----------|
+| `RvHeadsDownDisplay::Plugin` | class | `rv::Plugin` | `RvHeadDownViewPlugin.hpp:21-95` | Mystic Head Down View 插件主体。 |
+| `RvHeadsDownDisplay::Plugin::BuildEntityContextMenu` | method | 无 | `RvHeadDownViewPlugin.cpp:69-91` | 为 SA 平台添加 Air Combat / Head Down View action。 |
+| `RvHeadsDownDisplay::Plugin::ConnectToPlatform` | method | 无 | `RvHeadDownViewPlugin.cpp:99-151` | 创建并显示平台 HDD 窗口。 |
+| `RvHeadsDownDisplay::Plugin::GuiUpdate` | method | 无 | `RvHeadDownViewPlugin.cpp:182-232` | 将数据容器中的平台/航迹/燃油/武器/导航等数据推给 HDD 窗口。 |
+| `RvHeadsDownDisplay::Plugin::UpdateDataContainer` | method | 无 | `RvHeadDownViewPlugin.cpp:259-706` | 从 ResultData 平台消息构造 `HDD::HDD_Data`。 |
+| `RvHeadsDownDisplay::Plugin::HasSA_Data` | method | 无 | `RvHeadDownViewPlugin.cpp:727-841` | 检测平台是否存在 SA 相关消息。 |
+
+### 15.5 关键关系
+
+| 关系 | 说明 | 证据 |
+|------|------|------|
+| 插件注册 | `WKF_PLUGIN_DEFINE_SYMBOLS` 注册显示名 `Head Down View`、tag `mystic`，默认不加载。 | `RvHeadDownViewPlugin.cpp:35-39` |
+| UI 入口 | 右键菜单只对 `wkf::Platform` 且具备 SA 数据、未打开 HDD 的平台添加 action。 | `RvHeadDownViewPlugin.cpp:69-91` |
+| 数据输入 | `UpdateDataContainer` 读取 `MsgEntityState`、`MsgSA_FlightKinematicsData`、`MsgSA_FlightControlsData`、`MsgSA_NavData`、`MsgSA_FuelData`、`MsgSA_WeaponsData`、`MsgSA_TrackData`、`MsgSA_PerceivedAssetsData`。 | `RvHeadDownViewPlugin.cpp:259-706` |
+| GUI 输出 | `GuiUpdate` 将 `HDD::HDD_Data` 推给 `HDD::Dockable` setter。 | `RvHeadDownViewPlugin.cpp:182-232` |
+
+### 15.6 修正记录
+
+旧 Phase 2 只记录了泛化 `RvHeadDownViewPlugin`。batch06 补入 UI 入口、窗口生命周期、数据转换和 SA 检测方法。保留复核项：`cHEADS_DOWN_DISPLAY` 未发现使用；`ConnectToPlatformActionHandler` 先读取 `sender->data()` 再检查 sender；EntityState fallback 中 heading 使用 `cDEG_PER_RAD`，pitch/roll 使用 `cRAD_PER_DEG`，单位转换需复核。
+
+## 16. mystic/plugins/ResultHeadUpView/source
+
+### 16.1 单元信息
+
+| 字段 | 值 |
+|------|-----|
+| 系统 | `applications`（Mystic 结果查看应用插件） |
+| 子系统 | `mystic/plugins` |
+| 最小目录单元 | `afsim-2_9/swdev/src/mystic/plugins/ResultHeadUpView/source` |
+| source/header 数 | 2 |
+| 源文件 | `RvHeadUpViewPlugin.cpp`、`RvHeadUpViewPlugin.hpp` |
+| 证据 | 子 agent 证据采集 + CodeGraph node + 源码行号 |
+
+### 16.2 职责说明
+
+`ResultHeadUpView` 是 Mystic HUD/OTW 插件。它对有 SA 数据的平台添加 Air Combat / Head Up View 菜单入口，打开 HUD dock widget，将平台状态、HUD 模式、姿态插值、飞行、飞控、导航、燃油和武器消息转换为 `wkf::HUD_DataContainer::PlatformData`，并在 GUI 更新时写入 HUD。
+
+### 16.3 文件清单
+
+| 文件 | 中文说明 | 关键符号 | 关键函数 |
+|------|----------|----------|----------|
+| `RvHeadUpViewPlugin.hpp` | Head Up View 插件声明；维护 HUD 数据容器、平台到 HUD 窗口映射和 HUD 偏好控件。 | `RvHeadsUpDisplay::Plugin`, `wkf::HUD_DataContainer`, `wkf::HUD_DockWidget` | `AdvanceTimeRead`, `ConnectToPlatform`, `UpdateDataContainer`, `UpdateDataForHud`, `HasSA_Data` |
+| `RvHeadUpViewPlugin.cpp` | Head Up View 插件实现与注册；处理右键菜单、HUD 窗口生命周期、HUD 数据转换和 GUI 推送。 | `WKF_PLUGIN_DEFINE_SYMBOLS`, `RvHeadsUpDisplay::Plugin` | `BuildEntityContextMenu`, `ConnectToPlatform`, `GuiUpdate`, `UpdateDataContainer`, `UpdateDataForHud`, `HasSituationAwarenessProcessor` |
+
+### 16.4 核心符号
+
+| 符号 | 类型 | 基类 | 源码位置 | 中文说明 |
+|------|------|------|----------|----------|
+| `RvHeadsUpDisplay::Plugin` | class | `rv::Plugin` | `RvHeadUpViewPlugin.hpp:21-107` | Mystic Head Up View 插件主体。 |
+| `RvHeadsUpDisplay::Plugin::BuildEntityContextMenu` | method | 无 | `RvHeadUpViewPlugin.cpp:59-81` | 为 SA 平台添加 Air Combat / Head Up View action。 |
+| `RvHeadsUpDisplay::Plugin::ConnectToPlatform` | method | 无 | `RvHeadUpViewPlugin.cpp:88-142` | 创建并初始化 HUD dock widget。 |
+| `RvHeadsUpDisplay::Plugin::UpdateDataContainer` | method | 无 | `RvHeadUpViewPlugin.cpp:208-648` | 从 ResultData 平台消息构造 HUD 平台数据。 |
+| `RvHeadsUpDisplay::Plugin::UpdateDataForHud` | method | 无 | `RvHeadUpViewPlugin.cpp:650-682` | 将数据容器中对应平台的数据写入 HUD。 |
+| `RvHeadsUpDisplay::Plugin::HasSA_Data` | method | 无 | `RvHeadUpViewPlugin.cpp:710-824` | 检测平台是否存在 SA 相关消息。 |
+
+### 16.5 关键关系
+
+| 关系 | 说明 | 证据 |
+|------|------|------|
+| 插件注册 | `WKF_PLUGIN_DEFINE_SYMBOLS` 注册显示名 `Head Up View`、tag `mystic`，默认不加载。 | `RvHeadUpViewPlugin.cpp:35-40` |
+| UI 入口 | 右键菜单只对 `wkf::Platform` 且具备 SA 数据、未打开 HUD 的平台添加 action。 | `RvHeadUpViewPlugin.cpp:59-81` |
+| 数据输入 | `UpdateDataContainer` 读取 `MsgPlatformStatus`、`MsgHUD_Data`、`MsgEntityState`、`MsgSA_FlightKinematicsData`、`MsgSA_FlightControlsData`、`MsgSA_NavData`、`MsgSA_FuelData`、`MsgSA_WeaponsData`。 | `RvHeadUpViewPlugin.cpp:208-648` |
+| GUI 输出 | `GuiUpdate` 调用 `UpdateDataForHud`，最终写入 `hud->mPlatData`。 | `RvHeadUpViewPlugin.cpp:165-171`, `RvHeadUpViewPlugin.cpp:650-682` |
+
+### 16.6 修正记录
+
+旧 Phase 2 只记录了泛化 `RvHeadUpViewPlugin`。batch06 补入 UI 入口、窗口生命周期、数据转换、HUD 推送和 SA 检测方法。保留复核项：`cHEADS_UP_VIEW` 未发现使用；`ConnectToPlatform` 先读取 `sender->data()` 再检查 sender；`tempPlatData` 在平台循环外创建，需复核是否可能存在跨平台字段残留；`FirstPerson`/`ShowHUD` 在本文件内未见 action 连接。

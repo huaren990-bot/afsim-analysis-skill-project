@@ -17,7 +17,7 @@ metadata:
 2. 按 **7 阶段流水线** 依次调度各阶段 Agent，每阶段完成后立即触发对应验证 Agent。
 3. 确保每一阶段的输出产物符合模板规范和质量门槛，不合格则退回重做。
 4. 在各阶段之间传递上下文（上游输出 = 下游输入），保障信息不丢失。
-5. 汇总最终产物，向用户交付完整的分析报告。
+5. 汇总最终产物，向用户交付完整的分析报告和下一步业务逻辑分析承接材料。
 
 ## ⚠️ 防止重复工具调用协议（必须严格遵守）
 
@@ -98,6 +98,7 @@ for each file_path:
 - **覆盖清单驱动**：大型 C++ 项目不可只按“看起来重要”的文件分析。必须先生成全量文件清单、全量源码清单、全量候选符号清单、全量候选函数清单，再按清单逐步消化。任何跳过项都必须写入 `notes` 或 known-issue。
 - **多证据交叉校验**：关键结论应由高优先级证据直接支持，或由两类弱证据交叉支持（CodeGraph/AST/编译数据库/源码 grep/上游 JSONL 索引）。若只有单一弱证据，必须标记 `evidence_level: "inferred"` 并说明推断依据。
 - **分片可合并**：大项目按模块、目录或文件批次分片执行时，每个分片必须记录输入清单、输出条目数、未处理项。合并阶段必须基于唯一键去重，并生成覆盖率统计。
+- **业务逻辑可承接**：最终产物不仅说明架构，还必须为下一步 AFSIM 业务逻辑分析提供入口：业务域候选、端到端流程、业务规则/决策点、输入/配置/事件/状态/输出映射、源码证据路径和待确认问题。
 - **中文面向新手**：所有生成的 .md 报告面向母语为中文、无项目背景知识的程序员。具体要求如下：
   - **章节标题与表格表头**：必须使用中文（如“检查结果汇总”而非“Check Results Summary”）。
   - **描述性文字与评价**：必须使用中文撰写（如“总体评价”“结果：✅ 通过”而非“Overall Assessment”“Result: PASS”）。
@@ -207,6 +208,7 @@ Phase 3-4 必须显式处理以下 C++ 易漏点：
 - Phase 4 函数候选覆盖率 ≥ 90%，未覆盖项均列入 known-issue。
 - Phase 5 依赖至少覆盖 build、include、inheritance、composition、call、registration 六类关系。
 - Phase 7 最终报告中的关键断言均能追溯到索引或源码证据。
+- Phase 7 的业务逻辑承接产物能够把业务域/流程/规则候选追溯到模块、类、函数、配置、事件、数据对象和输出证据。
 
 ## CodeGraph 配置与优先策略
 
@@ -328,8 +330,8 @@ Phase 6: 生命周期与数据流分析
 
 Phase 7: 综合验证与架构文档生成
   ├── 输入: Phase 1-6 全部产出
-  ├── 分析: 汇总生成架构文档、功能层次文档、模块依赖文档
-  ├── 输出: afsim-architecture.md, x-level-capabilities.md, module-dependency.md, final-verification-report.md
+  ├── 分析: 汇总生成架构文档、功能层次文档、模块依赖文档、业务逻辑承接文档
+  ├── 输出: afsim-architecture.md, x-level-capabilities.md, module-dependency.md, business-logic-readiness.md, final-verification-report.md
   └── 验证: Phase 7 Verifier 进行全量交叉一致性检查
 ```
 
@@ -384,7 +386,8 @@ Phase 7: 综合验证与架构文档生成
 
 1. 汇总所有阶段的输出文件清单。
 2. 汇总所有验证报告。
-3. 向用户交付摘要：分析范围、产出文件、关键发现、仍为 unknown 的项、质量门禁通过情况。
+3. 检查 `docs/architecture/business-logic-readiness.md` 是否足以支撑下一步 AFSIM 业务逻辑分析：至少包含业务域候选、端到端流程入口、规则/决策点候选、输入输出映射、证据路径和待确认问题。
+4. 向用户交付摘要：分析范围、产出文件、关键发现、仍为 unknown 的项、质量门禁通过情况，以及下一步业务逻辑分析入口。
 
 ### 每阶段完成后自动记录（必须执行）
 
@@ -494,7 +497,8 @@ docs/
 │   ├── extension-points.md          # Phase 6 产出
 │   ├── afsim-architecture.md        # Phase 7 产出
 │   ├── x-level-capabilities.md      # Phase 7 产出
-│   └── module-dependency.md         # Phase 7 产出
+│   ├── module-dependency.md         # Phase 7 产出
+│   └── business-logic-readiness.md  # Phase 7 业务逻辑分析承接产物
 ├── verification/
 │   ├── phase1-verify-report.md      # Phase 1 验证报告
 │   ├── phase2-verify-report.md      # Phase 2 验证报告
@@ -569,7 +573,7 @@ docs/
 
 ## 需要读取的参考文件
 
-- `skill/cpp-project-analyzer/templates/` — 各阶段输出模板（11 个模板）。
+- `skill/cpp-project-analyzer/templates/` — 各阶段输出模板，包含业务逻辑承接模板。
 - `skill/cpp-project-analyzer/phases/phase*/SKILL.md` — 各阶段 Skill 详细说明。
 - `skill/cpp-project-analyzer/phases/phase*/SKILL_VERIFY.md` — 各阶段验证 Skill 详细说明。
 
@@ -785,7 +789,7 @@ const PHASES = [
     verify: 'phase7-report',
     model: 'sonnet',
     inputs: ['source-index/file-index.jsonl', 'source-index/symbol-index.jsonl', 'source-index/function-index.jsonl', 'source-index/dependency-index.jsonl', 'docs/architecture/lifecycle.md', 'docs/architecture/dataflow.md'],
-    outputs: ['docs/architecture/afsim-architecture.md', 'docs/architecture/x-level-capabilities.md', 'docs/architecture/module-dependency.md'],
+    outputs: ['docs/architecture/afsim-architecture.md', 'docs/architecture/x-level-capabilities.md', 'docs/architecture/module-dependency.md', 'docs/architecture/business-logic-readiness.md'],
   },
 ]
 

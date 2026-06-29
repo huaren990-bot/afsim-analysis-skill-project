@@ -2,12 +2,12 @@
 
 > **生成日期**：2026-06-17
 > **验证类型**：全部修复后的最终验证
-> **后续更新**：2026-06-24 起 Phase 2 改为按最小目录单元增量补强；batch01 验证见 `docs/verification/phase2-followup-batch01-verify-report.md`，batch02 验证见 `docs/verification/phase2-followup-batch02-verify-report.md`，batch03 验证见 `docs/verification/phase2-followup-batch03-verify-report.md`，batch04 验证见 `docs/verification/phase2-followup-batch04-verify-report.md`。
+> **后续更新**：2026-06-24 起 Phase 2 改为按最小目录单元增量补强；batch01 验证见 `docs/verification/phase2-followup-batch01-verify-report.md`，batch02 验证见 `docs/verification/phase2-followup-batch02-verify-report.md`，batch03 验证见 `docs/verification/phase2-followup-batch03-verify-report.md`，batch04 验证见 `docs/verification/phase2-followup-batch04-verify-report.md`，batch05 验证见 `docs/verification/phase2-followup-batch05-verify-report.md`，batch06 验证见 `docs/verification/phase2-followup-batch06-verify-report.md`。
 > **验证 Skill**：cpp-proj-modules-verify (SKILL_VERIFY.md)
 > **验证对象**：
-> - `workspace/source-index/file-index.jsonl`（43,591 条，其中 17,342 个源码/头文件）
-> - `workspace/source-index/symbol-index.jsonl`（13,936 条）
-> - `workspace/architecture/module-overview.md`
+> - `workspace/source-index/file-index.jsonl`（43,586 条，其中 17,342 个源码/头文件）
+> - `workspace/source-index/symbol-index-phase2.jsonl`（14,134 条粗符号）
+> - `docs/architecture/module-overview-v2-incremental.md`
 
 ---
 

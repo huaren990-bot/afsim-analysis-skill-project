@@ -1,22 +1,23 @@
 ---
 name: cpp-proj-report
-description: Phase 7: 综合报告生成 — 汇总前 6 阶段产出，生成 afsim-architecture.md、x-level-capabilities.md、module-dependency.md 三份最终报告。
+description: Phase 7: 综合报告生成 — 汇总前 6 阶段产出，生成 afsim-architecture.md、x-level-capabilities.md、module-dependency.md、business-logic-readiness.md 四份最终产物。
 metadata:
   phase: 7
   requires-codegraph: false
-  produces: afsim-architecture.md, x-level-capabilities.md, module-dependency.md
+  produces: afsim-architecture.md, x-level-capabilities.md, module-dependency.md, business-logic-readiness.md
 ---
 
 # Phase 7: 综合报告与架构文档生成
 
 ## 目标
 
-汇总前 6 个阶段的所有产出，生成面向人类读者的三份最终报告：
+汇总前 6 个阶段的所有产出，生成面向人类读者的四份最终产物：
 - **afsim-architecture.md**：总体架构报告
 - **x-level-capabilities.md**：四层功能层次文档
 - **module-dependency.md**：模块依赖说明
+- **business-logic-readiness.md**：业务逻辑分析承接文档，用于下一步从源码证据中提取 AFSIM 业务逻辑
 
-本阶段**不执行新的源码分析**，只做信息汇总、交叉验证、格式化和排版。
+本阶段**不执行新的源码分析**，只做信息汇总、交叉验证、格式化和排版。`business-logic-readiness.md` 不直接替代业务逻辑分析，只负责把下一步所需入口、候选流程、规则点和证据链整理清楚。
 
 ## 输入
 
@@ -67,6 +68,7 @@ metadata:
 ## 7. 关键符号
 ## 8. 未知项
 ## 9. 源码证据
+## 10. 下一步业务逻辑分析入口
 ```
 
 对各章节要求：
@@ -80,6 +82,7 @@ metadata:
 - **关键符号**：正文只做总体性陈述和代表性符号表；完整清单链接到 `source-index/symbol-index.jsonl` 或独立附录。
 - **未知项**：汇总所有阶段尚为 unknown 的问题，必须包含问题描述、影响、当前证据、建议人工确认的问题、建议确认对象/文件。
 - **源码证据**：列出所有产出文件及其统计数据。
+- **下一步业务逻辑分析入口**：摘要说明 `business-logic-readiness.md` 中的业务域候选、流程入口和规则候选，不在本报告中展开完整细节。
 
 ### Step 3: 生成 x-level-capabilities.md
 
@@ -120,29 +123,54 @@ metadata:
 - 必须覆盖所有子系统；如果某子系统无核心依赖或被排除，必须列出原因。
 - 关键全局常量表必须解释为什么选这些常量、完整清单在哪里；`说明`列必须放在`定义位置`之前，且不能只重复常量名。
 
-### Step 5: 生成最终验证报告
+### Step 5: 生成 business-logic-readiness.md
+
+参照模板 `skill/cpp-project-analyzer/templates/template_business-logic-readiness.md` 的结构。
+
+该文档用于承接下一步 AFSIM 业务逻辑分析，必须从 Phase 1-6 的已有产物中提取候选项，不新增未经验证的业务结论。
+
+必须包含：
+1. **业务域候选总览**：将仿真执行、场景配置、平台/模型管理、事件/调度、数据交换、扩展注册等候选业务域映射到系统、模块和源码证据。
+2. **端到端业务流程入口**：按“触发入口 → 配置/事件输入 → 关键处理链 → 状态对象 → 输出/副作用”组织流程候选。
+3. **业务规则/决策点候选**：列出条件判断、阈值、状态迁移、策略选择、事件分发、工厂选择等可能承载业务规则的位置。
+4. **数据与配置映射**：连接配置项、输入数据、事件对象、运行时状态、输出对象和对应源码位置。
+5. **扩展点与业务能力接入**：说明插件、工厂、注册表、事件订阅、脚本/配置入口可能如何影响业务行为。
+6. **下一步分析优先级**：按证据完整度、业务影响范围和未知风险排序，给出建议先分析的业务逻辑主题。
+7. **未知项和人工确认问题**：每项必须包含影响、当前证据、建议确认对象/文件。
+
+关键要求：
+- 每个业务域、流程或规则候选至少关联一个源码或索引证据：`module-overview.md`、`function-index.jsonl`、`dependency-index.jsonl`、`lifecycle.md`、`dataflow.md`、`extension-points.md` 或具体源文件位置。
+- 每条候选必须标注 `evidence_level`：`direct`、`cross_checked`、`inferred` 或 `unknown`。
+- 对仅由命名、目录或单一弱证据推断出的业务含义，必须标记为 `inferred`，并写明待验证问题。
+- 不得把架构职责直接包装成确定业务规则；没有源码或索引支持时只能写为“候选”或“待确认”。
+
+### Step 6: 生成最终验证报告
 
 汇总 Phase 1-6 所有验证报告的结论，生成 `docs/verification/phase7-final-verify-report.md`：
 - 各阶段验证通过/不通过统计
 - 仍存在的 known-issues
 - 整体质量评分
+- 业务逻辑承接产物是否满足下一步分析入口要求
 
 ## 输出文件
 
 - `docs/architecture/afsim-architecture.md`
 - `docs/architecture/x-level-capabilities.md`
 - `docs/architecture/module-dependency.md`
+- `docs/architecture/business-logic-readiness.md`
 - `docs/verification/phase7-final-verify-report.md`
 
 ## 质量门槛
 
-1. afsim-architecture.md 包含模板要求的全部章节（0-9）。
+1. afsim-architecture.md 包含模板要求的全部章节（0-10）。
 2. x-level-capabilities.md 包含四层功能，标题为 `# AFSIM 仿真框架架构文档`。
 3. x-level-capabilities.md 的方法级功能表格中，每个 `qualified_name` 可在 function-index.jsonl 中查到。
 4. module-dependency.md 中每一条 Mermaid 边可追溯到 dependency-index.jsonl。
-5. 三份报告中的模块名、符号名、函数名统一一致，无歧义。
+5. 四份最终产物中的模块名、符号名、函数名统一一致，无歧义。
 6. 所有 `.md` 文件中英文标识均有中文翻译说明。
 7. 不得使用省略号省略内容；条目超过 30 条时新建独立文件完整列出。
 8. afsim-architecture.md 必须包含总框架图、模块详情跳转、数据对象节点映射、配置流/扩展点用途说明和可处理未知项。
 9. x-level-capabilities.md 只纳入仿真模型相关功能；方法级过多时必须摘要化并链接完整索引。
 10. module-dependency.md 必须无边界外 training/demo 核心依赖，Mermaid 可渲染，且覆盖所有子系统。
+11. business-logic-readiness.md 必须包含业务域候选、端到端业务流程入口、业务规则/决策点候选、数据与配置映射、扩展点与业务能力接入、下一步分析优先级和未知项。
+12. business-logic-readiness.md 中每条业务候选必须能追溯到至少一类源码或索引证据，并明确 `evidence_level`。
