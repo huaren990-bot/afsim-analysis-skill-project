@@ -15,15 +15,15 @@ metadata:
 
 ## 验证对象
 
-- `docs/migration/preliminary-migration-plan/<req_index>-FU-design.md`
-- `workspace/migration/migration-log.jsonl`
+- `docs/migration/<requirement_index>/<req_index>-FU-design.md`
+- `workspace/migration/<requirement_index>/<requirement_index>-migration-log.jsonl`
 - `docs/records/` 操作留痕文件
 
 ## 验证步骤
 
 ### 检查 0: FU-design.md 文件存在性与基本完整性
 
-1. 文件存在于 `docs/migration/preliminary-migration-plan/` 目录下。
+1. 文件存在于 `docs/migration/<requirement_index>/` 目录下。
 2. 文件非空且行数 > 100。
 3. 所有 mermaid 代码块语法正确（````mermaid` ... ```` 闭合完整，无孤立开标签）。
 4. 文件以"修订记录"表格结尾。
@@ -55,19 +55,21 @@ metadata:
 
 ### 检查 4: FU 章节完整性与模板合规性
 
-对照 `workspace/requirements/gap-specs.jsonl` 中的每个 FU，检查是否存在对应章节且结构完整：
+对照 `workspace/requirements/gap-specs.jsonl`+`docs/requirements/<requirement_index>/3_<requirement_index>-requirement-gap-analysis.md` 中的每个 FU，检查是否存在对应章节且结构完整：
 
 1. `## FU-{XXX}：{名称}` 章节标题存在。
-2. FU 属性表含必填字段：关联需求、优先级、来源类型、设计版本、设计日期、功能描述。
+2. FU 属性表含必填字段：关联需求、优先级、来源类型、设计版本、设计日期、迁移策略、风险评估。
 3. 子章节齐全（按模板顺序）：
-   - `### 功能概述`：存在且非空。
+   - `### 功能概述`：存在且与`requirement-gap-analysis`文档中一致。
    - `### 算法流程`：含 `#### 算法流程图如下：` + mermaid `flowchart` + `#### 关键算法` + 公式（LaTeX `$...$`）+ 引用链接。
-   - `### 接口详细定义（API）如下：`：含函数签名表 + 输入参数详细表 + 补充参数详细表。
-   - `### 耦合度与依赖分析`：含 `#### 依赖` + `#### 耦合度评估`（框架/数据/控制/外部 四维度）+ 综合等级 + 剥离策略。
+   - `### 接口详细定义（API）`：含函数签名 + 输入参数详细表 + 配置参数详细表 + 依赖 + 设计确认勾选框
+   - `### 接口详细定义（API）`：输入参数详细表 + 配置参数详细表涵盖`requirement-gap-analysis`中的所有参数
+   - `### 接口详细定义（API）`：依赖涵盖`requirement-gap-analysis`中的所有库和头文件
+   - `### 耦合度评估`：含 框架/数据/控制/外部 四维度+ 综合等级 + 剥离策略。
    - `### 内部状态与生命周期`：含状态变量表格 + reset/拷贝说明。
    - `### 错误处理策略`：含异常场景表格（至少 3 行）。
    - `### 风险与未决问题`：含至少 1 条技术风险。
-   - `### 人工确认`：含 6 项 checkbox + 修改要求 + 确认人/日期。
+
 
 ### 检查 5: migration-log.jsonl 格式与字段完整性
 

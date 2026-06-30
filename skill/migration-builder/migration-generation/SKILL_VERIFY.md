@@ -15,19 +15,19 @@ metadata:
 
 ## 验证对象
 
-- `docs/migration/software-design-specification/<req_index>-SDD.md`
+- `docs/migration/<req_index>/<req_index>-SDD.md`
 - `tests/migration_src/<req_index>/REQ_xxx.h`
 - `tests/migration_src/<req_index>/REQ_xxx.cpp`
 - `tests/migration_src/<req_index>/test_demo.cpp`
 - `tests/migration_src/<req_index>/README.md`
-- `workspace/migration/migration-log.jsonl`
+- `workspace/migration/<req_index>/<req_index>-migration-log.jsonl`
 - `docs/records/` 操作留痕文件
 
 ## 验证步骤
 
 ### 检查 0: SDD.md 文件存在性与基本完整性
 
-1. 文件存在于 `docs/migration/software-design-specification/` 目录下。
+1. 文件存在于 `docs/migration/<req_index>/` 目录下。
 2. 文件非空且行数 > 80。
 3. 所有 mermaid 代码块语法正确（````mermaid` ... ```` 闭合完整，无孤立开标签），每个标签内容均使用双引号包裹。
 4. 文件以"附录"或"修改记录"章节结尾。
@@ -52,7 +52,7 @@ metadata:
 | 2 | `日期` | 日期格式合法（YYYY-MM-DD） |
 | 3 | `作者` | 非空 |
 | 4 | `关联需求` | 非空，格式 REQ-XXX |
-| 5 | `关联迁移计划` | 非空，指向 `docs/migration/<req_index>-FU-design.md` |
+| 5 | `关联迁移计划` | 非空，指向 `docs/migration/<req_index>/<req_index>-FU-design.md` |
 | 6 | `### 1. 目的` | 章节存在且非空 |
 | 7 | `### 2. 范围` | 章节存在，列出包含的 FU 及简要功能 |
 | 8 | `### 3. 参考文档` | 章节存在，含需求规范、迁移计划、AFSIM 源文件路径（novel FU 替换为文献引用） |
@@ -133,12 +133,12 @@ metadata:
 
 ### 检查 8: migration-log.jsonl 格式与字段完整性
 
-1. 文件存在于 `workspace/migration/migration-log.jsonl` 且非空。
+1. 文件存在于 `workspace/migration/<req_index>/<req_index>-migration-log.jsonl` 且非空。
 2. 逐行解析 JSON，无解析错误。
 3. 每条记录含必填字段：`event`、`req_index`、`req_name`、`files`、`status`、`generated_at`。
 4. `files` 字段为数组，至少包含：`<req_index>-SDD.md`、`REQ_xxx.h`、`REQ_xxx.cpp`、`test_demo.cpp`、`README.md`。
 5. `files` 数组中各路径与各文件实际路径一致。
-6. 文件的相对路径根目录正确（SDD 在 `docs/migration/software-design-specification/`，代码在 `tests/migration_src/<req_index>/`）。
+6. 文件的相对路径根目录正确（SDD 在 `docs/migration/<req_index>/`，代码在 `tests/migration_src/<req_index>/`）。
 
 ### 检查 9: 操作留痕完整性
 

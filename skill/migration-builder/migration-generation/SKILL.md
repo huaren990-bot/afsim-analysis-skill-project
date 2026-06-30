@@ -14,12 +14,12 @@ description: >
 
 | 输入项 | 路径/来源 | 说明 |
 |--------|-----------|------|
-| 确认后的迁移计划 | `docs/migration/<req_index>-FU-design-confirmed.md` | 必须为已确认版本（所有 FU 均为 Y） |
+| 确认后的迁移计划 | `docs/migration/<req_index>/<req_index>-FU-design-confirmed.md` | 必须为已确认版本（所有 FU 均为 Y） |
 | 软件设计说明模板 | `docs/templates/template_sdd.md` | 定义 SDD 的章节结构 |
-| 需求缺口报告 | `docs/requirements/requirement-gap-analysis.md` | 提供需求的完整上下文 |
+| 需求缺口报告 | `docs/requirements/<req_index>/3_<req_index>-requirement-gap-analysis.md` | 提供需求的完整上下文 |
 | 算法卡片 | `docs/algorithms/` | 对应 FU 的算法公式、伪代码、变量映射 |
 | AFSIM 候选源码 | `workspace/source-index/` + `source_root/` | 通过索引定位，获取原始代码片段 |
-| 目标系统接口定义 | 目标系统公共头文件 | 类型定义（状态结构体、数学库等） |
+| 目标系统接口定义 | `docs/migration/<req_index>/target-interfaces.md` | 类型定义（状态结构体、数学库等） |
 
 ## 二、核心原则
 
@@ -69,7 +69,7 @@ description: >
 
 ### 步骤 7：输出与记录
 - 写入所有文件。
-- 更新迁移日志 `workspace/migration/migration-log.jsonl`，记录生成的文件路径和版本。
+- 更新迁移日志 `workspace/migration/<req_index>/<req_index>-migration-log.jsonl`，记录生成的文件路径和版本。
 
 ### 步骤8：操作留痕
 - 每次修改SDD和迁移计划时，记录修改内容、修改原因、修改时间，形成完整的迭代历史。
@@ -89,7 +89,7 @@ description: >
 
 | 产物 | 路径 | 说明 |
 |------|------|------|
-| 软件设计说明 | `docs/migration/software-design-specification/<req_index>-SDD.md` | 依据 `template_sdd.md` 模板撰写 |
+| 软件设计说明 | `docs/migration/<req_index>/<req_index>-SDD.md` | 依据 `template_sdd.md` 模板撰写 |
 | 头文件 | `tests/migration_src/<req_index>/REQ_xxx.h` | 接口声明，含 FU 追溯注释 |
 | 实现文件 | `tests/migration_src/<req_index>/REQ_xxx.cpp` | 核心实现，按 FU 分段注释 |
 | 测试 Demo | `tests/migration_src/<req_index>/test_demo.cpp` | 完整可运行示例 |
