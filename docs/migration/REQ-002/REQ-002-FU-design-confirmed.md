@@ -206,7 +206,7 @@ $$\text{leg\_index} = \arg\min_i d_i$$
 $$\text{leg\_progress} = \frac{\overrightarrow{P_iP_{cur}} \cdot \overrightarrow{P_iP_{i+1}}}{|\overrightarrow{P_iP_{i+1}}|^2}$$
 其中分子为当前位置到段起点的向量在段方向上的投影长度，分母为段长度的平方。进度值 0 表示段起点，1 表示段终点。
 
-### 接口详细定义（API）：本节需要人工修改、确认
+### 接口详细定义（API）：已人工确认
 
 #### 函数`mapRouteSegment`
 
@@ -246,7 +246,6 @@ $$\text{leg\_progress} = \frac{\overrightarrow{P_iP_{cur}} \cdot \overrightarrow
 | 1 | `<cmath>` | sqrt、min/max 等基本运算 |
 | 2 | `Eigen` | 向量点积、线段投影计算 |
 
-- [x] <span style="color:red">设计确认</span>
 
 #### 函数`computeLegProgress`
 
@@ -279,7 +278,6 @@ $$\text{leg\_progress} = \frac{\overrightarrow{P_iP_{cur}} \cdot \overrightarrow
 | 1 | `<cmath>` | clamp |
 | 2 | `Eigen` | 向量运算 |
 
-- [x] <span style="color:red">设计确认</span>
 
 ### 耦合度评估
 
@@ -317,13 +315,6 @@ $$\text{leg\_progress} = \frac{\overrightarrow{P_iP_{cur}} \cdot \overrightarrow
   其中 $R_{earth}$ 为地球半径（`Earth_Params.a`，默认 6378137 m），航段方向向量归一化使用球面几何投影替代平面向量差。小跨度场景（≤100 km）默认关闭以保持 O(1) 性能。
 - ~~需人工确认：`Point` 结构体的 `_lon/_lat` 是否确实是单位 m（而非度）~~ **✅ 已确认**：`Point` 结构体的经纬高单位均为米（m）
 
-
-**修改要求**（若有）：  
-
-______________________________________________  
-
-**确认人**：__________  
-**确认日期**：__________  
 
 ---
 
@@ -395,7 +386,7 @@ $$\theta_{heading} = \text{atan2}\left(\Delta lat, \Delta lon\right) \cdot \frac
 $$h_{cmd} = P_i.\_alt + \text{progress} \cdot (P_{i+1}.\_alt - P_i.\_alt)$$
 其中 $P_i.\_alt$ 和 $P_{i+1}.\_alt$ 分别为航路段两端高度（m）。
 
-### 接口详细定义（API）：本节需要人工修改、确认
+### 接口详细定义（API）：已人工确认
 
 #### 函数`advanceAlongPath`
 
@@ -444,7 +435,6 @@ $$h_{cmd} = P_i.\_alt + \text{progress} \cdot (P_{i+1}.\_alt - P_i.\_alt)$$
 | 2 | `Eigen` | 矢量加法/点积、坐标系旋转变换 |
 | 3 | FU-001 | 提供 `leg_index` 和 `leg_progress` 输入 |
 
-- [x] <span style="color:red">设计确认</span>
 
 #### 函数`computeHeadingCommand`
 
@@ -475,7 +465,6 @@ $$h_{cmd} = P_i.\_alt + \text{progress} \cdot (P_{i+1}.\_alt - P_i.\_alt)$$
 |---|------|------|
 | 1 | `<cmath>` | atan2 |
 
-- [x] <span style="color:red">设计确认</span>
 
 ### 耦合度评估
 
@@ -514,13 +503,6 @@ $$h_{cmd} = P_i.\_alt + \text{progress} \cdot (P_{i+1}.\_alt - P_i.\_alt)$$
 - ~~**未决问题**：`V_wind` 当前定义为标量（沿航线方向投影），是否需要扩展为二维矢量（风速+风向）以支持侧风修正？~~ **✅ 已确认**：`V_wind`→三维矢量（`lonwind`/`latwind`/`altwind`），经向风北为正、纬向风东为正、垂直风向上为正，单位 m/s
 - `altitude_cmd` 和 `speed_cmd` 已由人工确认为 PATH-01 输出，本 FU 实现线性插值和查表
 
-
-**修改要求**（若有）：  
-
-______________________________________________  
-
-**确认人**：__________  
-**确认日期**：__________  
 
 ---
 
@@ -573,7 +555,7 @@ $$\text{closest\_index} = \arg\min_i |\mathbf{r}_{ref} - \mathbf{P}_i|$$
 $$\text{remaining\_path} = \text{path}[\text{closest\_index}:]$$
 其中 $\mathbf{r}_{ref}$ 为参考点位置（来自 FU-002），$\mathbf{P}_i$ 为第 i 个航路点。当参考点已飞越所有航路点时，保留最后一个航路点以避免空路径。
 
-### 接口详细定义（API）：本节需要人工修改、确认
+### 接口详细定义（API）：已人工确认
 
 #### 函数`trimRemainingPath`
 
@@ -606,7 +588,6 @@ $$\text{remaining\_path} = \text{path}[\text{closest\_index}:]$$
 | 2 | `<algorithm>` | std::min_element |
 | 3 | FU-002 | 提供 `ref_pos_next` 输入 |
 
-- [x] <span style="color:red">设计确认</span>
 
 ### 耦合度评估
 
@@ -637,14 +618,6 @@ $$\text{remaining\_path} = \text{path}[\text{closest\_index}:]$$
 
 ### 风险与未决问题
 - 无显著技术风险。基本数组操作，可在航线推进实现后随时添加。
-
-
-**修改要求**（若有）：  
-______________________________________________  
-
-**确认人**：__________  
-**确认日期**：__________  
-
 ---
 
 ## FU-004：推进系统（1D推力曲线+恒定燃油率+单油箱）
@@ -706,7 +679,7 @@ $$F_{thrust} = \delta_{throttle} \cdot T(altitude)$$
 $$m_{fuel}(t + \Delta t) = m_{fuel}(t) - \dot{m}_{const} \cdot \Delta t$$
 其中 $\dot{m}_{const}$ 为恒定燃油质量流量（kg/s），可从 AFSIM 名义 SFC 和额定推力反算。单油箱模型不区分油箱间传输——燃油质量直接从单一变量递减。
 
-### 接口详细定义（API）：本节需要人工修改、确认
+### 接口详细定义（API）：已人工确认
 
 #### 函数`calculateThrust`
 
@@ -748,7 +721,6 @@ $$m_{fuel}(t + \Delta t) = m_{fuel}(t) - \dot{m}_{const} \cdot \Delta t$$
 | 1 | `<cmath>` | min/max 限幅操作 |
 | 2 | `<algorithm>` | std::clamp |
 
-- [x] <span style="color:red">设计确认</span>
 
 ### 耦合度评估
 
@@ -785,14 +757,6 @@ $$m_{fuel}(t + \Delta t) = m_{fuel}(t) - \dot{m}_{const} \cdot \Delta t$$
   1. **阶段1（当前 v0.5）——1D 推力曲线 T(altitude)**：引入 1D 推力曲线查表 `T(altitude)`，推力变为高度的连续函数（非单一上限），通过 `InterpCurve1D` 按 `altitude` 插值获取当前高度推力值，替代简单常量 `T_max`
   2. **阶段2**：引入 2D 推力表 T(Ma, h) + spool dynamics 一阶滞后 → 增加 `mach` 输入参数，实现 $\delta_{eff}(t+\Delta t) = \delta_{eff}(t) + \text{clamp}(\delta_{cmd} - \delta_{eff}, -\dot{\delta}_{down} \cdot \Delta t, +\dot{\delta}_{up} \cdot \Delta t)$
   3. **阶段3**：三层推力查表（Idle/Mil/AB）+ TSFC 变燃油率 + 多油箱传输协调 → 对齐 AFSIM `JetEngine::CalculateThrust` 完整实现
-
-
-**修改要求**（若有）：  
-______________________________________________  
-
-**确认人**：__________  
-**确认日期**：__________  
-
 ---
 
 ## FU-005：气动模型（仅气动力）
@@ -843,7 +807,7 @@ $$\mathbf{F}_{aero} = \bar{q} \cdot S_{ref} \cdot \begin{bmatrix} -C_D(\alpha, \
 $$\alpha = \text{atan2}(V_z, V_x), \quad \beta = \text{atan2}(V_y, V_x)$$
 其中 $V_x, V_y, V_z$ 为体轴系速度分量（m/s），由当前速度和姿态角转换得到。
 
-### 接口详细定义（API）：本节需要人工修改、确认
+### 接口详细定义（API）：已人工确认
 
 #### 函数`calculateAeroForces`
 
@@ -887,7 +851,6 @@ $$\alpha = \text{atan2}(V_z, V_x), \quad \beta = \text{atan2}(V_y, V_x)$$
 | 2 | `Eigen` | Vector3 运算 |
 | 3 | FU-007（SAS） | 消费模式——SAS 将本 FU 的零力矩替换为完整力矩控制 |
 
-- [x] <span style="color:red">设计确认</span>
 
 ### 耦合度评估
 
@@ -921,14 +884,6 @@ $$\alpha = \text{atan2}(V_z, V_x), \quad \beta = \text{atan2}(V_y, V_x)$$
 ### 风险与未决问题
 - **技术风险**：力矩精度由 SAS 补偿——仅保留气动力三向分量可能导致 SAS 需要更大的控制力矩来维持稳定（因气动力矩缺失）
 - 需人工补充：`S_ref`、`l_ref` 参数值；CL/CD/CY 气动系数表（建议简化首版用常量系数或解析函数替代高维查表）
-
-
-**修改要求**（若有）：  
-______________________________________________  
-
-**确认人**：__________  
-**确认日期**：__________  
-
 ---
 
 ## FU-006：自动驾驶仪 PID（完整 20 PID 四通道）
@@ -991,7 +946,7 @@ $$K_i^{eff} = K_i + K_t \cdot (u_{limited} - u_{prelim})$$
 $$accum = \int (K_i^{eff} \cdot e) dt$$
 其中 $K_t$ 为抗饱和增益（值越大，积分器被修正得越快）。
 
-### 接口详细定义（API）：本节需要人工修改、确认
+### 接口详细定义（API）：已人工确认
 
 #### 函数`updateAutopilot`
 
@@ -1043,7 +998,6 @@ $$accum = \int (K_i^{eff} \cdot e) dt$$
 | 3 | FU-002 | 提供 heading_cmd/altitude_cmd/speed_cmd |
 | 4 | FU-007（SAS） | 消费输出 δ_commands |
 
-- [x] <span style="color:red">设计确认</span>
 
 ### 耦合度评估
 
@@ -1086,12 +1040,6 @@ $$accum = \int (K_i^{eff} \cdot e) dt$$
   4. **建议验证方式**：在 $V \in [5, 50]$ m/s 区间进行阶跃响应仿真，确认各通道无超调 > 20% 或持续振荡
 - **建议**：首轮实现使用 AFSIM 默认增益表；逐步增加飞控调参辅助工具（如阶跃响应测试、频域分析）
 
-
-**修改要求**（若有）： 
-______________________________________________  
-
-**确认人**：__________  
-**确认日期**：__________  
 
 ---
 
@@ -1158,7 +1106,7 @@ $$\dot{p}_{expected} = (1 - weight) \cdot p$$
 $$\alpha_{roll,stab} = \frac{\dot{p}_{expected} - p}{\Delta t}$$
 其中 expected roll rate 是向零衰减的加权平滑值，等效于低通滤波器时间常数 $\tau = 1/\omega_{n,roll}$。
 
-### 接口详细定义（API）：本节需要人工修改、确认
+### 接口详细定义（API）：已人工确认
 
 #### 函数`computeStabilityAugmentation`
 
@@ -1208,7 +1156,6 @@ $$\alpha_{roll,stab} = \frac{\dot{p}_{expected} - p}{\Delta t}$$
 | 2 | `Eigen` | Vector3 运算 |
 | 3 | FU-006（Autopilot PID） | 提供 δ_commands 输入 |
 
-- [x] <span style="color:red">设计确认</span>
 
 ### 耦合度评估
 
@@ -1244,14 +1191,6 @@ $$\alpha_{roll,stab} = \frac{\dot{p}_{expected} - p}{\Delta t}$$
 ### 风险与未决问题
 - **技术风险**：二阶临界阻尼的稳定性依赖正确的 ω_n 参数——过高的 ω_n 可能导致大步长下数值振荡。建议 Δt ≤ 1/(2·ω_n) 作为稳定条件
 - ⚠️ 与 PID（FU-006）分工明确，不可混淆：PID=制导决策层，SAS=执行保护层
-
-
-**修改要求**（若有）：  
-______________________________________________  
-
-**确认人**：__________  
-**确认日期**：__________  
-
 ---
 
 ## FU-008：六自由度积分器（Heun+四元数+欧拉方程）
@@ -1325,7 +1264,7 @@ $$\dot{\mathbf{q}} = \frac{1}{2} \mathbf{q} \otimes \begin{bmatrix} 0 \\ \boldsy
 $$\mathbf{q}_{new} = \text{normalize}\left(\mathbf{q}_{old} + \dot{\mathbf{q}} \cdot \Delta t\right)$$
 其中 $\otimes$ 为四元数乘法，归一化步骤防止姿态漂移。
 
-### 接口详细定义（API）：本节需要人工修改、确认
+### 接口详细定义（API）：已人工确认
 
 #### 函数`integrate`
 
@@ -1377,7 +1316,6 @@ $$\mathbf{q}_{new} = \text{normalize}\left(\mathbf{q}_{old} + \dot{\mathbf{q}} \
 | 4 | FU-005 | 提供 F_aero |
 | 5 | FU-007 | 提供 angular_accel（转为力矩：M = I × α） |
 
-- [x] <span style="color:red">设计确认</span>
 
 ### 耦合度评估
 
@@ -1413,14 +1351,6 @@ $$\mathbf{q}_{new} = \text{normalize}\left(\mathbf{q}_{old} + \dot{\mathbf{q}} \
 - **技术风险**：欧拉转动方程交叉耦合项 ω×(Iω) 需正确处理——$I_{xz} \neq 0$ 时忽视此耦合会导致姿态发散
 - **技术风险**：m 和 I 为飞行全程常量（补充约束），仅燃油质量在 FU-004 中单独衰减。若未来需要变惯量支持，需重构积分器接口
 - 四元数归一化频率：每帧一次通常足够。**✅ 已确认**：步长 dt > 0.5s 场景需中间归一化以确保四元数模长稳定
-
-
-**修改要求**（若有）：  
-______________________________________________  
-
-**确认人**：__________  
-**确认日期**：__________  
-
 ---
 
 ## FU-009：航线机动集成调度
@@ -1479,7 +1409,7 @@ flowchart TD
 $$\text{PATH-01} \rightarrow \text{KINEMATICS-02} \rightarrow \text{输出组装}$$
 协调点：(1) FU-001 输出经 FU-002 消费后方可调用 FU-002；(2) FU-004/005 并行输出经集成调度器求和后进入 FU-008；(3) FU-006 输出经 FU-007 消费后与 FU-008 串联；(4) 步长自适应仅在 dt > STEP_THRESHOLD (1.0s) 时激活。
 
-### 接口详细定义（API）：本节需要人工修改、确认
+### 接口详细定义（API）：已人工确认
 
 #### 函数`runState`
 
@@ -1530,7 +1460,6 @@ $$\text{PATH-01} \rightarrow \text{KINEMATICS-02} \rightarrow \text{输出组装
 | 7 | FU-007 | SAS 姿态控制 |
 | 8 | FU-008 | 六自由度积分器 |
 
-- [x] <span style="color:red">设计确认</span>
 
 #### 函数`reportError`
 
@@ -1558,7 +1487,6 @@ $$\text{PATH-01} \rightarrow \text{KINEMATICS-02} \rightarrow \text{输出组装
 | 1 | `<string>` | std::string |
 | 2 | `<fstream>` | 文件日志写入 |
 
-- [x] <span style="color:red">设计确认</span>
 
 ### 耦合度评估
 
@@ -1597,25 +1525,17 @@ $$\text{PATH-01} \rightarrow \text{KINEMATICS-02} \rightarrow \text{输出组装
 - **技术风险**：依赖全部 8 个子 FU——任一子 FU 有 bug 都会导致集成测试失败。建议先以简化力模型（常力/零力）验证调度逻辑正确性
 - **技术风险**：步长自适应（dt > 1s 时的内插逻辑）需要验证帧间状态一致性
 - **未决问题**：`boost::any` 参数传递方式——是否考虑替换为 `std::any`（C++17）或 `std::variant` 以消除 Boost 依赖？**✅ 已确认**：`boost::any` → `std::any`（C++17），消除 Boost 依赖
-
-
-**修改要求**（若有）：  
-______________________________________________  
-
-**确认人**：__________  
-**确认日期**：__________  
-
 ---
 
 ## 修订记录
 
-| 版本 | 日期 | 修改内容 | 修改原因 |
-|------|------|----------|----------|
-| v0.1 | 2026-06-30 | 初始版本——完成 9 个 FU 的完整迁移设计 | 首次生成，待人工确认 |
-| v0.2 | 2026-06-30 | 第一次人工确认迭代：FU-001 Point 单位确认；FU-002 V_wind 标量→三维风矢量（lonwind/latwind/altwind）；FU-004 参数通过 para.getPara() 读取；FU-006 内部保留 Imperial 单位；FU-008 确认 dt>0.5s 中间归一化；FU-009 boost::any→std::any + 三维风矢量；全局单位策略更新 | 根据人工修改要求逐项落实 |
-| v0.3 | 2026-06-30 | 第二次人工确认迭代：FU-001 增加地球曲率 Haversine 距离计算方案；FU-002 增加大跨度球面正向方位角+slerp 推进方案；FU-004 增加 4 阶段优化 roadmap（线性推力→1D/2D 查表→spool dynamics→完整三层查表）；FU-006 增加低速段增益过冲 4 点解决方案（增益限幅/动压下界 clamp/速率限制器/验证方式） | 根据人工修改要求逐项落实 |
-| v0.4 | 2026-06-30 | 第三次人工确认迭代：FU-004 澄清 T_max(h) vs T(altitude) 区别并补充阶段1不可跳过理由 | 根据人工修改要求逐项落实 |
-| v0.5 | 2026-06-30 | 第四次人工确认迭代：FU-004 采纳人工决定直接进入 1D 推力曲线 T(altitude)（InterpCurve1D），优化 roadmap 从 4→3 阶段 | 根据人工修改要求——不可跳过原因不采纳 |
-| v1.0 | 2026-06-30 | 全部 9 个 FU（13 个函数）设计确认通过，文档标记为已确认可执行计划 | 第四次人工确认全部通过 |
+| 版本   | 日期         | 修改内容                                                                                                                                                                                                  | 修改原因                |
+| ---- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
+| v0.1 | 2026-06-30 | 初始版本——完成 9 个 FU 的完整迁移设计                                                                                                                                                                               | 首次生成，待人工确认          |
+| v0.2 | 2026-06-30 | 第一次人工确认迭代：FU-001 Point 单位确认；FU-002 V_wind 标量→三维风矢量（lonwind/latwind/altwind）；FU-004 参数通过 para.getPara() 读取；FU-006 内部保留 Imperial 单位；FU-008 确认 dt>0.5s 中间归一化；FU-009 boost::any→std::any + 三维风矢量；全局单位策略更新 | 根据人工修改要求逐项落实        |
+| v0.3 | 2026-06-30 | 第二次人工确认迭代：FU-001 增加地球曲率 Haversine 距离计算方案；FU-002 增加大跨度球面正向方位角+slerp 推进方案；FU-004 增加 4 阶段优化 roadmap（线性推力→1D/2D 查表→spool dynamics→完整三层查表）；FU-006 增加低速段增益过冲 4 点解决方案（增益限幅/动压下界 clamp/速率限制器/验证方式）            | 根据人工修改要求逐项落实        |
+| v0.4 | 2026-06-30 | 第三次人工确认迭代：FU-004 澄清 T_max(h) vs T(altitude) 区别并补充阶段1不可跳过理由                                                                                                                                            | 根据人工修改要求逐项落实        |
+| v0.5 | 2026-06-30 | 第四次人工确认迭代：FU-004 采纳人工决定直接进入 1D 推力曲线 T(altitude)（InterpCurve1D），优化 roadmap 从 4→3 阶段                                                                                                                    | 根据人工修改要求——不可跳过原因不采纳 |
+| v1.0 | 2026-06-30 | 全部 9 个 FU（13 个函数）设计确认通过，文档标记为已确认可执行计划                                                                                                                                                                 | 第四次人工确认全部通过         |
 
 ---

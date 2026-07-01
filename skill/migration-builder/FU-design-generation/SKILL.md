@@ -52,11 +52,18 @@ description: AFSIM 功能迁移的计划制定者与迭代协调者。它负责�
    - 读取人工反馈，包括`接口详细定义`和`修改要求`。
    - 重新生成修改后的 FU 章节，并保留历史修改记录（在文档底部添加修订表）。
    - 循环直至所有 函数设计确认 均被勾选。
-   - 将文档标记为“已确认可执行计划”，添加确认时间和人工签字（电子记录）。
+   - 将文档标记为“已确认”，添加确认时间和人工签字（电子记录）。
 
-5. **输出最终计划并记录日志**
-   - 保存确认版 `docs/migration/<requirement_index>/<requirement_index>-FU-design-confirmed.md`。
-   - 更新迁移日志 `workspace/migration/<requirement_index>/<requirement_index>-migration-log.jsonl`，记录该需求计划的确认时间、版本。
+5. **输出最终计划**
+   -  **功能迁移设计文档**：保存确认版 `docs/migration/<requirement_index>/<requirement_index>-FU-design-confirmed.md`并要求：
+      1. `### 接口详细定义（API）：本节需要人工修改、确认`修改为`### 接口详细定义（API）：已人工确认`
+      2. 删掉每个函数`设计确认`勾选框
+      3. 删掉每个FU的修改要求填写区、确认人、确认日期（如有）
+   - **功能迁移设计规格**：生成 `workspace/migration/<requirement_index>/<requirement_index>-migration-function.jsonl`，记录每个 函数 的设计规格：
+      1. source_location 中的 exists_in_afsim 为 false 时，class_name, method_name, file, line_start, line_end字段需要根据`workspace/source-index/function-index.jsonl` AFSIM 源码功能索引生成。
+      2. source_location 中的 exists_in_afsim 为 false 时，其他字段可留空或填 ""
+      3. 包含每个函数的 fu_id, function_name, display_name, description, source_location, interface, exists_in_afsim 等字段。
+      4. 功能迁移设计文档和功能迁移设计规格的内容必须保持一致。
 
 6.**操作留痕**
    - 每次修改 FU 计划时，记录修改内容、修改原因、修改时间，形成完整的迭代历史。
@@ -68,6 +75,7 @@ description: AFSIM 功能迁移的计划制定者与迭代协调者。它负责�
   - 按模板 `skill\afsim-migration-builder\template_list\template_FU-migration.md` 格式输出。
   - 所有需要用户确认的条目，均标亮（红色）显示，并提供修改要求填写区。
 - `docs/records/`：操作留痕文件，记录每次修改的内容、原因、时间等，形成完整的迭代历史。
-- `workspace/migration/<requirement_index>/<requirement_index>-migration-log.jsonl`：迁移日志，记录每个需求的计划生成和确认历史。
+- `workspace/migration/<requirement_index>/<requirement_index>-migration-function.jsonl`：功能迁移设计规格文件，记录每个 函数 的迁移关键信息。
+   - 按模板 `skill\afsim-migration-builder\template_list\template_migration-function.md` 格式输出。
 
 

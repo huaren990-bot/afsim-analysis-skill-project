@@ -1,7 +1,7 @@
 # FU-design-generation 验证报告
 
 > **日期**：2026-06-22
-> **验证对象**：REQ-001-FU-design.md, migration-log.jsonl, 操作留痕
+> **验证对象**：REQ-001-FU-design.md, migration-function.jsonl, 操作留痕
 > **验证依据**：`skill/afsim-migration-builder/FU-design-generation/SKILL_VERIFY.md`
 
 ## 检查结果汇总
@@ -13,7 +13,7 @@
 | 2 | 全局设计约定完整性 | ✅ 通过 | 3个子章节齐全：目标系统环境(5行)、全局类型映射(10行)、全局单位约定(10行含位置/速度/质量/力/力矩/角度/角速率/转动惯量/动压/重力) |
 | 3 | 实现流程章节完整性 | ✅ 通过 | `## 实现流程`存在(L64)；含1个mermaid sequenceDiagram(4个FU间数据流)；含接口信息表(5列×5行) |
 | 4 | FU章节完整性与模板合规性 | ✅ 通过 | 4个FU全部通过（详见下方） |
-| 5 | migration-log.jsonl完整性 | ✅ 通过 | JSON合法；8个必填字段齐全；fu_count=4与fu_list长度一致；file路径指向的文件存在；4个FU均在FU-design.md中找到对应章节 |
+| 5 | migration-function.jsonl完整性 | ✅ 通过 | JSON合法；8个必填字段齐全；fu_count=4与fu_list长度一致；file路径指向的文件存在；4个FU均在FU-design.md中找到对应章节 |
 | 6 | 操作留痕完整性 | ✅ 通过 | `docs/records/2026-06-18-FU-design-generation-record.md`存在；含日期(2026-06-18)、操作描述、输出文件清单；路径引用与实际输出一致 |
 
 ## 检查 4 详细结果

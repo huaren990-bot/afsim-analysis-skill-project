@@ -14,7 +14,7 @@
 | 文件 | 路径 | 说明 |
 |------|------|------|
 | FU-design 文档 | `docs/migration/REQ-002/REQ-002-FU-design.md` | 含 9 个 FU 的完整迁移设计方案，v0.1 草稿 |
-| 迁移日志 | `workspace/migration/REQ-002/REQ-002-migration-log.jsonl` | 记录本次生成事件 |
+| 迁移日志 | `workspace/migration/REQ-002/REQ-002-migration-function.jsonl` | 记录本次生成事件 |
 | 操作留痕 | `docs/records/2026-06-30-FU-design-generation-record-REQ-002.md` | 本文件 |
 
 ## 决策依据

@@ -12,14 +12,14 @@ description: >
 
 ## 一、输入
 
-| 输入项 | 路径/来源 | 说明 |
-|--------|-----------|------|
-| 确认后的迁移计划 | `docs/migration/<req_index>/<req_index>-FU-design-confirmed.md` | 必须为已确认版本（所有 FU 均为 Y） |
-| 软件设计说明模板 | `docs/templates/template_sdd.md` | 定义 SDD 的章节结构 |
-| 需求缺口报告 | `docs/requirements/<req_index>/3_<req_index>-requirement-gap-analysis.md` | 提供需求的完整上下文 |
-| 算法卡片 | `docs/algorithms/` | 对应 FU 的算法公式、伪代码、变量映射 |
-| AFSIM 候选源码 | `workspace/source-index/` + `source_root/` | 通过索引定位，获取原始代码片段 |
-| 目标系统接口定义 | `docs/migration/<req_index>/target-interfaces.md` | 类型定义（状态结构体、数学库等） |
+- 设计侧：
+  - `docs/migration/<requirement_index>/<requirement_index>-FU-design-confirmed.md`：功能迁移计划文档确认版，包含每个 FU 的详细迁移方案，可作为生成代码的依据。
+  - `workspace/migration/<requirement_index>/<requirement_index>-migration-function.jsonl`：功能迁移设计规格文件，记录每个函数的迁移关键信息。
+- AFSIM侧：
+  - `docs/algorithms/`：算法卡片目录，包含每个 FU 的算法公式、伪代码和变量映射，作为实现的参考。
+  - `workspace/source-index/` + `source_root/`：AFSIM 源码索引和源码目录，通过索引定位到具体的源码文件和行号，获取原始代码片段。
+- 目标系统侧：
+  - `docs/migration/<requirement_index>/target-interfaces.md`：目标系统接口定义，包含状态结构体、数学库等类型定义，确保迁移代码与目标系统接口一致。（如有）
 
 ## 二、核心原则
 
@@ -27,7 +27,7 @@ description: >
 2. **设计先于编码**：先产出 SDD，再生成代码，确保接口和逻辑经过文档化推敲。
 3. **追溯性**：每个函数实现必须用注释标注对应的 FU ID 和实现来源（AFSIM 源位置 或 对于 novel FU，设计依据文献引用）。
 4. **合规优先**：许可证不明确的代码，仅生成 Clean-room 风格的算法规格和重写建议，不直接复制源码。
-5. **可测试**：所有迁移代码必须附带可编译运行的 `test_demo.cpp`。
+5. **可测试**：所有迁移代码必须附带可编译运行的 `<requirement_name>_test.cpp`。
 
 ## 三、执行步骤
 
@@ -56,22 +56,23 @@ description: >
 - 以需求（REQ）为范围撰写一份软件设计说明`<req_index>-SDD.md`，按模板 `skill\afsim-migration-builder\template_list\template_sdd.md` 格式输出。
 
 ### 步骤 5：生成代码文件
-- **头文件**：生成`REQ_xxx.h`，要求包括所有 FU 的接口声明；每个函数前用注释标注 FU ID 和实现来源（AFSIM 源位置 或 novel FU 的设计依据文献引用）；包含完整的 Doxygen 风格注释。按模板 `skill/afsim-migration-builder/template_list/template_REQ_xxx.h` 格式输出。
-- **实现文件**：生成`REQ_xxx.cpp`，要求包括所有 FU 的实现代码；按 FU 分段，每段以 `/* === FU-xxx: 描述 === */` 开头；对于 AFSIM 有参考的 FU，保留原始版权注释（若许可允许）；对于 novel FU，标注设计依据；详细注释所有修改点。按模板 `skill/afsim-migration-builder/template_list/template_REQ_xxx.cpp` 格式输出。
-- **测试 Demo**：生成 `test_demo.cpp`，可直接编译运行的演示程序，包含 `main()`；注释中说明编译命令、运行方法和预期输出；覆盖主要使用场景。按模板 `skill/afsim-migration-builder/template_list/template_test_demo.cpp` 格式输出。
-  - main() 为最简单示例场景，展示核心功能的输入输出，统一调用测试用例函数。
-  - 设计至少 3 个测试用例，覆盖正常情况、边界情况和异常情况，每个以 `/* --- TC-xxx: 描述 --- */` 开头，每个测试用例对应一个函数，都放在 `test_demo.cpp` 中。
-  - 为每个测试用例提供详细的注释和预期输出说明。
+- **头文件**：生成`<requirement_name>.h`
+  - 包含每个函数的接口声明、参数说明、返回值说明、异常处理说明。
+- **实现文件**：生成`<requirement_name>.cpp`
+- **测试 Demo**：生成 `<requirement_name>_test.cpp`，可直接编译运行的演示程序
+  - 包含能统一调用所有测试用例的 `TEST()`入口，展示集成测试的输入输出。
+  - 按模板 `skill/afsim-migration-builder/template_list/template_test_demo.cpp` 格式输出。
+  - 设计至少 3 个集成测试的测试用例，覆盖正常情况、边界情况和异常情况，每个以 `/* --- TC-xxx: 描述 --- */` 开头，都放在 `<requirement_name>_test.cpp` 中。
+- **每个代码文件的补充**：
+  - 提供详细的中文注释和预期输出说明。
+  - 与目标系统中定义的类型、代码风格、接口定义、构建方式保持一致。
+  - 与设计规格保持一致，确保可追溯性。
 
 ### 步骤 6：生成 README
 - 在代码目录下生成 `README.md`，仅包含：编译命令、依赖列表、运行 demo 的步骤和预期输出。按模板 `skill/afsim-migration-builder/template_list/template_README.md` 格式输出。
 - 不涉及设计细节，与 SDD 分工明确。
 
-### 步骤 7：输出与记录
-- 写入所有文件。
-- 更新迁移日志 `workspace/migration/<req_index>/<req_index>-migration-log.jsonl`，记录生成的文件路径和版本。
-
-### 步骤8：操作留痕
+### 步骤 7：操作留痕
 - 每次修改SDD和迁移计划时，记录修改内容、修改原因、修改时间，形成完整的迭代历史。
 - 把每一步的决策依据和执行计划生成文档进行记录归档，放在目录 `docs/records/` 里面，以便人工追溯。
 
@@ -90,7 +91,7 @@ description: >
 | 产物 | 路径 | 说明 |
 |------|------|------|
 | 软件设计说明 | `docs/migration/<req_index>/<req_index>-SDD.md` | 依据 `template_sdd.md` 模板撰写 |
-| 头文件 | `tests/migration_src/<req_index>/REQ_xxx.h` | 接口声明，含 FU 追溯注释 |
-| 实现文件 | `tests/migration_src/<req_index>/REQ_xxx.cpp` | 核心实现，按 FU 分段注释 |
-| 测试 Demo | `tests/migration_src/<req_index>/test_demo.cpp` | 完整可运行示例 |
+| 头文件 | `tests/migration_src/<req_index>/<requirement_name>.h` | 接口声明， 追溯注释 |
+| 实现文件 | `tests/migration_src/<req_index>/<requirement_name>.cpp` | 核心实现，分段注释 |
+| 测试 Demo | `tests/migration_src/<req_index>/<requirement_name>_test.cpp` | 完整可运行示例 |
 | 使用说明 | `tests/migration_src/<req_index>/README.md` | 编译、依赖、运行说明 |

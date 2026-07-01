@@ -1,6 +1,6 @@
 ---
 name: FU-design-generation-verify
-description: 功能单元迁移设计验证: 检查 <requirement_index>-FU-design.md 和 migration-log.jsonl 的输出质量、完整性、模板合规性。
+description: 功能单元迁移设计验证: 检查 <requirement_index>-FU-design.md 和 migration-function.jsonl 的输出质量、完整性、模板合规性。
 metadata:
   phase: FU-design-generation
   role: verifier
@@ -16,7 +16,7 @@ metadata:
 ## 验证对象
 
 - `docs/migration/<requirement_index>/<req_index>-FU-design.md`
-- `workspace/migration/<requirement_index>/<requirement_index>-migration-log.jsonl`
+- `workspace/migration/<requirement_index>/<requirement_index>-migration-function.jsonl`
 - `docs/records/` 操作留痕文件
 
 ## 验证步骤
@@ -69,9 +69,10 @@ metadata:
    - `### 内部状态与生命周期`：含状态变量表格 + reset/拷贝说明。
    - `### 错误处理策略`：含异常场景表格（至少 3 行）。
    - `### 风险与未决问题`：含至少 1 条技术风险。
+   - `**修改要求**`：留出人工修改要求填写部分。
 
 
-### 检查 5: migration-log.jsonl 格式与字段完整性
+### 检查 5: migration-function.jsonl 格式与字段完整性
 
 1. 文件存在且非空。
 2. 逐行解析 JSON，无解析错误。
@@ -94,7 +95,7 @@ metadata:
 # FU-design-generation 验证报告
 
 > **日期**：YYYY-MM-DD
-> **验证对象**：<req_index>-FU-design.md, migration-log.jsonl, 操作留痕
+> **验证对象**：<req_index>-FU-design.md, migration-function.jsonl, 操作留痕
 
 ## 检查结果汇总
 
@@ -105,7 +106,7 @@ metadata:
 | 2 | 全局设计约定完整性 | ✅/❌ | ... |
 | 3 | 实现流程章节完整性 | ✅/❌ | ... |
 | 4 | FU 章节完整性与模板合规性 | ✅/❌ | ... |
-| 5 | migration-log.jsonl 完整性 | ✅/❌ | ... |
+| 5 | migration-function.jsonl 完整性 | ✅/❌ | ... |
 | 6 | 操作留痕完整性 | ✅/❌ | ... |
 
 ## 不通过项详情
@@ -122,5 +123,5 @@ metadata:
 ## 质量门槛
 
 1. 7 项检查中至少 5 项通过。
-2. 检查 4（FU 章节完整性）和检查 5（migration-log.jsonl）必须通过。
+2. 检查 4（FU 章节完整性）和检查 5（migration-function.jsonl）必须通过。
 3. 如有不通过项，明确写出修复指引。

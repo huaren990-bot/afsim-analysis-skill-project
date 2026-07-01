@@ -15,12 +15,11 @@ metadata:
 
 ## 验证对象
 
-- `docs/migration/<req_index>/<req_index>-SDD.md`
-- `tests/migration_src/<req_index>/REQ_xxx.h`
-- `tests/migration_src/<req_index>/REQ_xxx.cpp`
-- `tests/migration_src/<req_index>/test_demo.cpp`
-- `tests/migration_src/<req_index>/README.md`
-- `workspace/migration/<req_index>/<req_index>-migration-log.jsonl`
+- `docs/migration/<req_index>/<req_index>-SDD.md` | 软件设计说明 |
+- `tests/migration_src/<req_index>/<requirement_name>.h` | 接口声明， 追溯注释 |
+- `tests/migration_src/<req_index>/<requirement_name>.cpp` | 核心实现，分段注释 |
+- `tests/migration_src/<req_index>/<requirement_name>_test.cpp` | 完整可运行示例 |
+- `tests/migration_src/<req_index>/README.md` | 编译、依赖、运行说明 |
 - `docs/records/` 操作留痕文件
 
 ## 验证步骤
@@ -37,9 +36,9 @@ metadata:
 
 | # | 文件 | 检查方式 |
 |---|------|---------|
-| 1 | `REQ_xxx.h` | 存在、非空、行数 > 30，含头文件保护宏（`#ifndef`/`#define`/`#endif` 或 `#pragma once`） |
-| 2 | `REQ_xxx.cpp` | 存在、非空、行数 > 80，含 `#include "REQ_xxx.h"` |
-| 3 | `test_demo.cpp` | 存在、非空、行数 > 100，含 `main()` 函数 |
+| 1 | `<requirement_name>.h` | 存在、非空、行数 > 30，含头文件保护宏（`#ifndef`/`#define`/`#endif` 或 `#pragma once`） |
+| 2 | `<requirement_name>.cpp` | 存在、非空、行数 > 80，含 `#include "<requirement_name>.h"` |
+| 3 | `<requirement_name>_demo.cpp` | 存在、非空、行数 > 100，含 `TEST()` 函数 |
 | 4 | `README.md` | 存在、非空、行数 > 15 |
 
 ### 检查 2: SDD.md 文档头部与章节完整性
@@ -73,42 +72,35 @@ metadata:
 5. `##### 1.4. 数学公式` 小节存在，至少 1 个 LaTeX `$...$` 公式，并且每个公式后必须有公式中数学符号的中文解释说明，如"$x$表示速度"。
 6. 对于 novel FU：公式来源标注为领域文献/算法教材引用，而非 AFSIM 源码。
 
-### 检查 4: REQ_xxx.h 模板合规性与代码质量
-
-对照 `skill/afsim-migration-builder/template_list/template_REQ_xxx.h`：
+### 检查 4:<requirement_name>.h 模板合规性与代码质量
 
 1. 头文件保护宏正确（`#ifndef` / `#define` / `#endif` 配对完整，或 `#pragma once`）。
 2. 每个函数声明前有完整的 Doxygen 风格注释（`@brief`、`@param`、`@return` 等）。
-3. 每个函数注释中含 FU ID 标识（如 `FU-XXX`）。
-4. 每个函数注释中含实现来源：AFSIM 源文件路径 + 行号，或 novel FU 的设计依据文献引用。
-5. `<requirement_index>-FU-design.md` 中所有已确认的 FU 接口均在头文件中声明。
-6. 必要的 `#include` 和命名空间声明完整。
+3. 每个函数注释中含实现来源：AFSIM 源文件路径 + 行号，或 novel FU 的设计依据文献引用。
+4. `<requirement_index>-migration-function.jsonl` 中所有函数接口均在头文件中声明。
+5. 必要的 `#include` 和命名空间声明完整。
 
-### 检查 5: REQ_xxx.cpp 模板合规性与代码质量
+### 检查 5: <requirement_name>.cpp 模板合规性与代码质量
 
-对照 `skill/afsim-migration-builder/template_list/template_REQ_xxx.cpp`：
-
-1. 每个 FU 实现以 `/* === FU-xxx: 描述 === */` 分段开头。
+1. 每个 函数 实现以 `/* === name: 描述 === */` 分段开头。
 2. 关键代码逻辑有中文注释（核心算法步骤、边界条件处理、关键决策点）。
-3. AFSIM 有参考的 FU：保留原始版权注释（若许可证允许）并标注源位置。
-4. novel FU：实现开始处标注设计依据文献引用。
-5. 所有与 AFSIM 源码有差异的修改点均有注释说明。
-6. 函数签名与 `.h` 文件中的声明一致。
+3. novel FU：实现开始处标注设计依据文献引用。
+4. 所有与 AFSIM 源码有差异的修改点均有注释说明。
+5. 函数签名与 `.h` 文件中的声明一致。
 
-### 检查 6: test_demo.cpp 模板合规性与可运行性
+### 检查 6: <requirement_name>_demo.cpp 模板合规性与可运行性
 
 对照 `skill/afsim-migration-builder/template_list/template_test_demo.cpp`：
 
 1. 文件开头注释含编译命令（如 `g++ ...`）和运行方法。
-2. 含 `main()` 函数，`main()` 统一调用各测试用例函数。
-3. 至少 3 个测试用例函数：
+2. 含 `TEST()` 函数，`TEST()` 统一调用各测试用例函数。
+3. 至少 3 个集成测试测试用例函数：
    - 设计为正常情况测试。
    - 设计为边界情况测试。
    - 设计为异常情况测试。
 4. 每个测试用例以 `/* --- TC-xxx: 描述 --- */` 开头。
 5. 每个测试用例含详细注释和预期输出说明。
-6. `main()` 为最简单示例场景，展示核心功能的输入输出。
-7. 审查`test_demo.cpp`的逻辑正确性与输出合理性（仅编译通过+PASS标签 ≠ 逻辑正确）：
+6. 审查`<requirement_name>.cpp`的逻辑正确性与输出合理性（仅编译通过+PASS标签 ≠ 逻辑正确）：
    1. 逐测试用例审查仿真/计算循环中的代码逻辑：
       - 检查是否存在"计算了但未使用"的变量（变量赋值后从未被后续表达式引用）
       - 检查循环体内所有依赖状态变量是否在每步迭代后更新（避免全循环使用不变的初始值）
@@ -131,15 +123,6 @@ metadata:
 4. 含预期输出示例。
 5. 与 SDD 分工明确：不涉及设计细节和算法推导。
 
-### 检查 8: migration-log.jsonl 格式与字段完整性
-
-1. 文件存在于 `workspace/migration/<req_index>/<req_index>-migration-log.jsonl` 且非空。
-2. 逐行解析 JSON，无解析错误。
-3. 每条记录含必填字段：`event`、`req_index`、`req_name`、`files`、`status`、`generated_at`。
-4. `files` 字段为数组，至少包含：`<req_index>-SDD.md`、`REQ_xxx.h`、`REQ_xxx.cpp`、`test_demo.cpp`、`README.md`。
-5. `files` 数组中各路径与各文件实际路径一致。
-6. 文件的相对路径根目录正确（SDD 在 `docs/migration/<req_index>/`，代码在 `tests/migration_src/<req_index>/`）。
-
 ### 检查 9: 操作留痕完整性
 
 1. `docs/records/` 目录下存在与 migration-generation 相关的操作留痕文件。
@@ -154,7 +137,7 @@ metadata:
 # migration-generation 验证报告
 
 > **日期**：YYYY-MM-DD
-> **验证对象**：<req_index>-SDD.md, REQ_xxx.h, REQ_xxx.cpp, test_demo.cpp, README.md, migration-log.jsonl, 操作留痕
+> **验证对象**：<req_index>-SDD.md, <requirement_name>.h, <requirement_name>.cpp, <requirement_name>_demo.cpp, README.md, 操作留痕
 
 ## 检查结果汇总
 
@@ -168,7 +151,7 @@ metadata:
 | 5 | REQ_xxx.cpp 模板合规性与代码质量 | ✅/❌ | ... |
 | 6 | test_demo.cpp 模板合规性与可运行性 | ✅/❌ | ... |
 | 7 | README.md 完整性 | ✅/❌ | ... |
-| 8 | migration-log.jsonl 格式与字段完整性 | ✅/❌ | ... |
+| 8 | migration-function.jsonl 格式与字段完整性 | ✅/❌ | ... |
 | 9 | 操作留痕完整性 | ✅/❌ | ... |
 
 ## 不通过项详情
@@ -185,5 +168,5 @@ metadata:
 ## 质量门槛
 
 1. 10 项检查中至少 8 项通过。
-2. 检查 4（REQ_xxx.h 质量）、检查 5（REQ_xxx.cpp 质量）、检查 6（test_demo.cpp）和检查 8（migration-log.jsonl）必须全部通过（共 4 项硬性门槛）。
+2. 检查 4（<requirement_name>.h 质量）、检查 5（<requirement_name>.cpp 质量）、检查 6（<requirement_name>_demo.cpp）必须全部通过（共 3 项硬性门槛）。
 3. 如有不通过项，明确写出修复指引。

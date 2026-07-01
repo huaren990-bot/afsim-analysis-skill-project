@@ -3,7 +3,7 @@
  * @brief REQ-XXX 迁移功能演示与快速验证
  *
  * 编译命令（示例）：
- *   g++ -std=c++17 -I../include test_demo.cpp REQ_xxx.cpp -o test_demo
+ *   g++ -std=c++17 -I../include test_demo.cpp <requirement_name>.cpp -o test_demo
  * 运行：
  *   ./test_demo
  * 预期输出：
@@ -11,7 +11,7 @@
  *   姿态四元数: (w, x, y, z)
  */
 
-#include "REQ_xxx.h"
+#include "<requirement_name>.h"
 #include <iostream>
 
 /* --- TC-001: 正常情况测试 --- */
@@ -27,7 +27,7 @@ void test_case_normal() {
     // ...
 
     // 4. 调用
-    state = REQ_xxx_integrate_step(state, forces, 0.01, params);
+    state = <requirement_name>_integrate_step(state, forces, 0.01, params);
 
     // 5. 输出
     std::cout << "TC-Normal: Position: " << state.position.transpose() << std::endl;
@@ -44,7 +44,7 @@ void test_case_boundary() {
     // ...
     
     // 4. 调用
-    state = REQ_xxx_integrate_step(state, forces, 0.01, params);
+    state = <requirement_name>_integrate_step(state, forces, 0.01, params);
     // 5. 输出
     std::cout << "TC-Boundary: Position: " << state.position.transpose() << std::endl;
 }
@@ -60,7 +60,7 @@ void test_case_exception() {
     // ... 
     // 4. 调用并捕获异常
     try {
-        state = REQ_xxx_integrate_step(state, forces, 0.01, params);
+        state = <requirement_name>_integrate_step(state, forces, 0.01, params);
         // 5. 输出
         std::cout << "TC-Exception: Position: " << state.position.transpose() << std::endl;
     } catch (const std::exception& e) {
@@ -69,9 +69,7 @@ void test_case_exception() {
 }
 
 
-
-
-int main() {
+int TEST() {
     test_case_normal();
     test_case_boundary();
     test_case_exception();

@@ -12,17 +12,6 @@
  * ============================================================================
  */
 
-/**
- *  ============================================================================
- * @file REQ_xxx.h
- * @brief 需求 REQ-XXX 迁移模块接口声明。{简要描述本文件实现的功能}
- *
- * 包含的原子功能：
- * - FU-001: <功能名> (来源: AFSIM src/.../xxx.cpp:line)
- * - FU-xxx: <功能名> (设计依据: [文献引用] — novel，AFSIM 无参考)
- * ============================================================================
- */
-
 #ifndef REQ_XXX_H
 #define REQ_XXX_H
 
@@ -30,24 +19,53 @@
 #include <Eigen/Dense>              // 第三方依赖
 
 // 如果需要，定义模块专有结构体
-struct ModuleSpecificParams {
-    double gravity = 9.80665;
-    // ... 其他参数
+struct Point{
+    double _lon; // 经度，单位m
+    double _lat; // 纬度，单位m
+    double _alt; // 高度，单位m
+}
+
+struct Posture{
+    double _yaw; //航向角，单位度
+    double _pitch; //俯仰角，单位度
+    double _roll; //翻滚角，单位度
+}
+
+struct CMRBasicBAC{
+    std::vector<Point> path; //期望航线
+    std::vector<dobule> speed_profile; //期望速度
+    std::vector<Point> track; //当前步长内的路径
+    Posture posture; //当前姿态
+    double speed; //当前速度
+    double prev_fuel; //当前燃油质量
+}
+
+
+class FormationMoveAlongPath
+{
+    public:
+    /**
+     * @brief 初始化：在仿真开始时初始化
+     * @param pPhyComp 组件指针
+     * @param p 初始化参数
+     * @param params 配置参数（质量、惯量等）
+     */
+    void init(CMRBasicBAC *pPhyComp, std::unordered_map<std::string, boost::any> *params, const CMRJsonPara &p);
+
+    /**
+    进入状态：在进入状态时被调用一次
+    para 数据库参数
+    */
+    void enterState(const boost::any &para);
+
+    /**
+    状态运行：在状态保持时每个步长都调用一次
+    */
+    bool runState(double curTime, double deltaTime);
+
+    /**
+    异常情况上报
+    */
+    void reportError(double curTime, std::string report_string);
 };
-
-/**
- * @brief FU-001: <功能描述>
- * @param state 当前刚体状态（位置、速度、姿态、角速度）
- * @param forces 合外力与力矩
- * @param dt 时间步长
- * @param params 配置参数（质量、惯量等）
- * @return 更新后的状态
- */
-RigidBodyState REQ_xxx_integrate_step(const RigidBodyState& state,
-                                      const Wrench& forces,
-                                      double dt,
-                                      const ModuleSpecificParams& params);
-
-// 其他 FU 函数声明...
-
 #endif // REQ_XXX_H

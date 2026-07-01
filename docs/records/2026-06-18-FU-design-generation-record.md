@@ -35,7 +35,7 @@
 |------|------|------|
 | FU 迁移设计文档 | `docs/migration/preliminary-migration-plan/REQ-001-FU-design.md` | ✅ 已更新 (v0.2) |
 | 旧版文档 | `docs/migration/REQ-001-FU-design.md` | ❌ 已删除 |
-| 迁移日志 | `workspace/migration/migration-log.jsonl` | ✅ 已更新 |
+| 迁移日志 | `workspace/migration/migration-function.jsonl` | ✅ 已更新 |
 | 操作留痕（本文件） | `docs/records/2026-06-18-FU-design-generation-record.md` | ✅ 已更新 |
 
 ## 四、v0.3 迭代（2026-06-22）—— 人工审阅反馈

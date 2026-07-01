@@ -39,7 +39,7 @@
 
 ## 输出格式
 
-### 迁移记录（存入 `workspace/migration/migration-log.jsonl`）
+### 迁移记录（存入 `workspace/migration/migration-function.jsonl`）
 ```json
 {
   "migration_id": "MIG-001",

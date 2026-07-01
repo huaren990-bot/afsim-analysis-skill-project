@@ -1,7 +1,7 @@
 # migration-generation 验证报告
 
 > **日期**：2026-06-22
-> **验证对象**：REQ-001-SDD.md, REQ_001.h, REQ_001.cpp, test_demo.cpp, README.md, migration-log.jsonl, 操作留痕
+> **验证对象**：REQ-001-SDD.md, REQ_001.h, REQ_001.cpp, test_demo.cpp, README.md, migration-function.jsonl, 操作留痕
 
 ## 检查结果汇总
 
@@ -15,7 +15,7 @@
 | 5 | REQ_001.cpp 模板合规性与代码质量 | ✅ | 4 个 FU 均以 `/* === FU-xxx: 描述 === */` 分段，关键算法有中文注释，AFSIM 源位置标注完整，修改点均注释说明，函数签名与 .h 一致 |
 | 6 | test_demo.cpp 模板合规性与可运行性 | ❌ | 编译成功、4 个测试用例输出 PASS 标签，但代码逻辑存在 4 个缺陷（详见不通过项详情） |
 | 7 | README.md 完整性 | ✅ | 含编译命令（g++/MSVC）、依赖列表（Eigen 3 + C++17）、运行步骤、预期输出示例，不涉及设计细节 |
-| 8 | migration-log.jsonl 格式与字段完整性 | ✅ | 2 行 JSON 均解析正确，migration_generated 记录含 event/req_index/req_name/files/status/generated_at，files 数组 5 个路径与实际一致 |
+| 8 | migration-function.jsonl 格式与字段完整性 | ✅ | 2 行 JSON 均解析正确，migration_generated 记录含 event/req_index/req_name/files/status/generated_at，files 数组 5 个路径与实际一致 |
 | 9 | 操作留痕完整性 | ✅ | docs/records/2026-06-22-migration-generation-record.md 存在，含日期、操作描述、5 个输出文件清单（含行数）、实现决策记录、AFSIM 差异对照表，路径与实物一致 |
 
 ## 不通过项详情
