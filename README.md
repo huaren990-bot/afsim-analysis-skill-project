@@ -84,10 +84,10 @@ flowchart TB
 | Agent 名称                                | 作用                                                   | 主要产物                                 | 状态                                        |
 | --------------------------------------- | ---------------------------------------------------- | ------------------------------------ | ----------------------------------------- |
 | `afsim-analyst`                         | 总控入口，判断任务类型并协调其他 skill                               | 阶段计划、路由决策、综合报告                       | ✅ SKILL.md + references 就绪                |
-| `afsim-source-cognition`(源码分析 Agent)    | 快速学习 AFSIM 源码，总结架构，提取函数、类、数据流                        | 源码索引、架构报告、模块依赖                       | ✅ 已执行两轮基线（core/ 14模块 + wsf_plugins/ 16模块） |
-| `algorithm-extractor`(数学解析 Agent) | 识别并解释源码中的算法、公式、变量映射，转化为标准数学表示和伪代码                    | 算法卡片、伪代码、接口规格                        | ✅ 已执行，产出 23 张算法卡片 + 24 份接口规格              |
-| `requirement-mapper`(需求分析 Agent)  | 阅读规范需求文档，推断自有仿真器缺少的功能，生成待补充功能列表                      | 需求缺口报告、功能映射矩阵                        | ⏳ SKILL.md 就绪，待执行                         |
-| `afsim-migration-builder`(代码迁移 Agent)   | 在 AFSIM 源码中定位所需功能，进行代码切片、简化、适配，生成迁移方案、适配接口、代码原型和测试计划 | 迁移记录、适配方案、测试计划                       | ⏳ SKILL.md 就绪，待执行                         |
+| `cpp-project-analyzer`(源码分析 Agent)    | 基于 CodeGraph 的 7 阶段 C++ 项目细粒度分析，从粗到细：边界-模块-符号-函数-依赖-生命周期-报告 | 源码索引（8 类 JSONL）、架构报告（10 份）、验证报告     | ✅ 已执行全量 7 阶段流水线（17,342 源文件，107 模块） |
+| `algorithm-extractor`(数学解析 Agent) | 识别并解释源码中的算法、公式、变量映射，转化为标准数学表示和伪代码                    | 算法卡片、伪代码、接口规格                        | ✅ 已执行，产出 32 张算法卡片 + 26 份接口规格              |
+| `requirement-mapper`(需求分析 Agent)  | 阅读规范需求文档，推断自有仿真器缺少的功能，生成待补充功能列表                      | 需求缺口报告、功能映射矩阵                        | ▶ 进行中（REQ-001/002 缺口分析完成）                         |
+| `afsim-migration-builder`(代码迁移 Agent)   | 在 AFSIM 源码中定位所需功能，进行代码切片、简化、适配，生成迁移方案、适配接口、代码原型和测试计划 | 迁移记录、适配方案、测试计划                       | ▶ 进行中（REQ-001 编译通过，REQ-002 验证通过）                         |
 | `afsim-knowledge-curator`(知识记录 Agent)   | 整理知识库、追溯矩阵、决策记录和后续任务，全程记录每一步的输入、思考链、决策、输出，生成阶段性文档    | 知识地图、追溯矩阵、过程记录、文档模板、Markdown 生成、版本快照 | ⏳ SKILL.md 就绪，待执行                         |
 
 ---
@@ -96,27 +96,33 @@ flowchart TB
 
 ### 当前进展
 
-首轮分析已完成 **阶段 1（AFSIM 源码结构化分析）** 和 **阶段 2（算法提取）**：
+首轮分析已完成 **阶段 1（AFSIM 源码结构化分析）** 和 **阶段 2（算法提取）**，阶段 3（需求映射）和阶段 4（迁移代码生成）已启动并完成首批需求验证：
 
 ### 阶段 1 — 源码认知
 
-| 基线     | 分析范围                   | 文件数        | 产出                                             |
-| ------ | ---------------------- | ---------- | ---------------------------------------------- |
-| 基线 1   | `core/` 全 14 模块        | 4,997      | 4 份 JSONL 索引 + 2 份架构报告                         |
-| 基线 2   | `wsf_plugins/` 全 16 模块 | 11,666     | 4 份 JSONL 索引 + 3 份架构报告（含 x-level-capabilities） |
-| **合计** | **30 模块**              | **16,663** | **8 份索引（76,844 行）+ 5 份架构报告**                   |
+| 分析范围                   | 文件数        | 产出                                             |
+| ---------------------- | ---------- | ---------------------------------------------- |
+| 全部源码（core/ + wsf_plugins/ + 其他）        | 17,342+      | 8 类 JSONL 索引（83,095 符号 + 50,402 函数 + 52,996 依赖 + 9,381 宏 + 814 枚举） + 10 份架构报告 |
+| 执行方式：cpp-project-analyzer 7 阶段流水线（Phase 1 边界确认 -> Phase 2 模块粗分 -> Phase 3 符号精析 -> Phase 4 函数深提 -> Phase 5 跨模依赖 -> Phase 6 生命周期 -> Phase 7 综合报告），基于 CodeGraph 语义分析 |
 
 ### 阶段 2 — 算法提取
 
 | 领域                              | 算法数    | 卡片产出                | 接口规格                        |
 | ------------------------------- | ------ | ------------------- | --------------------------- |
-| 飞行动力学 (wsf_p6dof + wsf_six_dof) | 10     | 10 张算法卡片（平均 ~440 行） | 10 份 interface-spec.md      |
-| 空间/轨道力学 (wsf_space)             | 13     | 13 张算法卡片（平均 ~340 行） | 14 份 interface-spec.md（含已有） |
-| **合计**                          | **23** | **23 张卡片（9,307 行）** | **24 份接口规格**                |
+| 飞行动力学 (wsf_p6dof + wsf_six_dof) | 13     | 13 张算法卡片 | 10 份 interface-spec.md      |
+| 空间/轨道力学 (wsf_space)             | 19     | 19 张算法卡片 | 16 份 interface-spec.md |
+| **合计**                          | **32** | **32 张卡片** | **26 份接口规格**                |
 
-**最新质量补全**（2026-06-12）：全部 23 张卡片已通过结构性自检，覆盖 output-contracts.md 要求的 14 个必填章节（含新增的内部状态、变量映射表、边界条件、提取策略）。详见 `docs/records/12-algorithm-extraction-quality-supplement.md`。
+**最新质量补全**（2026-06-24）：全部 32 张卡片已通过结构性自检，覆盖 output-contracts.md 要求的 14 个必填章节（含新增的内部状态、变量映射表、边界条件、提取策略）。详见 `docs/records/12-algorithm-extraction-quality-supplement.md` 及 `docs/records/2026-06-24-batch1-2-extraction-record.md`。
 
-后续待执行：阶段 3（需求映射）、阶段 4（迁移生成）、阶段 5（知识沉淀）。
+### 阶段 3 — 需求映射 & 阶段 4 — 迁移代码生成（进行中）
+
+| 需求编号 | 需求名称 | 阶段 | 状态 |
+| ------ | ------ | ---- | ---- |
+| REQ-001 | 六自由度无人飞行器（Six-DOF UAV） | 需求规范->缺口分析->FU设计->代码生成->编译 | ✅ 全流程完成，CMake 编译通过，CTest 验证通过（4 个已知 Bug 待修） |
+| REQ-002 | 编队沿路径移动（Formation Move Along Path） | 需求规范 v2->缺口分析->FU设计->代码生成 | ✅ 迁移生成验证通过（9 项参数待确认） |
+
+后续待执行：REQ-001 测试 Bug 修复、REQ-002 参数确认与编译验证、REQ-003+ 新需求启动、阶段 5（知识沉淀）。
 
 ### 项目结构
 
@@ -141,10 +147,10 @@ afsim-analysis-skill-project/
 │   │   └── assets/                             #   静态资源（预留）
 │   │       └── README.md
 │   │
-│   ├── afsim-source-cognition/                 # 【源码认知 Skill】快速学习 AFSIM 源码结构与架构
+│   ├── cpp-project-analyzer/                   # 【源码认知 Skill】基于 CodeGraph 的 7 阶段 C++ 项目细粒度分析
 │   │   └── SKILL.md                            #   7 步工作流：确认边界→发现文件→符号索引→依赖索引→生命周期→数据流→生成报告
 │   │                                           #   输出规范：4 个 JSONL 索引文件(file/symbol/function/dependency) + 架构文档
-│   │                                           #   质量门槛 + 基线记录（已完成 core/ 全 14 模块深度分析）
+│   │                                           #   质量门槛 + 基线记录（已完成全量 7 阶段流水线分析）
 │   │
 │   ├── algorithm-extractor/              # 【算法提取 Skill】从源码中识别并抽取算法与数学公式
 │   │   └── SKILL.md                            #   7 步执行：定位→区分→抽取→转换→映射→评估→验证
@@ -179,7 +185,7 @@ afsim-analysis-skill-project/
 │   │   ├── WsfSimulation_Design_Document.md    #   WSF 子系统完整软件设计文档（111KB，12 章）
 │   │   └── WsfSimulation_Core_Design_Document.md # WSF 仿真核心控制类设计文档（66KB）
 │   │
-│   ├── algorithms/                             # 算法提取结果（23 张算法卡片 + 1 份汇总文档）
+│   ├── algorithms/                             # 算法提取结果（32 张算法卡片 + 1 份汇总文档）
 │   │   ├── .gitkeep
 │   │   ├── CompendiumofAlgorithms.md            #   算法汇总文档（23 个算法的分类目录 + 可移植性总览）
 │   │   ├── flight-dynamics-*.md                 #   飞行动力学算法卡片 × 10（积分器/气动/SAS/推进/发动机/PID）
@@ -216,16 +222,13 @@ afsim-analysis-skill-project/
 ├── workspace/                                  # ═══════════ 机器生成或中间产物 ═══════════
 │   ├── source-index/                           # 源码索引（JSONL 格式，每行一条记录）
 │   │   ├── .gitkeep
-│   │   ├── core/                                #   core/ 基线 1：file(4,997行) + symbol(3,255) + function(4,099) + dependency(1,113)
-│   │   │   ├── file-index.jsonl
-│   │   │   ├── symbol-index.jsonl
-│   │   │   ├── function-index.jsonl
-│   │   │   └── dependency-index.jsonl
-│   │   └── wsf_plugins/                         #   wsf_plugins 基线 2：file(11,666) + symbol(14,565) + function(36,939) + dependency(456)
-│   │       ├── file-index.jsonl
-│   │       ├── symbol-index.jsonl
-│   │       ├── function-index.jsonl
-│   │       └── dependency-index.jsonl
+│   │   ├── file-index.jsonl                     #   全文件索引（17,342 源文件，25MB）
+│   │   ├── symbol-index.jsonl                   #   精炼符号索引（83,095 条，80MB）
+│   │   ├── function-index.jsonl                 #   四层功能条目（50,402 条，50MB）
+│   │   ├── dependency-index.jsonl               #   依赖关系（52,996 条，23MB）
+│   │   ├── macro-index.jsonl                    #   宏定义（9,381 条，4MB）
+│   │   ├── enum-index.jsonl                     #   枚举（814 条）
+│   │   └── function-body-summary.jsonl          #   函数体摘要（27,047 条，29MB）
 │   │
 │   ├── analysis-cache/                         # 分析缓存（当前为空）
 │   │   └── .gitkeep
@@ -392,7 +395,7 @@ afsim-analysis-skill-project/
 `skill/` — 可被大模型直接使用的 Skill 系统，包含 6 个 skill（1 个总控 + 5 个专职）。每个 skill 只放执行规则和必要引用文件，保持精简。其中：
 
 - `afsim-analyst` 是总控入口，负责判任务类型、选 skill、定输入输出、保证据追溯
-- `afsim-source-cognition` 是最先开发完成的 skill，已对 AFSIM core/ 全 14 模块完成深度分析（产出了 4 个 JSONL 索引和 2 份架构报告）
+- `afsim-source-cognition` 是最先开发完成的 skill，已对 AFSIM 全部源码完成 7 阶段流水线分析（产出了 8 类 JSONL 索引和 10 份架构报告）
 - 其余 4 个专职 skill（算法提取/需求映射/迁移生成/知识沉淀）SKILL.md 已就绪，等待后续阶段执行
 
 `docs/` — 人工可读、可审查的分析结果。架构、算法、需求、迁移和过程记录分开存放：
@@ -430,8 +433,8 @@ afsim-analysis-skill-project/
 ## 推荐落地顺序
 
 1. ~~先完善 `tools/indexers/`，实现 C/C++ 源码扫描和 JSONL 索引输出。~~ → 首轮分析已通过 Agent 直接扫描完成
-2. ~~用 `afsim-source-cognition` 生成第一版 AFSIM 架构报告。~~ → ✅ 已完成（core/ + wsf_plugins/ 两轮基线）
-3. ~~选择一个小功能，用 `algorithm-extractor` 生成算法卡片。~~ → ✅ 已完成（23 张算法卡片 + 24 份接口规格，经全面质量补全）
+2. ~~用 `afsim-source-cognition` 生成第一版 AFSIM 架构报告。~~ → ✅ 已完成（7 阶段全量流水线，17,342 源文件）
+3. ~~选择一个小功能，用 `algorithm-extractor` 生成算法卡片。~~ → ✅ 已完成（32 张算法卡片 + 26 份接口规格，经全面质量补全）
 4. 输入一个自有项目需求，用 `requirement-mapper` 做缺口分析。
 5. 用 `afsim-migration-builder` 生成迁移方案和最小代码原型。
 6. 用 `afsim-knowledge-curator` 更新追溯矩阵和知识地图。
