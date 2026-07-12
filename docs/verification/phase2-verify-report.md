@@ -2,7 +2,7 @@
 
 > **生成日期**：2026-06-17
 > **验证类型**：全部修复后的最终验证
-> **后续更新**：2026-06-24 起 Phase 2 改为按最小目录单元增量补强；batch01 验证见 `docs/verification/phase2-followup-batch01-verify-report.md`，batch02 验证见 `docs/verification/phase2-followup-batch02-verify-report.md`，batch03 验证见 `docs/verification/phase2-followup-batch03-verify-report.md`，batch04 验证见 `docs/verification/phase2-followup-batch04-verify-report.md`，batch05 验证见 `docs/verification/phase2-followup-batch05-verify-report.md`，batch06 验证见 `docs/verification/phase2-followup-batch06-verify-report.md`。
+> **后续更新**：2026-06-24 起 Phase 2 改为按最小目录单元增量补强；batch01 验证见 `docs/verification/phase2-followup-batch01-verify-report.md`，batch02 验证见 `docs/verification/phase2-followup-batch02-verify-report.md`，batch03 验证见 `docs/verification/phase2-followup-batch03-verify-report.md`，batch04 验证见 `docs/verification/phase2-followup-batch04-verify-report.md`，batch05 验证见 `docs/verification/phase2-followup-batch05-verify-report.md`，batch06 验证见 `docs/verification/phase2-followup-batch06-verify-report.md`，batch07 验证见 `docs/verification/phase2-followup-batch07-verify-report.md`，batch08 验证见 `docs/verification/phase2-followup-batch08-verify-report.md`，batch09 验证见 `docs/verification/phase2-followup-batch09-verify-report.md`，batch10 验证见 `docs/verification/phase2-followup-batch10-verify-report.md`，batch11 验证见 `docs/verification/phase2-followup-batch11-verify-report.md`，batch12 验证见 `docs/verification/phase2-followup-batch12-verify-report.md`，batch13 验证见 `docs/verification/phase2-followup-batch13-verify-report.md`，batch14 验证见 `docs/verification/phase2-followup-batch14-verify-report.md`。
 > **验证 Skill**：cpp-proj-modules-verify (SKILL_VERIFY.md)
 > **验证对象**：
 > - `workspace/source-index/file-index.jsonl`（43,586 条，其中 17,342 个源码/头文件）
@@ -207,3 +207,51 @@
 | 核心类可追溯性（缺失率） | ≤ 20% | 0.00% | ✅ 是 |
 
 **建议**：接受 Phase 2 产出。6 项质量门禁中 5 项完全通过。唯一缺口是 8 个简单单文件模块（占源文件 0.05%）缺少独立详情章节——对下游阶段（Phase 3：符号级细粒度分析）影响可忽略。上一轮验证以来的所有修复均已确认为有效，最关键的改进已验证通过：key_symbols 达 100%，符号索引已去噪，includes 解析率达 99.23%，核心类完全可追溯。
+
+---
+
+## Phase 2 v2 增量批次状态
+
+> **最近更新**：2026-07-11
+
+| 批次 | 状态 | 增量验证报告 |
+|------|------|--------------|
+| batch07 | 已完成 | `docs/verification/phase2-followup-batch07-verify-report.md` |
+| batch08 | 已完成 | `docs/verification/phase2-followup-batch08-verify-report.md` |
+| batch09 | 已完成 | `docs/verification/phase2-followup-batch09-verify-report.md` |
+| batch10 | 已完成 | `docs/verification/phase2-followup-batch10-verify-report.md` |
+| batch11 | 已完成 | `docs/verification/phase2-followup-batch11-verify-report.md` |
+| batch12 | 已完成 | `docs/verification/phase2-followup-batch12-verify-report.md` |
+| batch13 | 已完成 | `docs/verification/phase2-followup-batch13-verify-report.md` |
+| batch14 | 已完成 | `docs/verification/phase2-followup-batch14-verify-report.md` |
+| batch15 | 已完成 | `docs/verification/phase2-followup-batch15-verify-report.md` |
+| batch16 | 已完成 | `docs/verification/phase2-followup-batch16-verify-report.md` |
+| batch17 | 已完成 | `docs/verification/phase2-followup-batch17-verify-report.md` |
+| batch18 | 已完成 | `docs/verification/phase2-followup-batch18-verify-report.md` |
+| batch19 | 已完成 | `docs/verification/phase2-followup-batch19-verify-report.md` |
+| batch20 | 已完成 | `docs/verification/phase2-followup-batch20-verify-report.md` |
+| batch21 | 已完成 | `docs/verification/phase2-followup-batch21-verify-report.md` |
+| batch22 | 已完成 | `docs/verification/phase2-followup-batch22-verify-report.md` |
+| batch23 | 已完成 | `docs/verification/phase2-followup-batch23-verify-report.md` |
+| batch24 | 已完成 | `docs/verification/phase2-followup-batch24-verify-report.md` |
+| batch25 | 已完成 | `docs/verification/phase2-followup-batch25-verify-report.md` |
+| batch26 | 已完成 | `docs/verification/phase2-followup-batch26-verify-report.md` |
+| batch27 | 已完成 | `docs/verification/phase2-followup-batch27-verify-report.md` |
+| batch28 | 已完成 | `docs/verification/phase2-followup-batch28-verify-report.md` |
+| batch29 | 已完成 | `docs/verification/phase2-followup-batch29-verify-report.md` |
+| batch30 | 已完成 | `docs/verification/phase2-followup-batch30-verify-report.md` |
+| batch31 | 已完成 | `docs/verification/phase2-followup-batch31-verify-report.md` |
+| batch32 | 已完成 | `docs/verification/phase2-followup-batch32-verify-report.md` |
+| batch33 | 已完成 | `docs/verification/phase2-followup-batch33-verify-report.md` |
+
+### Phase 2 v2 最新进度（2026-07-11）
+
+| 指标 | 值 |
+|------|-----|
+| 最小目录单元总数 | 237 |
+| 已完成单元 | 174 |
+| 剩余单元 | 63 |
+| 最新完成批次 | batch28-batch33 |
+| 本次新增 | 36 个目录、785 个 source/header、180 条代表性符号 |
+
+本次继续按最小目录单元推进，并确认 `core/wsf_parser`、`wizard/plugins`、`core/wsf_space`、`wsf_plugins/wsf_coverage` 等实际展开较大的目录不应作为小批次整体完成。
