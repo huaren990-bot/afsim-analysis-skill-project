@@ -1,0 +1,52 @@
+{
+  "schema_version": "1",
+  "batch_id": "phase4-batch20",
+  "status": "completed",
+  "input_candidate_count": 2422,
+  "effective_candidate_count": 2421,
+  "invalid_candidate_count": 1,
+  "read_file_count": 259,
+  "method_done_count": 2308,
+  "body_summary_count": 2308,
+  "skip_count": 114,
+  "raw_coverage": 0.9529,
+  "coverage": 0.9533,
+  "skip_reasons": {
+    "declaration_only": 113,
+    "variable_not_function": 1
+  },
+  "matched_files_not_in_original_path": 1045,
+  "duplicate_name_fix_count": 30,
+  "top_matched_files": {
+    "afsim-2_9/swdev/src/wsf_plugins/wsf_p6dof/source/WsfP6DOF_Mover.cpp": 374,
+    "afsim-2_9/swdev/src/tools/vespatk/source/VaViewer.cpp": 139,
+    "afsim-2_9/swdev/src/tools/vespatk/source/VaEnvironment.cpp": 79,
+    "afsim-2_9/swdev/src/tools/vespatk/source/VaCameraMotionLookAt.cpp": 70,
+    "afsim-2_9/swdev/src/core/wsf_cyber/source/effects/WsfCyberMitmEffect.cpp": 51,
+    "afsim-2_9/swdev/src/post_processor/WizPostProcessor/source/EngagementType.cpp": 44,
+    "afsim-2_9/swdev/src/tools/vespatk/source/VaScenario.cpp": 42,
+    "afsim-2_9/swdev/src/core/wsf_cyber/source/WsfCyberVisualization.cpp": 40,
+    "afsim-2_9/swdev/src/core/wsf_cyber/source/effects/WsfCyberScriptEffectEnhanced.cpp": 35,
+    "afsim-2_9/swdev/src/core/wsf_cyber/source/effects/WsfCyberToggleEffect.hpp": 35,
+    "afsim-2_9/swdev/src/core/wsf_cyber/source/WsfCyberEngagementManager.cpp": 33,
+    "afsim-2_9/swdev/src/core/wsf_cyber/source/effects/WsfCyberScriptEffect.cpp": 33,
+    "afsim-2_9/swdev/src/tools/vespatk/source/VaEnvironment.hpp": 30,
+    "afsim-2_9/swdev/src/core/wsf_cyber/source/WsfCyberEventPipe.cpp": 29,
+    "afsim-2_9/swdev/src/post_processor/WizPostProcessor/source/FilterWidget.cpp": 29,
+    "afsim-2_9/swdev/src/wsf_plugins/wsf_p6dof/p6dof/source/P6DofAeroMovableObject.cpp": 29,
+    "afsim-2_9/swdev/src/tools/vespatk/source/VaViewer.hpp": 28,
+    "afsim-2_9/swdev/src/tools/vespatk/vespatk_qt/source/VaWidget.cpp": 26,
+    "afsim-2_9/swdev/src/post_processor/WizPostProcessor/source/ReportDialog.cpp": 25,
+    "afsim-2_9/swdev/src/post_processor/lib/source/Report.cpp": 25
+  },
+  "output_function_index": "workspace/source-index/phase4-batches/phase4-batch20-function-index.jsonl",
+  "output_body_summary": "workspace/source-index/phase4-batches/phase4-batch20-function-body-summary.jsonl",
+  "output_skips": "workspace/source-index/phase4-batches/phase4-batch20-skips.jsonl",
+  "notes": [
+    "增强匹配：同时搜索 definition_path、path、declaration_path、同名头文件和 inline 文件。",
+    "补充匹配：从 owner/qualified_name 提取类名，搜索类名同 stem 的源/头/inline 文件，覆盖声明头文件与实现文件不同名的场景。",
+    "每个候选搜索文件读取后复用缓存；同一文件不重复读取。",
+    "qualified_name 追加 signature_digest 以避免重载静默覆盖；若仍重复则追加 candidate_id 短后缀。",
+    "coverage 使用有效候选口径；raw_coverage 保留未剔除变量/表达式误报前的原始口径。"
+  ]
+}

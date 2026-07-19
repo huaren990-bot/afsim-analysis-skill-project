@@ -1,0 +1,46 @@
+{
+  "schema_version": "1",
+  "batch_id": "phase4-batch03",
+  "status": "completed",
+  "input_candidate_count": 1862,
+  "read_file_count": 252,
+  "method_done_count": 1693,
+  "body_summary_count": 1693,
+  "skip_count": 169,
+  "coverage": 0.9092,
+  "skip_reasons": {
+    "declaration_only": 169
+  },
+  "matched_files_not_in_original_path": 451,
+  "duplicate_name_fix_count": 0,
+  "top_matched_files": {
+    "afsim-2_9/swdev/src/core/wsf/source/dis/WsfDisInterface.cpp": 94,
+    "afsim-2_9/swdev/src/core/wsf/source/event_pipe/WsfEventPipeInterface.cpp": 83,
+    "afsim-2_9/swdev/src/core/wsf/source/comm/WsfCommRouter.cpp": 50,
+    "afsim-2_9/swdev/src/core/wsf/source/comm/WsfCommNetworkManager.cpp": 46,
+    "afsim-2_9/swdev/src/core/wsf/source/dis/WsfDisInterface.hpp": 39,
+    "afsim-2_9/swdev/src/core/wsf/source/comm/WsfCommProtocolOSPF.cpp": 38,
+    "afsim-2_9/swdev/src/core/wsf/source/comm/WsfComm.cpp": 34,
+    "afsim-2_9/swdev/src/core/wsf/source/comm/WsfComm.hpp": 33,
+    "afsim-2_9/swdev/src/core/wsf/source/comm/WsfCommLayer.cpp": 33,
+    "afsim-2_9/swdev/src/core/wsf/source/comm/WsfCommGraph.cpp": 27,
+    "afsim-2_9/swdev/src/core/wsf/source/comm/WsfCommQueue.hpp": 26,
+    "afsim-2_9/swdev/src/core/wsf/source/comm/WsfCommMediumMessageStatus.hpp": 25,
+    "afsim-2_9/swdev/src/core/wsf/source/comm/WsfCommProtocolAdHoc.cpp": 24,
+    "afsim-2_9/swdev/src/core/wsf/source/comm/WsfCommRouter.hpp": 23,
+    "afsim-2_9/swdev/src/core/wsf/source/ext/WsfExtEntityDeadReckon.cpp": 23,
+    "afsim-2_9/swdev/src/core/wsf/source/ext/WsfExtInterface.cpp": 23,
+    "afsim-2_9/swdev/src/core/wsf/source/comm/WsfCommProtocolStack.cpp": 22,
+    "afsim-2_9/swdev/src/core/wsf/source/comm/WsfCommMedium.cpp": 21,
+    "afsim-2_9/swdev/src/core/wsf/source/comm/WsfCommMessage.hpp": 21,
+    "afsim-2_9/swdev/src/core/wsf/source/comm/WsfCommNetworkAdHoc.cpp": 21
+  },
+  "output_function_index": "workspace/source-index/phase4-batches/phase4-batch03-function-index.jsonl",
+  "output_body_summary": "workspace/source-index/phase4-batches/phase4-batch03-function-body-summary.jsonl",
+  "output_skips": "workspace/source-index/phase4-batches/phase4-batch03-skips.jsonl",
+  "notes": [
+    "增强匹配：同时搜索 definition_path、path、declaration_path、同名头文件和 inline 文件。",
+    "每个候选搜索文件读取后复用缓存；同一文件不重复读取。",
+    "qualified_name 追加 signature_digest 以避免重载静默覆盖；若仍重复则追加 candidate_id 短后缀。"
+  ]
+}

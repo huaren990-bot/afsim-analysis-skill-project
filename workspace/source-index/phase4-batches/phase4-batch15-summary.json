@@ -1,0 +1,52 @@
+{
+  "schema_version": "1",
+  "batch_id": "phase4-batch15",
+  "status": "completed",
+  "input_candidate_count": 2424,
+  "effective_candidate_count": 2418,
+  "invalid_candidate_count": 6,
+  "read_file_count": 356,
+  "method_done_count": 2276,
+  "body_summary_count": 2276,
+  "skip_count": 148,
+  "raw_coverage": 0.9389,
+  "coverage": 0.9413,
+  "skip_reasons": {
+    "declaration_only": 142,
+    "variable_not_function": 6
+  },
+  "matched_files_not_in_original_path": 449,
+  "duplicate_name_fix_count": 0,
+  "top_matched_files": {
+    "afsim-2_9/swdev/src/warlock/plugins/PlatformHistory/source/PlatformHistoryPlugin.cpp": 192,
+    "afsim-2_9/swdev/src/warlock/plugins/SixDOF_Tuner/source/TunerSimInterface.cpp": 154,
+    "afsim-2_9/swdev/src/warlock/plugins/P6DOF_Tuner/source/TunerMainWidget.cpp": 108,
+    "afsim-2_9/swdev/src/warlock/plugins/SixDOF_Data/source/SixDOF_DataPlotUpdaters.cpp": 78,
+    "afsim-2_9/swdev/src/warlock/plugins/P6DOF_Data/source/P6DOF_DataPlotUpdaters.cpp": 76,
+    "afsim-2_9/swdev/src/warlock/plugins/SixDOF_Data/source/SixDOF_DataUpdaters.cpp": 76,
+    "afsim-2_9/swdev/src/warlock/plugins/P6DOF_Data/source/P6DOF_DataUpdaters.cpp": 75,
+    "afsim-2_9/swdev/src/warlock/plugins/P6DOF_Tuner/source/TunerSimInterface.cpp": 74,
+    "afsim-2_9/swdev/src/warlock/plugins/SixDOF_Tuner/source/TunerMainWidget.cpp": 54,
+    "afsim-2_9/swdev/src/warlock/plugins/P6DOF_Tuner/source/TunerCommandDialog.cpp": 50,
+    "afsim-2_9/swdev/src/warlock/plugins/SixDOF_Tuner/source/TunerCommandDialog.cpp": 50,
+    "afsim-2_9/swdev/src/warlock/plugins/Tracks/source/TracksPlugin.cpp": 49,
+    "afsim-2_9/swdev/src/warlock/plugins/TrackDetailsDisplay/source/TrackDetailsDisplayDialog.cpp": 43,
+    "afsim-2_9/swdev/src/warlock/plugins/PlatformData/source/PlatformDataUpdaters.cpp": 41,
+    "afsim-2_9/swdev/src/warlock/plugins/SensorVolumes/source/SensorVolumesPlatform.cpp": 40,
+    "afsim-2_9/swdev/src/warlock/plugins/SensorVolumes/source/SensorVolumesPlugin.cpp": 39,
+    "afsim-2_9/swdev/src/warlock/plugins/PlatformData/source/PlatformDataPlotUpdaters.cpp": 29,
+    "afsim-2_9/swdev/src/warlock/plugins/ScriptBrowser/source/ScriptBrowserDockWidget.cpp": 27,
+    "afsim-2_9/swdev/src/warlock/plugins/PlatformData/source/PlatformDataPlugin.cpp": 25,
+    "afsim-2_9/swdev/src/warlock/plugins/TaskAssigner/source/TaskAssignerDockWidget.cpp": 23
+  },
+  "output_function_index": "workspace/source-index/phase4-batches/phase4-batch15-function-index.jsonl",
+  "output_body_summary": "workspace/source-index/phase4-batches/phase4-batch15-function-body-summary.jsonl",
+  "output_skips": "workspace/source-index/phase4-batches/phase4-batch15-skips.jsonl",
+  "notes": [
+    "增强匹配：同时搜索 definition_path、path、declaration_path、同名头文件和 inline 文件。",
+    "补充匹配：从 owner/qualified_name 提取类名，搜索类名同 stem 的源/头/inline 文件，覆盖声明头文件与实现文件不同名的场景。",
+    "每个候选搜索文件读取后复用缓存；同一文件不重复读取。",
+    "qualified_name 追加 signature_digest 以避免重载静默覆盖；若仍重复则追加 candidate_id 短后缀。",
+    "coverage 使用有效候选口径；raw_coverage 保留未剔除变量/表达式误报前的原始口径。"
+  ]
+}

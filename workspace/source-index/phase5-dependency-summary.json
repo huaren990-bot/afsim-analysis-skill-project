@@ -1,0 +1,31 @@
+{
+  "row_count": 273350,
+  "relation_counts": {
+    "build": 280,
+    "call": 179465,
+    "composition": 13083,
+    "include": 74737,
+    "inheritance": 5102,
+    "registration": 683
+  },
+  "missing_relations": [],
+  "low_relations": {},
+  "missing_strength_count": 0,
+  "boundary_hit_count": 0,
+  "boundary_hit_sample": [],
+  "schema_version": "1",
+  "phase": "phase5-dependencies",
+  "status": "generated",
+  "excluded_paths": [
+    "afsim-2_9/demos",
+    "afsim-2_9/documentation",
+    "afsim-2_9/training",
+    "afsim-2_9/resources"
+  ],
+  "outputs": {
+    "dependency_index": "workspace/source-index/dependency-index.jsonl",
+    "dependency_graph": "docs/architecture/dependency-graph.md",
+    "module_dependency": "docs/architecture/module-dependency.md",
+    "verify_report": "docs/verification/phase5-verify-report.md"
+  }
+}

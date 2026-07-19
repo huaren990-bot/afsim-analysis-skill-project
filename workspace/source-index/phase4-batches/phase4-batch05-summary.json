@@ -1,0 +1,46 @@
+{
+  "schema_version": "1",
+  "batch_id": "phase4-batch05",
+  "status": "completed",
+  "input_candidate_count": 1872,
+  "read_file_count": 185,
+  "method_done_count": 1732,
+  "body_summary_count": 1732,
+  "skip_count": 140,
+  "coverage": 0.9252,
+  "skip_reasons": {
+    "declaration_only": 140
+  },
+  "matched_files_not_in_original_path": 525,
+  "duplicate_name_fix_count": 8,
+  "top_matched_files": {
+    "afsim-2_9/swdev/src/wizard/lib/source/Us/UsCtx.hpp": 73,
+    "afsim-2_9/swdev/src/wizard/lib/source/Us/UsCtx.cpp": 61,
+    "afsim-2_9/swdev/src/core/wsf/source/sensor/WsfSensorMode.hpp": 57,
+    "afsim-2_9/swdev/src/core/wsf/source/sensor/WsfPassiveSensor.cpp": 50,
+    "afsim-2_9/swdev/src/core/wsf/source/sensor/WsfRadarSensor.cpp": 49,
+    "afsim-2_9/swdev/src/core/wsf/source/traffic/XWsfOSM_Traffic.cpp": 44,
+    "afsim-2_9/swdev/src/core/wsf/source/sensor/WsfCompositeSensor.cpp": 43,
+    "afsim-2_9/swdev/src/core/wsf/source/sensor/WsfRadarSensor.hpp": 39,
+    "afsim-2_9/swdev/src/core/wsf/source/xio/WsfXIO_Interface.cpp": 38,
+    "afsim-2_9/swdev/src/core/wsf/source/sensor/WsfSectorScanSensorScheduler.hpp": 37,
+    "afsim-2_9/swdev/src/core/wsf/source/xio_sim/WsfXIO_PlatformInfoService.cpp": 35,
+    "afsim-2_9/swdev/src/core/wsf/source/xio/WsfXIO_RemotePlatformList.cpp": 33,
+    "afsim-2_9/swdev/src/core/wsf/source/sensor/WsfDefaultSensorScheduler.cpp": 30,
+    "afsim-2_9/swdev/src/core/wsf/source/xio/WsfXIO_ObjectInfo.hpp": 30,
+    "afsim-2_9/swdev/src/core/wsf/source/sensor/WsfSectorScanSensorScheduler.cpp": 28,
+    "afsim-2_9/swdev/src/core/wsf/source/traffic/XWsfSeaTraffic.cpp": 28,
+    "afsim-2_9/swdev/src/core/wsf/source/xio/WsfXIO_ObjectInfo.cpp": 26,
+    "afsim-2_9/swdev/src/core/wsf/source/sensor/WsfGeometricSensor.cpp": 24,
+    "afsim-2_9/swdev/src/core/wsf/source/sensor/WsfSensorMode.cpp": 24,
+    "afsim-2_9/swdev/src/core/wsf/source/traffic/XWsfAirTraffic.cpp": 24
+  },
+  "output_function_index": "workspace/source-index/phase4-batches/phase4-batch05-function-index.jsonl",
+  "output_body_summary": "workspace/source-index/phase4-batches/phase4-batch05-function-body-summary.jsonl",
+  "output_skips": "workspace/source-index/phase4-batches/phase4-batch05-skips.jsonl",
+  "notes": [
+    "增强匹配：同时搜索 definition_path、path、declaration_path、同名头文件和 inline 文件。",
+    "每个候选搜索文件读取后复用缓存；同一文件不重复读取。",
+    "qualified_name 追加 signature_digest 以避免重载静默覆盖；若仍重复则追加 candidate_id 短后缀。"
+  ]
+}

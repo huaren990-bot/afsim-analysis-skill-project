@@ -67,6 +67,22 @@ metadata:
        若 codegraph_node 与 Read 均失败 → 标记这些函数为 evidence_level: "unknown"，不重试
    ```
 
+   **头文件声明到源文件定义增强匹配（强制）**：
+   - 对每个候选函数，不得只搜索 `path` 或 `definition_path`。必须构建搜索文件集合：
+     1. `definition_path`
+     2. `path`
+     3. `declaration_path`
+     4. 与上述路径同 stem 的 `.hpp/.h/.hh/.hxx/.cpp/.cc/.cxx/.C/.inl/.ipp/.tpp`
+     5. 从 `owner` / `qualified_name` 提取类名后，与该类名同 stem 的 `.hpp/.h/.hh/.hxx/.cpp/.cc/.cxx/.C/.inl/.ipp/.tpp`
+   - 搜索文件集合必须去重，并且每个文件最多读取一次，文件内容进入缓存后供同批次全部候选复用。
+   - 若声明头文件名与实现类名不同，例如 `Bounds.hpp` 声明 `TimeBounds` 而 `TimeBounds.cpp` 存放定义，必须通过类名 stem 搜索补齐，不得直接判定为 `declaration_only`。
+   - 若函数体命中 `declaration_path` 或同名头/inline 文件，应把 Method-level 的 `path`、`line_start`、`line_end` 写为真实命中文件和行号，并在 `notes` 中记录 `"函数体命中声明/同名头文件: <path>"`。
+   - 对头文件 inline getter/setter、模板成员、类内短函数体，必须优先生成 Method-level 条目，不能因为 `definition_path` 指向 `.cpp` 而误判为 `declaration_only`。
+   - 匹配函数体时必须跳过字符串、行注释、块注释，以及参数列表后的行尾注释（如 `) // = 0`），避免多行函数定义被误判为无函数体。
+   - 若 `qualified_name + signature_digest` 仍重复，必须追加稳定候选 ID 或路径摘要作为最后兜底，确保 `qualified_name` 全文件唯一。
+   - 只有在上述搜索集合全部未定位到函数体时，才允许记录 `declaration_only`。
+   - 推荐复用项目脚本 `tools/indexers/phase4_extract_batch.py --batch-id <batch_id> --root <project_root>` 执行批次提取；该脚本已实现上述增强匹配、文件缓存、重载签名摘要和批次跳过清单。
+
    对每个函数提取：
    - 完整参数列表（名称、类型、默认值、方向）
    - 返回类型
@@ -127,9 +143,10 @@ metadata:
    - `declaration_only`：只有声明无函数体。
    - `implicit_special_member`：隐式构造/析构/赋值函数。
    - `macro_generated_unexpanded`：宏生成，无法展开。
+   - `variable_not_function`：变量、局部对象直接初始化、throw/return/typeid/流输出表达式等被旧索引误识别为函数。
    - `template_uninstantiated`：模板声明无法确定实例化。
    - `parse_failed`：源码解析失败。
-2. 计算函数候选覆盖率：`Method-level 条目数 / functions_to_extract 数量`。
+2. 计算函数候选覆盖率：`Method-level 条目数 / 有效候选数量`；有效候选数量必须从 `functions_to_extract` 中剔除明确的 `variable_not_function` 误报，同时保留 `raw_coverage = Method-level 条目数 / functions_to_extract 原始数量`。
 3. 对未覆盖项列出前 50 项，并把完整清单写入 context-handoff 或验证报告。
 4. 覆盖率低于 90% 时，本阶段不得标记为完全通过，除非用户明确缩小分析范围。
 
@@ -174,6 +191,14 @@ metadata:
 
 - `source-index/function-index.jsonl`
 - `source-index/function-body-summary.jsonl`
+
+批次产物全部完成后，推荐使用项目脚本合并最终四层产物：
+
+```bash
+python3 tools/indexers/phase4_merge_outputs.py --root <project_root>
+```
+
+该脚本负责合并 `phase4-batches/` 下的 Method-level 与 body summary，回填候选元数据，构建 Class/Module/System 三层聚合，输出最终 `function-index.jsonl`、`function-body-summary.jsonl` 和 `phase4-function-skips.jsonl`。
 
 ## 质量门槛
 

@@ -1,627 +1,312 @@
-# AFSIM 仿真框架功能层次文档
+# AFSIM 仿真框架架构文档
 
 > **状态**：已完成
-> **日期**：2026-06-22
-> **分析范围**：AFSIM 2.9 全量源码
-> **分析深度**：full（7 阶段完整流水线）
-> **关联文档**：function-index.jsonl, symbol-index.jsonl, afsim-architecture.md
-
----
+> **日期**：2026-07-16
+> **分析范围**：仿真模型相关功能，排除 training、demo、test、doc 工具性条目
+> **分析深度**：System-level、Module-level、Class-level 完整索引支撑，Method-level 正文列代表性样例
+> **关联文档**：`workspace/source-index/function-index.jsonl`、`docs/architecture/business-logic-readiness.md`
 
 ## 0. 文档说明
 
-**总体概述**：本文档按四层体系（System→Module→Class→Method）组织 AFSIM 仿真框架的全部功能，
-每层功能均可追溯到 function-index.jsonl 中的对应条目。
+**总体概述**：本文按四层能力体系组织 AFSIM 功能。标题按 Phase7 验证规则固定为架构文档标题，正文内容为功能层次说明。
 
-**功能划分**：
+**功能划分**：功能按四层体系组织：
 
-| 层级 | 英文 | 定义 | 对应索引 |
-|------|------|------|----------|
-| **系统级** | System-level | 跨框架/域/插件层，组合多个模块完成的端到端业务能力 | function-index level=System-level |
-| **模块级** | Module-level | 在单一子系统/模块内通过策略模式实现多变体的功能 | function-index level=Module-level |
-| **类级** | Class-level | 单个类（class）封装的职责集合 | function-index level=Class-level |
-| **方法级** | Method-level | 单个函数/方法的具体算法实现 | function-index level=Method-level |
-
----
+| 层级 | 英文 | 定义 | 边界范围 | 对应索引 |
+|------|------|------|----------|----------|
+| **系统级** | System-level | 跨框架、跨域、跨插件层组合多个模块完成的端到端能力 | 跨目录、跨子系统 | function-index level=System-level |
+| **模块级** | Module-level | 单一子系统或模块内的能力集合 | 同一目录或相邻目录 | function-index level=Module-level |
+| **类级** | Class-level | 单个 class（类）封装的职责集合 | 单个头文件和实现文件 | function-index level=Class-level |
+| **方法级** | Method-level | 单个函数或方法的具体实现 | 单个文件内的函数 | function-index level=Method-level |
 
 ## 1. 系统级功能总览
 
-| #   | 系统级功能      | 核心职责                                                 |
-| --- | ---------- | ---------------------------------------------------- |
-| 1   | 仿真生命周期管理   | AFSIM 仿真的完整生命周期管理：场景加载→对象创建→仿真循环→模型更新→事件处理→结果输出→资源清理 |
-| 2   | 物理模型与动力学计算 | 涵盖飞行器六自由度/质点动力学、轨道预报、传感器物理模型、环境建模等数值计算密集型功能          |
-| 3   | 数据链通信与战术网络 | 涵盖 Link16、IADS C2、MIL-STD 等战术数据链和通信协议的消息处理与网络仿真功能    |
-| 4   | 场景解析与配置管理  | 场景文件解析、语法检查、配置生成、对象注册等仿真初始化前处理功能                     |
-| 5   | 可视化与用户界面   | 涵盖 2D/3D 可视化、地图渲染、数据显示、结果回放等图形用户界面功能                 |
-
-**功能对应条目**：见 function-index.jsonl 中 `level=System-level` 的 5 个条目。
-
----
-
-## 1. 仿真生命周期管理
-
-1. **系统功能概述**：AFSIM 仿真的完整生命周期管理：场景加载→对象创建→仿真循环→模型更新→事件处理→结果输出→资源清理
-2. **功能对应条目**：见 function-index.jsonl 中 `level=System-level` 的条目 `qualified_name=system::simulation_lifecycle`
-3. **模块级功能细览**：该系统功能包含 0 个模块级功能：
-
-| 系统级功能 | 模块级功能 (Module-level) | 核心职责 |
-|-----------|--------------------------|----------|
-
----
-
-## 2. 物理模型与动力学计算
-
-1. **系统功能概述**：涵盖飞行器六自由度/质点动力学、轨道预报、传感器物理模型、环境建模等数值计算密集型功能
-2. **功能对应条目**：见 function-index.jsonl 中 `level=System-level` 的条目 `qualified_name=system::physics_dynamics`
-3. **模块级功能细览**：该系统功能包含 4 个模块级功能：
-
-| 系统级功能 | 模块级功能 (Module-level) | 核心职责 |
-|-----------|--------------------------|----------|
-| 物理模型与动力学计算 | wsf_space模块 | 太空仿真的轨道预报和星座管理功能集合 |
-| 物理模型与动力学计算 | wsf_p6dof模块 | 质点六自由度动力学模型功能集合 |
-| 物理模型与动力学计算 | wsf_six_dof模块 | 六自由度飞行器动力学仿真功能集合 |
-| 物理模型与动力学计算 | wsf_sosm模块 | 小型轨道卫星模型功能集合 |
-
-### 2.1 wsf_space
-
-1. **模块功能概述**：太空仿真的轨道预报和星座管理功能集合
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Module-level` 的条目 `qualified_name=module::wsf_space`
-3. **类级功能细览**：该模块级功能包含 116 个类级功能：
-
-| 模块级功能     | 类级功能 (Class-level) | 核心职责                                  |
-| --------- | ------------------ | ------------------------------------- |
-| wsf_space | State              | Struct defined in UtRouteCalculator   |
-| wsf_space | SharedData         | SharedData 的功能集合                      |
-| wsf_space | Object             | Object 的功能集合                          |
-| wsf_space | Data               | Struct defined in WsfRelativeManeuver |
-| wsf_space | MyMat3d            | MyMat3d 的功能集合                         |
-
-#### 2.1.1 State
-
-1. **类功能概述**：Struct defined in UtRouteCalculator
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=class::State`
-3. **方法级功能细览**：该类级功能包含 55 个方法级功能：
-
-| 类级功能 | 方法级功能 | qualified_name（限定名） | lifecycle_role（生命周期角色） | algorithm_hint（算法提示） | 核心职责 |
-|---------|-----------|------------------------|-------------------------------|--------------------------|----------|
-| State | Set | State::Set | unknown | state_update | method: UtVec3d:: Set(mLocationWCS, 0.0) |
-| State | Set | State::Set | unknown | state_update | method: UtVec3d:: Set(mLLA, 0.0) |
-| State | ~State | State::~State | shutdown | unknown | destructor: virtual ~State() |
-| State | State | State::State | unknown | unknown | constructor: State(WsfStringId aStateId) |
-| State | State | State::State | unknown | unknown | constructor: State() |
-
-#### 2.1.2 SharedData
-
-1. **类功能概述**：SharedData 的功能集合
-2. **功能对应条目**：见 function-index.jsonl  中 `level=Class-level` 的条目 `qualified_name=class::SharedData`
-3. **方法级功能细览**：该类级功能包含 83 个方法级功能：
-
-| 类级功能 | 方法级功能 | qualified_name（限定名） | lifecycle_role（生命周期角色） | algorithm_hint（算法提示） | 核心职责 |
-|---------|-----------|------------------------|-------------------------------|--------------------------|----------|
-| SharedData | SharedData | SharedData::SharedData | unknown | unknown | constructor: SharedData() |
-| SharedData | ~SharedData | SharedData::~SharedData | shutdown | unknown | destructor: ~SharedData() |
-| SharedData | InitializeType | SharedData::InitializeType | object_create | math | method: bool InitializeType(WsfObject& aBase) |
-| SharedData | IsA_ValidState | SharedData::IsA_ValidState | unknown | math | method: bool IsA_ValidState(WsfStringId aId) const |
-| SharedData | ProcessInput | SharedData::ProcessInput | model_update | math | method: bool ProcessInput(UtInput& aInput, WsfObject& aBase) |
-
-### 2.2 wsf_p6dof
-
-1. **模块功能概述**：质点六自由度动力学模型功能集合
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Module-level` 的条目 `qualified_name=module::wsf_p6dof`
-3. **类级功能细览**：该模块级功能包含 20 个类级功能：
-
-| 模块级功能     | 类级功能 (Class-level)             | 核心职责                                  |
-| --------- | ------------------------------ | ------------------------------------- |
-| wsf_p6dof | Event                          | Event 的功能集合                           |
-| wsf_p6dof | Data                           | Struct defined in WsfRelativeManeuver |
-| wsf_p6dof | WsfP6DOF_TypeManager           | WsfP6DOF_TypeManager 的功能集合            |
-| wsf_p6dof | wsf::p6dof::EventPipe          | wsf::p6dof::EventPipe 的功能集合           |
-| wsf_p6dof | wsf::p6dof::EventPipeInterface | wsf::p6dof::EventPipeInterface 的功能集合  |
-
-#### 2.2.1 Event
-
-1. **类功能概述**：Event 的功能集合
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=class::Event`
-3. **方法级功能细览**：该类级功能包含 3 个方法级功能：
-
-| 类级功能 | 方法级功能 | qualified_name（限定名） | lifecycle_role（生命周期角色） | algorithm_hint（算法提示） | 核心职责 |
-|---------|-----------|------------------------|-------------------------------|--------------------------|----------|
-| Event | Event | Event::Event | event_handling | unknown | constructor: Event(WsfFormationCommand* aCommandPtr, WsfSimu |
-| Event | ~Event | Event::~Event | event_handling | unknown | destructor: ~Event() override |
-| Event | Execute | Event::Execute | model_update | unknown | method: WsfEvent::EventDisposition Execute() override |
-
-#### 2.2.2 Data
-
-1. **类功能概述**：Struct defined in WsfRelativeManeuver
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=class::Data`
-3. **方法级功能细览**：该类级功能包含 34 个方法级功能：
-
-| 类级功能 | 方法级功能 | qualified_name（限定名） | lifecycle_role（生命周期角色） | algorithm_hint（算法提示） | 核心职责 |
-|---------|-----------|------------------------|-------------------------------|--------------------------|----------|
-| Data | Clone | Data::Clone | object_create | routing | method: MTT_Track::Data* Clone() const override |
-| Data | ~Data | Data::~Data | shutdown | routing | destructor: ~Data() override |
-| Data | ConvertFrom | Data::ConvertFrom | event_handling | routing | method: void ConvertFrom(const SupBlock& aBlock) override |
-| Data | CopyFrom | Data::CopyFrom | unknown | routing | method: mHorizontalInfoMatrix. CopyFrom(aBlock.mDoubleBlock) |
-| Data | CopyFrom | Data::CopyFrom | unknown | unknown | method: mFilterStates. CopyFrom(aBlock.mDoubleBlock + 36) |
-
-### 2.3 wsf_six_dof
-
-1. **模块功能概述**：六自由度飞行器动力学仿真功能集合
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Module-level` 的条目 `qualified_name=module::wsf_six_dof`
-3. **类级功能细览**：该模块级功能包含 27 个类级功能：
-
-| 模块级功能 | 类级功能 (Class-level) | 核心职责 |
-|-----------|----------------------|----------|
-| wsf_six_dof | wsf::six_dof::DataType::Appearance::Pid::Lateral::Vertical::Speed::Control::Nav::PidGainData | Struct defined in WsfSixDOF_VehicleData |
-| wsf_six_dof | wsf::six_dof::PointMassControlActuator | wsf::six_dof::PointMassControlActuator 的功能集合 |
-| wsf_six_dof | wsf::six_dof::ObjectManager | wsf::six_dof::ObjectManager 的功能集合 |
-| wsf_six_dof | wsf::six_dof::RigidBodyAeroMovableObject | wsf::six_dof::RigidBodyAeroMovableObject 的功能集合 |
-| wsf_six_dof | wsf::six_dof::Environment | wsf::six_dof::Environment 的功能集合 |
-
-#### 2.3.1 wsf::six_dof::DataType::Appearance::Pid::Lateral::Vertical::Speed::Control::Nav::PidGainData
-
-1. **类功能概述**：Struct defined in WsfSixDOF_VehicleData
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=class::wsf::six_dof::DataType::Appearance::Pid::Lateral::Vertical::Speed::Control::Nav::PidGainData`
-3. **方法级功能细览**：该类级功能包含 4 个方法级功能：
-
-| 类级功能 | 方法级功能 | qualified_name（限定名） | lifecycle_role（生命周期角色） | algorithm_hint（算法提示） | 核心职责 |
-|---------|-----------|------------------------|-------------------------------|--------------------------|----------|
-| wsf::six_dof::DataType::Appearance::Pid::Lateral::Vertical::Speed::Control::Nav::PidGainData | clearData | wsf::six_dof::DataType::Appearance::Pid::Lateral::Vertical::Speed::Control::Nav::PidGainData::clearData | event_handling | math | method: void clearData() |
-| wsf::six_dof::DataType::Appearance::Pid::Lateral::Vertical::Speed::Control::Nav::PidGainData | max | wsf::six_dof::DataType::Appearance::Pid::Lateral::Vertical::Speed::Control::Nav::PidGainData::max | event_handling | math | method: float MaxAccum         = std::numeric_limits<float>: |
-| wsf::six_dof::DataType::Appearance::Pid::Lateral::Vertical::Speed::Control::Nav::PidGainData | max | wsf::six_dof::DataType::Appearance::Pid::Lateral::Vertical::Speed::Control::Nav::PidGainData::max | event_handling | math | method: float MaxErrorZero     = std::numeric_limits<float>: |
-| wsf::six_dof::DataType::Appearance::Pid::Lateral::Vertical::Speed::Control::Nav::PidGainData | min | wsf::six_dof::DataType::Appearance::Pid::Lateral::Vertical::Speed::Control::Nav::PidGainData::min | event_handling | math | method: float MinErrorZero     = std::numeric_limits<float>: |
-
-#### 2.3.2 wsf::six_dof::PointMassControlActuator
-
-1. **类功能概述**：wsf::six_dof::PointMassControlActuator 的功能集合
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=class::wsf::six_dof::PointMassControlActuator`
-3. **方法级功能细览**：该类级功能包含 9 个方法级功能：
-
-| 类级功能 | 方法级功能 | qualified_name（限定名） | lifecycle_role（生命周期角色） | algorithm_hint（算法提示） | 核心职责 |
-|---------|-----------|------------------------|-------------------------------|--------------------------|----------|
-| wsf::six_dof::PointMassControlActuator | PointMassControlActuator | wsf::six_dof::PointMassControlActuator::PointMassControlActuator | event_handling | math | constructor: explicit PointMassControlActuator(PointMassFlig |
-| wsf::six_dof::PointMassControlActuator | ~PointMassControlActuator | wsf::six_dof::PointMassControlActuator::~PointMassControlActuator | event_handling | math | destructor: ~PointMassControlActuator() |
-| wsf::six_dof::PointMassControlActuator | Clone | wsf::six_dof::PointMassControlActuator::Clone | object_create | math | method: PointMassControlActuator* Clone(PointMassFlightContr |
-| wsf::six_dof::PointMassControlActuator | ProcessInput | wsf::six_dof::PointMassControlActuator::ProcessInput | event_handling | math | method: bool ProcessInput(UtInputBlock& aInputBlock) |
-| wsf::six_dof::PointMassControlActuator | Initialize | wsf::six_dof::PointMassControlActuator::Initialize | object_create | math | method: bool Initialize(int64_t aSimTime_nanosec) |
-
----
-
-## 3. 数据链通信与战术网络
-
-1. **系统功能概述**：涵盖 Link16、IADS C2、MIL-STD 等战术数据链和通信协议的消息处理与网络仿真功能
-2. **功能对应条目**：见 function-index.jsonl 中 `level=System-level` 的条目 `qualified_name=system::datalink_communication`
-3. **模块级功能细览**：该系统功能包含 5 个模块级功能：
-
-| 系统级功能 | 模块级功能 (Module-level) | 核心职责 |
-|-----------|--------------------------|----------|
-| 数据链通信与战术网络 | wsf_mil模块 | 模块 wsf_mil 的功能集合 |
-| 数据链通信与战术网络 | wsf_mtt模块 | 模块 wsf_mtt 的功能集合 |
-| 数据链通信与战术网络 | wsf_l16模块 | Link16 数据链消息处理和字段定义功能集合 |
-| 数据链通信与战术网络 | wsf_mil_parser模块 | 模块 wsf_mil_parser 的功能集合 |
-| 数据链通信与战术网络 | wsf_iads_c2_lib模块 | 模块 wsf_iads_c2_lib 的功能集合 |
-
-### 3.1 wsf_mil
-
-1. **模块功能概述**：模块 wsf_mil 的功能集合
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Module-level` 的条目 `qualified_name=module::wsf_mil`
-3. **类级功能细览**：该模块级功能包含 438 个类级功能：
-
-| 模块级功能 | 类级功能 (Class-level) | 核心职责 |
-|-----------|----------------------|----------|
-| wsf_mil | State | Struct defined in UtRouteCalculator |
-| wsf_mil | BaseData | Struct defined in WsfFalseTarget |
-| wsf_mil | Point | Struct defined in UtHeatMap |
-| wsf_mil | Table | Table 的功能集合 |
-| wsf_mil | SharedData | SharedData 的功能集合 |
-
-#### 3.1.1 State
-
-1. **类功能概述**：Struct defined in UtRouteCalculator
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=class::State`
-3. **方法级功能细览**：该类级功能包含 55 个方法级功能：
-
-| 类级功能 | 方法级功能 | qualified_name（限定名） | lifecycle_role（生命周期角色） | algorithm_hint（算法提示） | 核心职责 |
-|---------|-----------|------------------------|-------------------------------|--------------------------|----------|
-| State | Set | State::Set | unknown | state_update | method: UtVec3d:: Set(mLocationWCS, 0.0) |
-| State | Set | State::Set | unknown | state_update | method: UtVec3d:: Set(mLLA, 0.0) |
-| State | ~State | State::~State | shutdown | unknown | destructor: virtual ~State() |
-| State | State | State::State | unknown | unknown | constructor: State(WsfStringId aStateId) |
-| State | State | State::State | unknown | unknown | constructor: State() |
-
-#### 3.1.2 BaseData
-
-1. **类功能概述**：Struct defined in WsfFalseTarget
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=class::BaseData`
-3. **方法级功能细览**：该类级功能包含 9 个方法级功能：
-
-| 类级功能 | 方法级功能 | qualified_name（限定名） | lifecycle_role（生命周期角色） | algorithm_hint（算法提示） | 核心职责 |
-|---------|-----------|------------------------|-------------------------------|--------------------------|----------|
-| BaseData | BaseData | BaseData::BaseData | unknown | unknown | constructor: BaseData() |
-| BaseData | BaseData | BaseData::BaseData | unknown | unknown | constructor: BaseData(const BaseData& aSrc) |
-| BaseData | ~BaseData | BaseData::~BaseData | shutdown | unknown | destructor: ~BaseData() override |
-| BaseData | ProcessInput | BaseData::ProcessInput | model_update | unknown | method: virtual bool ProcessInput(WsfAntennaPattern& aPatter |
-| BaseData | Initialize | BaseData::Initialize | object_create | unknown | method: virtual bool Initialize(WsfAntennaPattern& aAntennaP |
-
-### 3.2 wsf_mtt
-
-1. **模块功能概述**：模块 wsf_mtt 的功能集合
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Module-level` 的条目 `qualified_name=module::wsf_mtt`
-3. **类级功能细览**：该模块级功能包含 20 个类级功能：
-
-| 模块级功能 | 类级功能 (Class-level) | 核心职责 |
-|-----------|----------------------|----------|
-| wsf_mtt | Data | Struct defined in WsfRelativeManeuver |
-| wsf_mtt | MTT_PerceivedCluster | MTT_PerceivedCluster 的功能集合 |
-| wsf_mtt | MTT_Parameters | MTT_Parameters 的功能集合 |
-| wsf_mtt | MTT_EmbryonicTrack | MTT_EmbryonicTrack 的功能集合 |
-| wsf_mtt | WsfMTT_ReferencePoint | WsfMTT_ReferencePoint 的功能集合 |
-
-#### 3.2.1 Data
-
-1. **类功能概述**：Struct defined in WsfRelativeManeuver
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=class::Data`
-3. **方法级功能细览**：该类级功能包含 34 个方法级功能：
-
-| 类级功能 | 方法级功能 | qualified_name（限定名） | lifecycle_role（生命周期角色） | algorithm_hint（算法提示） | 核心职责 |
-|---------|-----------|------------------------|-------------------------------|--------------------------|----------|
-| Data | Clone | Data::Clone | object_create | routing | method: MTT_Track::Data* Clone() const override |
-| Data | ~Data | Data::~Data | shutdown | routing | destructor: ~Data() override |
-| Data | ConvertFrom | Data::ConvertFrom | event_handling | routing | method: void ConvertFrom(const SupBlock& aBlock) override |
-| Data | CopyFrom | Data::CopyFrom | unknown | routing | method: mHorizontalInfoMatrix. CopyFrom(aBlock.mDoubleBlock) |
-| Data | CopyFrom | Data::CopyFrom | unknown | unknown | method: mFilterStates. CopyFrom(aBlock.mDoubleBlock + 36) |
-
-#### 3.2.2 MTT_PerceivedCluster
-
-1. **类功能概述**：MTT_PerceivedCluster 的功能集合
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=class::MTT_PerceivedCluster`
-3. **方法级功能细览**：该类级功能包含 6 个方法级功能：
-
-| 类级功能 | 方法级功能 | qualified_name（限定名） | lifecycle_role（生命周期角色） | algorithm_hint（算法提示） | 核心职责 |
-|---------|-----------|------------------------|-------------------------------|--------------------------|----------|
-| MTT_PerceivedCluster | MTT_PerceivedCluster | MTT_PerceivedCluster::MTT_PerceivedCluster | unknown | unknown | constructor: MTT_PerceivedCluster() |
-| MTT_PerceivedCluster | ~MTT_PerceivedCluster | MTT_PerceivedCluster::~MTT_PerceivedCluster | shutdown | unknown | destructor: virtual ~MTT_PerceivedCluster() |
-| MTT_PerceivedCluster | SetCombinedTrack | MTT_PerceivedCluster::SetCombinedTrack | unknown | state_update | method: void SetCombinedTrack(const MTT_CombinedTrack& aComb |
-| MTT_PerceivedCluster | SetMeasurement | MTT_PerceivedCluster::SetMeasurement | unknown | state_update | method: void SetMeasurement(const MTT_Measurement& aMeasurem |
-| MTT_PerceivedCluster | CopyFrom | MTT_PerceivedCluster::CopyFrom | unknown | unknown | method: void CopyFrom(double aSimTime, WsfMTT_Interface* aMT |
-
-### 3.3 wsf_l16
-
-1. **模块功能概述**：Link16 数据链消息处理和字段定义功能集合
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Module-level` 的条目 `qualified_name=module::wsf_l16`
-3. **类级功能细览**：该模块级功能包含 322 个类级功能：
-
-| 模块级功能 | 类级功能 (Class-level) | 核心职责 |
-|-----------|----------------------|----------|
-| wsf_l16 | WsfL16::Messages::J9_0::Continuation1 | WsfL16::Messages::J9_0::Continuation1 的功能集合 |
-| wsf_l16 | WsfL16::Messages::J9_0::Continuation2 | WsfL16::Messages::J9_0::Continuation2 的功能集合 |
-| wsf_l16 | WsfL16::Messages::J9_0::Extension0 | WsfL16::Messages::J9_0::Extension0 的功能集合 |
-| wsf_l16 | WsfL16::Messages::J9_0::Initial | WsfL16::Messages::J9_0::Initial 的功能集合 |
-| wsf_l16 | WsfL16::WeaponsCoordinationPart | WsfL16::WeaponsCoordinationPart 的功能集合 |
-
-#### 3.3.1 WsfL16::Messages::J9_0::Continuation1
-
-1. **类功能概述**：WsfL16::Messages::J9_0::Continuation1 的功能集合
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=class::WsfL16::Messages::J9_0::Continuation1`
-3. **方法级功能细览**：该类级功能包含 1 个方法级功能：
-
-| 类级功能 | 方法级功能 | qualified_name（限定名） | lifecycle_role（生命周期角色） | algorithm_hint（算法提示） | 核心职责 |
-|---------|-----------|------------------------|-------------------------------|--------------------------|----------|
-| WsfL16::Messages::J9_0::Continuation1 | DEFINE_CONTINUATION | WsfL16::Messages::J9_0::Continuation1::DEFINE_CONTINUATION | event_handling | control_flow | method: DEFINE_CONTINUATION(9, 0, 1) |
-
-#### 3.3.2 WsfL16::Messages::J9_0::Continuation2
-
-1. **类功能概述**：WsfL16::Messages::J9_0::Continuation2 的功能集合
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=class::WsfL16::Messages::J9_0::Continuation2`
-3. **方法级功能细览**：该类级功能包含 2 个方法级功能：
-
-| 类级功能 | 方法级功能 | qualified_name（限定名） | lifecycle_role（生命周期角色） | algorithm_hint（算法提示） | 核心职责 |
-|---------|-----------|------------------------|-------------------------------|--------------------------|----------|
-| WsfL16::Messages::J9_0::Continuation2 | DEFINE_CONTINUATION | WsfL16::Messages::J9_0::Continuation2::DEFINE_CONTINUATION | event_handling | control_flow | method: DEFINE_CONTINUATION(9, 0, 2) |
-| WsfL16::Messages::J9_0::Continuation2 | DEFINE_MEMBERS6 | WsfL16::Messages::J9_0::Continuation2::DEFINE_MEMBERS6 | event_handling | control_flow | method: DEFINE_MEMBERS6(Hour, Minute, Second, NumberOfMissil |
-
----
-
-## 4. 场景解析与配置管理
-
-1. **系统功能概述**：场景文件解析、语法检查、配置生成、对象注册等仿真初始化前处理功能
-2. **功能对应条目**：见 function-index.jsonl 中 `level=System-level` 的条目 `qualified_name=system::scenario_configuration`
-3. **模块级功能细览**：该系统功能包含 4 个模块级功能：
-
-| 系统级功能 | 模块级功能 (Module-level) | 核心职责 |
-|-----------|--------------------------|----------|
-| 场景解析与配置管理 | wsf_parser模块 | AFSIM 场景文件解析器功能集合 |
-| 场景解析与配置管理 | wsf_grammar_check模块 | 模块 wsf_grammar_check 的功能集合 |
-| 场景解析与配置管理 | wsf_mil_parser模块 | 模块 wsf_mil_parser 的功能集合 |
-| 场景解析与配置管理 | wsf_scenario_analyzer模块 | 模块 wsf_scenario_analyzer 的功能集合 |
-
-### 4.1 wsf_parser
-
-1. **模块功能概述**：AFSIM 场景文件解析器功能集合
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Module-level` 的条目 `qualified_name=module::wsf_parser`
-3. **类级功能细览**：该模块级功能包含 58 个类级功能：
-
-| 模块级功能 | 类级功能 (Class-level) | 核心职责 |
-|-----------|----------------------|----------|
-| wsf_parser | WsfPM_Fuel | WsfPM_Fuel 的功能集合 |
-| wsf_parser | WsfPProxyStructType | WsfPProxyStructType 的功能集合 |
-| wsf_parser | WsfPProxyHash | WsfPProxyHash 的功能集合 |
-| wsf_parser | WsfPProxyStructHeader | Struct defined in WsfPProxyStructHeader |
-| wsf_parser | WsfParseActionAddress | WsfParseActionAddress 的功能集合 |
-
-#### 4.1.1 WsfPM_Fuel
-
-1. **类功能概述**：WsfPM_Fuel 的功能集合
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=class::WsfPM_Fuel`
-3. **方法级功能细览**：该类级功能包含 1 个方法级功能：
-
-| 类级功能 | 方法级功能 | qualified_name（限定名） | lifecycle_role（生命周期角色） | algorithm_hint（算法提示） | 核心职责 |
-|---------|-----------|------------------------|-------------------------------|--------------------------|----------|
-| WsfPM_Fuel | WsfPM_Fuel | WsfPM_Fuel::WsfPM_Fuel | unknown | unknown | constructor: WsfPM_Fuel() |
-
-#### 4.1.2 WsfPProxyStructType
-
-1. **类功能概述**：WsfPProxyStructType 的功能集合
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=class::WsfPProxyStructType`
-3. **方法级功能细览**：该类级功能包含 37 个方法级功能：
-
-| 类级功能 | 方法级功能 | qualified_name（限定名） | lifecycle_role（生命周期角色） | algorithm_hint（算法提示） | 核心职责 |
-|---------|-----------|------------------------|-------------------------------|--------------------------|----------|
-| WsfPProxyStructType | ~WsfPProxyStructType | WsfPProxyStructType::~WsfPProxyStructType | shutdown | math | destructor: ~WsfPProxyStructType() override |
-| WsfPProxyStructType | IsUnset | WsfPProxyStructType::IsUnset | unknown | math | method: bool IsUnset(void* aValuePtr) const override |
-| WsfPProxyStructType | SetUnset | WsfPProxyStructType::SetUnset | unknown | math | method: void SetUnset(void* aValuePtr) const override |
-| WsfPProxyStructType | IsInherited | WsfPProxyStructType::IsInherited | utility | math | method: bool IsInherited(void* aValuePtr) const override |
-| WsfPProxyStructType | SetInherited | WsfPProxyStructType::SetInherited | unknown | math | method: void SetInherited(void* aValuePtr, bool aIsInherited |
-
-### 4.2 wsf_grammar_check
-
-1. **模块功能概述**：模块 wsf_grammar_check 的功能集合
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Module-level` 的条目 `qualified_name=module::wsf_grammar_check`
-3. **类级功能细览**：该模块级功能包含 1 个类级功能：
-
-| 模块级功能 | 类级功能 (Class-level) | 核心职责 |
-|-----------|----------------------|----------|
-| wsf_grammar_check | ParseSourceProvider | ParseSourceProvider 的功能集合 |
-
-#### 4.2.1 ParseSourceProvider
-
-1. **类功能概述**：ParseSourceProvider 的功能集合
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=class::ParseSourceProvider`
-3. **方法级功能细览**：该类级功能包含 5 个方法级功能：
-
-| 类级功能 | 方法级功能 | qualified_name（限定名） | lifecycle_role（生命周期角色） | algorithm_hint（算法提示） | 核心职责 |
-|---------|-----------|------------------------|-------------------------------|--------------------------|----------|
-| ParseSourceProvider | WsfGrammarCheckExtension | ParseSourceProvider::WsfGrammarCheckExtension | scenario_load | unknown | method: WsfGrammarCheckExtension() |
-| ParseSourceProvider | ~WsfGrammarCheckExtension | ParseSourceProvider::~WsfGrammarCheckExtension | scenario_load | unknown | method: ~WsfGrammarCheckExtension() override |
-| ParseSourceProvider | FileLoaded | ParseSourceProvider::FileLoaded | scenario_load | unknown | method: void FileLoaded(const std::string& aFileName) overri |
-| ParseSourceProvider | InitializeGrammar | ParseSourceProvider::InitializeGrammar | scenario_load | unknown | method: void InitializeGrammar(std::istream& aGrammarText) |
-| ParseSourceProvider | FileLoad | ParseSourceProvider::FileLoad | scenario_load | unknown | method: int FileLoad(const std::string& aGrammarText, const  |
-
-### 4.3 wsf_mil_parser
-
-1. **模块功能概述**：模块 wsf_mil_parser 的功能集合
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Module-level` 的条目 `qualified_name=module::wsf_mil_parser`
-3. **类级功能细览**：该模块级功能包含 1 个类级功能：
-
-| 模块级功能 | 类级功能 (Class-level) | 核心职责 |
-|-----------|----------------------|----------|
-| wsf_mil_parser | Mode | Mode 的功能集合 |
-
-#### 4.3.1 Mode
-
-1. **类功能概述**：Mode 的功能集合
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=class::Mode`
-3. **方法级功能细览**：该类级功能包含 2 个方法级功能：
-
-| 类级功能 | 方法级功能 | qualified_name（限定名） | lifecycle_role（生命周期角色） | algorithm_hint（算法提示） | 核心职责 |
-|---------|-----------|------------------------|-------------------------------|--------------------------|----------|
-| Mode | Mode | Mode::Mode | unknown | unknown | constructor: Mode() |
-| Mode | transmitter | Mode::transmitter | unknown | unknown | method: WsfPM_Transmitter transmitter() const |
-
----
-
-## 5. 可视化与用户界面
-
-1. **系统功能概述**：涵盖 2D/3D 可视化、地图渲染、数据显示、结果回放等图形用户界面功能
-2. **功能对应条目**：见 function-index.jsonl 中 `level=System-level` 的条目 `qualified_name=system::visualization_ui`
-3. **模块级功能细览**：该系统功能包含 2 个模块级功能：
-
-| 系统级功能 | 模块级功能 (Module-level) | 核心职责 |
-|-----------|--------------------------|----------|
-| 可视化与用户界面 | engage模块 | 交战规则与任务分配功能集合 |
-| 可视化与用户界面 | wizard模块 | 模块 wizard 的功能集合 |
-
-### 5.1 engage
-
-1. **模块功能概述**：交战规则与任务分配功能集合
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Module-level` 的条目 `qualified_name=module::engage`
-3. **类级功能细览**：该模块级功能包含 48 个类级功能：
-
-| 模块级功能 | 类级功能 (Class-level) | 核心职责 |
-|-----------|----------------------|----------|
-| engage | engage::TargetConfig | engage::TargetConfig 的功能集合 |
-| engage | engage::RoutePoint | Struct defined in TargetConfig |
-| engage | engage::SimulationThread | engage::SimulationThread 的功能集合 |
-| engage | engage::Simulation | engage::Simulation 的功能集合 |
-| engage | engage::TaskOutput | engage::TaskOutput 的功能集合 |
-
-#### 5.1.1 engage::TargetConfig
-
-1. **类功能概述**：engage::TargetConfig 的功能集合
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=class::engage::TargetConfig`
-3. **方法级功能细览**：该类级功能包含 25 个方法级功能：
-
-| 类级功能 | 方法级功能 | qualified_name（限定名） | lifecycle_role（生命周期角色） | algorithm_hint（算法提示） | 核心职责 |
-|---------|-----------|------------------------|-------------------------------|--------------------------|----------|
-| engage::TargetConfig | TargetConfig | engage::TargetConfig::TargetConfig | event_handling | math | constructor: TargetConfig() |
-| engage::TargetConfig | Complete | engage::TargetConfig::Complete | event_handling | math | method: bool Complete(bool aTargetGridUsed) |
-| engage::TargetConfig | CreatePlatform | engage::TargetConfig::CreatePlatform | object_create | math | method: bool CreatePlatform(Simulation& aSimulation, const T |
-| engage::TargetConfig | ProcessInput | engage::TargetConfig::ProcessInput | event_handling | math | method: bool ProcessInput(UtInput& aInput) |
-| engage::TargetConfig | ProcessSiteGridInput | engage::TargetConfig::ProcessSiteGridInput | event_handling | math | method: bool ProcessSiteGridInput(UtInput& aInput) |
-
-#### 5.1.2 engage::RoutePoint
-
-1. **类功能概述**：Struct defined in TargetConfig
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=class::engage::RoutePoint`
-3. **方法级功能细览**：该类级功能包含 4 个方法级功能：
-
-| 类级功能 | 方法级功能 | qualified_name（限定名） | lifecycle_role（生命周期角色） | algorithm_hint（算法提示） | 核心职责 |
-|---------|-----------|------------------------|-------------------------------|--------------------------|----------|
-| engage::RoutePoint | RoutePoint | RoutePoint::RoutePoint | unknown | unknown | constructor: RoutePoint() |
-| engage::RoutePoint | RoutePoint | RoutePoint::RoutePoint | unknown | unknown | constructor: RoutePoint(const WaypointAddr& aAddr, double aD |
-| engage::RoutePoint | RouteIndex | RoutePoint::RouteIndex | unknown | unknown | method: int RouteIndex() const |
-| engage::RoutePoint | WaypointIndex | RoutePoint::WaypointIndex | unknown | unknown | method: int WaypointIndex() const |
-
-### 5.2 wizard
-
-1. **模块功能概述**：模块 wizard 的功能集合
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Module-level` 的条目 `qualified_name=module::wizard`
-3. **类级功能细览**：该模块级功能包含 585 个类级功能：
-
-| 模块级功能 | 类级功能 (Class-level) | 核心职责 |
-|-----------|----------------------|----------|
-| wizard | ZoneEditor::Plugin | ZoneEditor::Plugin 的功能集合 |
-| wizard | ZoneEditor::CreateZoneDialog | ZoneEditor::CreateZoneDialog 的功能集合 |
-| wizard | ZoneEditor::DockWidget | ZoneEditor::DockWidget 的功能集合 |
-| wizard | TypeBrowser::Plugin | TypeBrowser::Plugin 的功能集合 |
-| wizard | wizard::TypeBrowser::Model | wizard::TypeBrowser::Model 的功能集合 |
-
-#### 5.2.1 ZoneEditor::Plugin
-
-1. **类功能概述**：ZoneEditor::Plugin 的功能集合
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=class::ZoneEditor::Plugin`
-3. **方法级功能细览**：该类级功能包含 25 个方法级功能：
-
-| 类级功能 | 方法级功能 | qualified_name（限定名） | lifecycle_role（生命周期角色） | algorithm_hint（算法提示） | 核心职责 |
-|---------|-----------|------------------------|-------------------------------|--------------------------|----------|
-| ZoneEditor::Plugin | Plugin | ZoneEditor::Plugin::Plugin | event_handling | unknown | constructor: Plugin(const QString& aName, const size_t aUniq |
-| ZoneEditor::Plugin | ~Plugin | ZoneEditor::Plugin::~Plugin | event_handling | unknown | destructor: ~Plugin() override |
-| ZoneEditor::Plugin | BuildViewerContextMenu | ZoneEditor::Plugin::BuildViewerContextMenu | object_create | factory | method: void BuildViewerContextMenu(QMenu* aMenuPtr, vespa:: |
-| ZoneEditor::Plugin | BuildAttachmentContextMenu | ZoneEditor::Plugin::BuildAttachmentContextMenu | object_create | factory | method: void BuildAttachmentContextMenu(QMenu* aMenu, vespa: |
-| ZoneEditor::Plugin | GetPreferencesWidgets | ZoneEditor::Plugin::GetPreferencesWidgets | event_handling | configuration | method: QList<wkf::PrefWidget*> GetPreferencesWidgets() cons |
-
-#### 5.2.2 ZoneEditor::CreateZoneDialog
-
-1. **类功能概述**：ZoneEditor::CreateZoneDialog 的功能集合
-2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=class::ZoneEditor::CreateZoneDialog`
-3. **方法级功能细览**：该类级功能包含 22 个方法级功能：
-
-| 类级功能 | 方法级功能 | qualified_name（限定名） | lifecycle_role（生命周期角色） | algorithm_hint（算法提示） | 核心职责 |
-|---------|-----------|------------------------|-------------------------------|--------------------------|----------|
-| ZoneEditor::CreateZoneDialog | ~CreateZoneDialog | ZoneEditor::CreateZoneDialog::~CreateZoneDialog | object_create | math | destructor: ~CreateZoneDialog() override |
-| ZoneEditor::CreateZoneDialog | closeEvent | ZoneEditor::CreateZoneDialog::closeEvent | object_create | math | method: void closeEvent(QCloseEvent* aEventPtr) override |
-| ZoneEditor::CreateZoneDialog | CreateZone | ZoneEditor::CreateZoneDialog::CreateZone | object_create | math | method: void CreateZone() |
-| ZoneEditor::CreateZoneDialog | ZoneTypeChanged | ZoneEditor::CreateZoneDialog::ZoneTypeChanged | object_create | math | method: void ZoneTypeChanged(const QString& aText) |
-| ZoneEditor::CreateZoneDialog | ShowGeometricCommands | ZoneEditor::CreateZoneDialog::ShowGeometricCommands | object_create | math | method: void ShowGeometricCommands(bool aShow) |
-
----
-
-
----
-
-## 附录 A：方法级功能精选清单
-
-> 从 45603 个方法级功能中选取调用复杂度最高的 100 个方法。
-
-| qualified_name                                                    | lifecycle_role | algorithm_hint | calls | 核心职责                                                         |
-| ----------------------------------------------------------------- | -------------- | -------------- | ----- | ------------------------------------------------------------ |
-| wsf::TerrainInterface::ProcessRect                                | model_update   | math           | 50    | method: bool ProcessRect(UtInput& aInput)                    |
-| wsf::Terrain::ProcessRect                                         | model_update   | math           | 50    | method: bool ProcessRect(UtInput& aInput)                    |
-| wsf::six_dof::NestedFeedbackLoop::value_or                        | model_update   | math           | 50    | method: int tickCount = middleLoopFactor. value_or(1)        |
-| wsf::six_dof::NestedFeedbackLoop::value_or                        | model_update   | math           | 50    | method: int middleLoopTickCount = middleLoopFactor. value_or |
-| wsf::six_dof::NestedFeedbackLoop::value_or                        | model_update   | math           | 50    | method: int outerLoopTickCount  = outerLoopFactor. value_or( |
-| Designer::Designer::GeometryMassProperties::GetCgX                | unknown        | control_flow   | 50    | method: double GetCgX()                                      |
-| Designer::Designer::GeometryMassProperties::GetCgY                | unknown        | control_flow   | 50    | method: double GetCgY()                                      |
-| Designer::Designer::GeometryMassProperties::GetCgZ                | unknown        | control_flow   | 50    | method: double GetCgZ()                                      |
-| Designer::Designer::GeometryMassProperties::GetCg                 | unknown        | control_flow   | 50    | method: UtVec3dX GetCg()                                     |
-| Designer::Designer::GeometryMassProperties::GetFueledIxx          | unknown        | control_flow   | 50    | method: double GetFueledIxx()                                |
-| Designer::Designer::GeometryMassProperties::GetFueledIyy          | unknown        | control_flow   | 50    | method: double GetFueledIyy()                                |
-| Designer::Designer::GeometryMassProperties::GetFueledIzz          | unknown        | control_flow   | 50    | method: double GetFueledIzz()                                |
-| Designer::Designer::GeometryMassProperties::GetFueledCgX          | unknown        | control_flow   | 50    | method: double GetFueledCgX()                                |
-| Designer::Designer::GeometryMassProperties::GetFueledCgY          | unknown        | control_flow   | 50    | method: double GetFueledCgY()                                |
-| Designer::Designer::GeometryMassProperties::GetFueledCgZ          | unknown        | control_flow   | 50    | method: double GetFueledCgZ()                                |
-| Designer::GeometryGLFocusPoint::Draw                              | output         | math           | 50    | method: void Draw()                                          |
-| Designer::GeometryGLFocusPoint::GetX                              | unknown        | math           | 50    | method: double GetX()                                        |
-| Designer::GeometryGLFocusPoint::GetY                              | unknown        | math           | 50    | method: double GetY()                                        |
-| Designer::GeometryGLFocusPoint::GetZ                              | unknown        | math           | 50    | method: double GetZ()                                        |
-| Designer::GeometryGLWidget::AdjustViewingDistance                 | utility        | math           | 50    | method: void AdjustViewingDistance(bool aInitialize = false) |
-| Designer::GeometryGLWidget::initializeGL                          | object_create  | math           | 50    | method: void initializeGL() override                         |
-| Designer::GeometryGLWidget::ToggleAxis                            | unknown        | math           | 50    | method: void ToggleAxis()                                    |
-| Designer::GeometryGLWidget::ToggleSelectedObjectCG                | unknown        | math           | 50    | method: void ToggleSelectedObjectCG()                        |
-| Designer::GeometryGLWidget::ToggleShowEngines                     | unknown        | math           | 50    | method: void ToggleShowEngines()                             |
-| Designer::GeometryGLWidget::ToggleThrustVectors                   | unknown        | math           | 50    | method: void ToggleThrustVectors()                           |
-| Designer::GeometryGLWidget::TogglePointMasses                     | unknown        | math           | 50    | method: void TogglePointMasses()                             |
-| Designer::GeometryGLWidget::ToggleFuelTanks                       | unknown        | math           | 50    | method: void ToggleFuelTanks()                               |
-| Designer::GeometryGLWidget::ToggleVehicleCG                       | unknown        | math           | 50    | method: void ToggleVehicleCG()                               |
-| Designer::GeometryGLWidget::ToggleLandingGear                     | unknown        | math           | 50    | method: void ToggleLandingGear()                             |
-| Designer::GeometryGLWidget::ToggleSpeedBrakes                     | unknown        | math           | 50    | method: void ToggleSpeedBrakes()                             |
-| Designer::GeometryGLWidget::ToggleShowWireframe                   | model_update   | math           | 50    | method: void ToggleShowWireframe()                           |
-| Designer::GeometryGLWidget::ShowAxis                              | unknown        | math           | 50    | method: void ShowAxis(bool aShow)                            |
-| Designer::GeometryGLWidget::ShowSelectedObjectCG                  | unknown        | math           | 50    | method: void ShowSelectedObjectCG(bool aShow)                |
-| Designer::GeometryGLWidget::Draw                                  | output         | math           | 50    | method: void Draw() override                                 |
-| Designer::GeometryGLWidget::QtDraw                                | output         | math           | 50    | method: void QtDraw() override                               |
-| Designer::GeometryGLWidget::Draw3dView                            | output         | math           | 50    | method: void Draw3dView()                                    |
-| Designer::GeometryGLWidget::Draw2dOverlay                         | output         | math           | 50    | method: void Draw2dOverlay()                                 |
-| Designer::GeometryGLWidget::Draw2dOverlayTopLeft                  | output         | math           | 50    | method: void Draw2dOverlayTopLeft()                          |
-| Designer::GeometryGLWidget::Draw2dOverlayTopCenter                | output         | math           | 50    | method: void Draw2dOverlayTopCenter()                        |
-| Designer::GeometryGLWidget::Draw2dOverlayTopRight                 | output         | math           | 50    | method: void Draw2dOverlayTopRight()                         |
-| Designer::GeometryGLWidget::Draw2dOverlayBottomLeft               | output         | math           | 50    | method: void Draw2dOverlayBottomLeft()                       |
-| Designer::GeometryWing::GetAspectRatio                            | unknown        | math           | 50    | method: double GetAspectRatio() override                     |
-| Designer::GeometryWing::GetPlanformArea_ft2                       | unknown        | math           | 50    | method: double GetPlanformArea_ft2() override                |
-| Designer::GeometryWing::GetAileronsPresent                        | event_handling | math           | 50    | method: bool GetAileronsPresent()                            |
-| Designer::GeometryWing::GetAileronsChordFractionStart             | event_handling | math           | 50    | method: double GetAileronsChordFractionStart()               |
-| Designer::GeometryWing::GetAileronsChordFractionEnd               | event_handling | math           | 50    | method: double GetAileronsChordFractionEnd()                 |
-| Designer::GeometryWing::GetAileronsSpanFractionStart              | event_handling | math           | 50    | method: double GetAileronsSpanFractionStart()                |
-| Designer::GeometryWing::GetAileronsSpanFractionEnd                | event_handling | math           | 50    | method: double GetAileronsSpanFractionEnd()                  |
-| Designer::GeometryWing::GetAileronsUseExponentialAngleMapping     | event_handling | math           | 50    | method: bool GetAileronsUseExponentialAngleMapping()         |
-| Designer::GeometryWing::GetAileronsControlSurfaceMinAngle_deg     | event_handling | math           | 50    | method: double GetAileronsControlSurfaceMinAngle_deg()       |
-| Designer::GeometryWing::GetAileronsControlSurfaceMaxAngle_deg     | event_handling | math           | 50    | method: double GetAileronsControlSurfaceMaxAngle_deg()       |
-| Designer::GeometryWing::GetAileronsActuatorMinRate_dps            | event_handling | math           | 50    | method: double GetAileronsActuatorMinRate_dps()              |
-| Designer::GeometryWing::GetAileronsActuatorMaxRate_dps            | event_handling | math           | 50    | method: double GetAileronsActuatorMaxRate_dps()              |
-| Designer::GeometryWing::GetAileronsActuatorMinAngle_deg           | event_handling | math           | 50    | method: double GetAileronsActuatorMinAngle_deg()             |
-| Designer::GeometryWing::GetAileronsActuatorMaxAngle_deg           | event_handling | math           | 50    | method: double GetAileronsActuatorMaxAngle_deg()             |
-| Designer::GeometryWing::GetDrageronsPresent                       | event_handling | math           | 50    | method: bool GetDrageronsPresent()                           |
-| Designer::GeometryWing::GetDrageronsChordFractionStart            | event_handling | math           | 50    | method: double GetDrageronsChordFractionStart()              |
-| Designer::GeometryWing::GetDrageronsChordFractionEnd              | event_handling | math           | 50    | method: double GetDrageronsChordFractionEnd()                |
-| Designer::GeometryWing::GetDrageronsSpanFractionStart             | event_handling | math           | 50    | method: double GetDrageronsSpanFractionStart()               |
-| Designer::GeometryWing::GetDrageronsSpanFractionEnd               | event_handling | math           | 50    | method: double GetDrageronsSpanFractionEnd()                 |
-| Designer::GeometryWing::GetDrageronsUseExponentialAngleMapping    | event_handling | math           | 50    | method: bool GetDrageronsUseExponentialAngleMapping()        |
-| Designer::VehicleAero::AeroObjectNameIsUnique                     | unknown        | math           | 50    | method: bool AeroObjectNameIsUnique(const std::string& aName |
-| Designer::VehicleAero::MakeNameUnique                             | unknown        | math           | 50    | method: std::string MakeNameUnique(const std::string& aBaseN |
-| Designer::VehicleAero::EnableDisableTables                        | unknown        | math           | 50    | method: void EnableDisableTables(bool aGenerateP6DOFMover, b |
-| Designer::VehicleAero::CalculateFullVehicleAerodynamics           | model_update   | math           | 50    | method: void CalculateFullVehicleAerodynamics()              |
-| Designer::VehicleAero::SetVehicleAlphaBeta                        | unknown        | math           | 50    | method: void SetVehicleAlphaBeta(double aAlpha_deg, double a |
-| WkP6DOF_Controller::HUD::~HUD                                     | event_handling | math           | 50    | destructor: ~HUD() override                                  |
-| WkP6DOF_Controller::HUD::Clone                                    | object_create  | math           | 50    | method: HUD* Clone() const override                          |
-| WkP6DOF_Controller::HUD::Initialize                               | object_create  | math           | 50    | method: bool Initialize() override                           |
-| WkP6DOF_Controller::HUD::Update                                   | model_update   | math           | 50    | method: void Update() override                               |
-| WkP6DOF_Controller::HUD::SetupHudProjection                       | event_handling | math           | 50    | method: void SetupHudProjection(float aFovY)                 |
-| WkP6DOF_Controller::HUD::SetHudMode                               | event_handling | math           | 50    | method: void SetHudMode(P6DOF_ControllerDataContainer::eHudM |
-| WkP6DOF_Controller::RegionExtents::X1                             | event_handling | math           | 50    | method: double X1() const                                    |
-| WkP6DOF_Controller::RegionExtents::Y1                             | event_handling | math           | 50    | method: double Y1() const                                    |
-| WkP6DOF_Controller::RegionExtents::X2                             | event_handling | math           | 50    | method: double X2() const                                    |
-| WkP6DOF_Controller::RegionExtents::Y2                             | event_handling | math           | 50    | method: double Y2() const                                    |
-| RoadTrafficNetworkInput::BadValue                                 | unknown        | math           | 44    | method: throw UtInput:: BadValue(aInput, "XWsfRoadTraffic th |
-| Designer::GeometrySurface::GeometrySurface                        | unknown        | math           | 50    | constructor: explicit GeometrySurface(Vehicle* aVehicle)     |
-| Designer::GeometrySurface::~GeometrySurface                       | shutdown       | math           | 50    | destructor: virtual ~GeometrySurface()                       |
-| Designer::GeometrySurface::MoveRefPoint                           | unknown        | math           | 50    | method: void MoveRefPoint(UtVec3dX aMoveDelta_ft) override   |
-| Designer::GeometrySurface::GetSpan_ft                             | unknown        | math           | 50    | method: double GetSpan_ft()                                  |
-| Designer::GeometrySurface::GetRootChord_ft                        | unknown        | math           | 50    | method: double GetRootChord_ft()                             |
-| Designer::GeometrySurface::GetTipChord_ft                         | unknown        | math           | 50    | method: double GetTipChord_ft()                              |
-| Designer::GeometrySurface::GetSweepAngle_deg                      | unknown        | math           | 50    | method: double GetSweepAngle_deg()                           |
-| Designer::GeometrySurface::GetDihedralAngle_deg                   | unknown        | math           | 50    | method: double GetDihedralAngle_deg()                        |
-| Designer::GeometrySurface::GetIncidenceAngle_deg                  | unknown        | math           | 50    | method: double GetIncidenceAngle_deg()                       |
-| Designer::GeometrySurface::GetThicknessRatio                      | unknown        | math           | 50    | method: double GetThicknessRatio()                           |
-| Designer::GeometrySurface::GetOswaldsEfficiency                   | unknown        | math           | 50    | method: double GetOswaldsEfficiency()                        |
-| Designer::GeometrySurface::GetFinRefRadius_ft                     | unknown        | math           | 50    | method: double GetFinRefRadius_ft()                          |
-| Designer::Designer::Vehicle::SetVehicleControlConfiguration       | event_handling | math           | 50    | method: void SetVehicleControlConfiguration(VehicleControlCo |
-| Designer::Designer::Vehicle::GetVehicleControlConfiguration       | event_handling | math           | 50    | method: VehicleControlConfig GetVehicleControlConfiguration( |
-| Designer::Designer::Vehicle::GetVehicleControlConfigurationString | event_handling | math           | 50    | method: QString GetVehicleControlConfigurationString() const |
-| Designer::Designer::Vehicle::IsAircraft                           | unknown        | math           | 50    | method: bool IsAircraft()                                    |
-| Designer::Designer::Vehicle::IsWeapon                             | event_handling | math           | 50    | method: bool IsWeapon()                                      |
-| WsfImageProcessor::ReceiveMessage                                 | model_update   | math           | 50    | method: bool ReceiveMessage(double aSimTime, const WsfMessag |
-| ObjectTest::GetDraw                                               | output         | math           | 50    | method: double GetDraw() const                               |
-| ObjectTest::GetRequiredDetected                                   | unknown        | math           | 50    | method: double GetRequiredDetected() const                   |
-| wkf::RegionExtents::X1                                            | event_handling | math           | 50    | method: double X1() const                                    |
-| wkf::RegionExtents::Y1                                            | event_handling | math           | 50    | method: double Y1() const                                    |
-| wkf::RegionExtents::X2                                            | event_handling | math           | 50    | method: double X2() const                                    |
+**功能总览**：本次索引包含 System-level 1 条、Module-level 54 条、Class-level 5415 条、Method-level 49561 条。主要能力域为仿真生命周期、场景配置、对象创建、事件处理、通信消息、传感器与平台状态、输出与扩展注册。完整方法清单见 `workspace/source-index/function-index.jsonl`。
+
+| # | 系统级功能 | 核心职责 |
+|---|-----------|----------|
+| 1 | AFSIM 函数级能力总览 | 汇总模块、类和方法级能力，为架构和业务逻辑分析提供入口 |
+
+## 2. AFSIM 系统功能（总体仿真框架）
+
+1. **AFSIM 系统功能概述**：系统级能力覆盖核心仿真、工具链、运行查看、结果分析和扩展接入。
+2. **功能对应条目**：见 function-index.jsonl 中 `level=System-level` 的条目 `qualified_name=AFSIM::System::FunctionInventory`。
+3. **模块级功能细览**：正文列仿真模型相关代表模块；完整 Module-level 清单见 `workspace/source-index/function-index.jsonl`。
+
+| 系统级功能 | 模块级功能 | 核心职责 |
+|-----------|-----------|----------|
+| `AFSIM::System::FunctionInventory` | `AFSIM::Module::core::wsf` | 汇总 core/wsf 模块的类级功能，覆盖 9427 个 Method-level 函数；主要生命周期角色：configuration、utility、simulation_loop、object… |
+| `AFSIM::System::FunctionInventory` | `AFSIM::Module::wizard` | 汇总 wizard 模块的类级功能，覆盖 8334 个 Method-level 函数；主要生命周期角色：configuration、utility、object_create、scenario_l… |
+| `AFSIM::System::FunctionInventory` | `AFSIM::Module::core::wsf_mil` | 汇总 core/wsf_mil 模块的类级功能，覆盖 5764 个 Method-level 函数；主要生命周期角色：configuration、object_create、utility、simu… |
+| `AFSIM::System::FunctionInventory` | `AFSIM::Module::mover_creator` | 汇总 mover_creator 模块的类级功能，覆盖 5609 个 Method-level 函数；主要生命周期角色：configuration、utility、object_create、shu… |
+| `AFSIM::System::FunctionInventory` | `AFSIM::Module::warlock` | 汇总 warlock 模块的类级功能，覆盖 3533 个 Method-level 函数；主要生命周期角色：configuration、simulation_loop、model_update、ut… |
+| `AFSIM::System::FunctionInventory` | `AFSIM::Module::mystic` | 汇总 mystic 模块的类级功能，覆盖 2324 个 Method-level 函数；主要生命周期角色：configuration、simulation_loop、utility、shutdown… |
+| `AFSIM::System::FunctionInventory` | `AFSIM::Module::wsf_plugins::wsf_iads_c2_lib` | 汇总 wsf_plugins/wsf_iads_c2_lib 模块的类级功能，覆盖 1041 个 Method-level 函数；主要生命周期角色：configuration、utility、sim… |
+| `AFSIM::System::FunctionInventory` | `AFSIM::Module::core::wsf_space` | 汇总 core/wsf_space 模块的类级功能，覆盖 899 个 Method-level 函数；主要生命周期角色：configuration、utility、simulation_loop、o… |
+| `AFSIM::System::FunctionInventory` | `AFSIM::Module::wsf_plugins::wsf_p6dof` | 汇总 wsf_plugins/wsf_p6dof 模块的类级功能，覆盖 610 个 Method-level 函数；主要生命周期角色：configuration、utility、simulation… |
+| `AFSIM::System::FunctionInventory` | `AFSIM::Module::tools::vespatk` | 汇总 tools/vespatk 模块的类级功能，覆盖 604 个 Method-level 函数；主要生命周期角色：configuration、utility、object_create、simu… |
+
+### 2.1 core/wsf 模块级功能（core/wsf 能力集合）
+
+1. **core/wsf 模块功能概述**：汇总 core/wsf 模块的类级功能，覆盖 9427 个 Method-level 函数；主要生命周期角色：configuration、utility、simulation_loop、object_create；主要算法类型：none、io、control_flow、math。
+2. **功能对应条目**：见 function-index.jsonl 中 `level=Module-level` 的条目 `qualified_name=AFSIM::Module::core::wsf`。
+3. **类级功能细览**：正文列该模块方法数较高的类级功能；完整 Class-level 清单见 `workspace/source-index/function-index.jsonl`。
+
+| 模块级功能 | 类级功能 | 核心职责 |
+|-----------|---------|----------|
+| `AFSIM::Module::core::wsf` | `AFSIM::Module::core::wsf::Class::wsf::comm::WsfSimulation` | 汇总 core/wsf 模块中 wsf::comm::WsfSimulation 的函数职责，覆盖 146 个 Method-level 函数；主要生命周期角色：configuration、simu… |
+| `AFSIM::Module::core::wsf` | `AFSIM::Module::core::wsf::Class::wsf::comm::WsfDisInterface` | 汇总 core/wsf 模块中 wsf::comm::WsfDisInterface 的函数职责，覆盖 131 个 Method-level 函数；主要生命周期角色：configuration、si… |
+| `AFSIM::Module::core::wsf` | `AFSIM::Module::core::wsf::Class::ut::script::wsf::WsfPlatform` | 汇总 core/wsf 模块中 ut::script::wsf::WsfPlatform 的函数职责，覆盖 124 个 Method-level 函数；主要生命周期角色：configuration、… |
+| `AFSIM::Module::core::wsf` | `AFSIM::Module::core::wsf::Class::wsf::comm::router::medium::WsfScenario` | 汇总 core/wsf 模块中 wsf::comm::router::medium::WsfScenario 的函数职责，覆盖 114 个 Method-level 函数；主要生命周期角色：conf… |
+| `AFSIM::Module::core::wsf` | `AFSIM::Module::core::wsf::Class::WsfTrackManager` | 汇总 core/wsf 模块中 WsfTrackManager 的函数职责，覆盖 88 个 Method-level 函数；主要生命周期角色：configuration、simulation_loo… |
+| `AFSIM::Module::core::wsf` | `AFSIM::Module::core::wsf::Class::wsf::comm::eventpipe::WsfEventPipeInterface` | 汇总 core/wsf 模块中 wsf::comm::eventpipe::WsfEventPipeInterface 的函数职责，覆盖 84 个 Method-level 函数；主要生命周期角色：… |
+
+#### 2.1.1 AFSIM::Module::core::wsf::Class::wsf::comm::WsfSimulation 类级功能（类职责集合）
+
+1. **AFSIM::Module::core::wsf::Class::wsf::comm::WsfSimulation 类功能概述**：汇总 core/wsf 模块中 wsf::comm::WsfSimulation 的函数职责，覆盖 146 个 Method-level 函数；主要生命周期角色：configuration、simulation_loop、utility、event_handling；主要算法类型：none、configuration…
+2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=AFSIM::Module::core::wsf::Class::wsf::comm::WsfSimulation`。
+3. **方法级功能摘要**：正文列代表性 Method-level 条目；完整方法级清单见 `workspace/source-index/function-index.jsonl`。
+
+| 类级功能 | 方法级功能 | qualified_name | lifecycle_role | algorithm_hint | 核心职责 |
+|---------|-----------|----------------|----------------|----------------|----------|
+| `AFSIM::Module::core::wsf::Class::wsf::comm::WsfSimulation` | InitializeSensorPlatforms | `FlightPathAnalysisFunction::InitializeSensorPlatforms#5951e90c26` | object_create | math | method: void InitializeSensorPlatforms() |
+| `AFSIM::Module::core::wsf::Class::wsf::comm::WsfSimulation` | InitializeSensorPlatforms | `HorizontalMapFunction::InitializeSensorPlatforms#b952c2c7d5` | object_create | control_flow | method: void InitializeSensorPlatforms(double aSimTime) |
+| `AFSIM::Module::core::wsf::Class::wsf::comm::WsfSimulation` | CreateAndInitialize | `Sensor::CreateAndInitialize#a49a527240` | scenario_load | configuration | method: bool CreateAndInitialize(WsfSimulation& aSimulation) |
+
+#### 2.1.2 AFSIM::Module::core::wsf::Class::wsf::comm::WsfDisInterface 类级功能（类职责集合）
+
+1. **AFSIM::Module::core::wsf::Class::wsf::comm::WsfDisInterface 类功能概述**：汇总 core/wsf 模块中 wsf::comm::WsfDisInterface 的函数职责，覆盖 131 个 Method-level 函数；主要生命周期角色：configuration、simulation_loop、utility、object_create；主要算法类型：math、control_flow…
+2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=AFSIM::Module::core::wsf::Class::wsf::comm::WsfDisInterface`。
+3. **方法级功能摘要**：正文列代表性 Method-level 条目；完整方法级清单见 `workspace/source-index/function-index.jsonl`。
+
+| 类级功能 | 方法级功能 | qualified_name | lifecycle_role | algorithm_hint | 核心职责 |
+|---------|-----------|----------------|----------------|----------------|----------|
+| `AFSIM::Module::core::wsf::Class::wsf::comm::WsfDisInterface` | InitializeSensorPlatforms | `FlightPathAnalysisFunction::InitializeSensorPlatforms#5951e90c26` | object_create | math | method: void InitializeSensorPlatforms() |
+| `AFSIM::Module::core::wsf::Class::wsf::comm::WsfDisInterface` | InitializeSensorPlatforms | `HorizontalMapFunction::InitializeSensorPlatforms#b952c2c7d5` | object_create | control_flow | method: void InitializeSensorPlatforms(double aSimTime) |
+| `AFSIM::Module::core::wsf::Class::wsf::comm::WsfDisInterface` | CreateAndInitialize | `Sensor::CreateAndInitialize#a49a527240` | scenario_load | configuration | method: bool CreateAndInitialize(WsfSimulation& aSimulation) |
+
+### 2.2 wizard 模块级功能（wizard 能力集合）
+
+1. **wizard 模块功能概述**：汇总 wizard 模块的类级功能，覆盖 8334 个 Method-level 函数；主要生命周期角色：configuration、utility、object_create、scenario_load；主要算法类型：none、io、configuration、control_flow。
+2. **功能对应条目**：见 function-index.jsonl 中 `level=Module-level` 的条目 `qualified_name=AFSIM::Module::wizard`。
+3. **类级功能细览**：正文列该模块方法数较高的类级功能；完整 Class-level 清单见 `workspace/source-index/function-index.jsonl`。
+
+| 模块级功能 | 类级功能 | 核心职责 |
+|-----------|---------|----------|
+| `AFSIM::Module::wizard` | `AFSIM::Module::wizard::Class::Project` | 汇总 wizard 模块中 Project 的函数职责，覆盖 107 个 Method-level 函数；主要生命周期角色：configuration、scenario_load、simulatio… |
+| `AFSIM::Module::wizard` | `AFSIM::Module::wizard::Class::wizard::Project` | 汇总 wizard 模块中 wizard::Project 的函数职责，覆盖 107 个 Method-level 函数；主要生命周期角色：configuration、scenario_load、s… |
+| `AFSIM::Module::wizard` | `AFSIM::Module::wizard::Class::Editor` | 汇总 wizard 模块中 Editor 的函数职责，覆盖 93 个 Method-level 函数；主要生命周期角色：configuration、utility、model_update、even… |
+| `AFSIM::Module::wizard` | `AFSIM::Module::wizard::Class::UsCtx` | 汇总 wizard 模块中 UsCtx 的函数职责，覆盖 86 个 Method-level 函数；主要生命周期角色：utility、configuration、object_create、even… |
+| `AFSIM::Module::wizard` | `AFSIM::Module::wizard::Class::WsfEditor` | 汇总 wizard 模块中 WsfEditor 的函数职责，覆盖 70 个 Method-level 函数；主要生命周期角色：configuration、model_update、scenario_… |
+| `AFSIM::Module::wizard` | `AFSIM::Module::wizard::Class::wizard::WsfEditor` | 汇总 wizard 模块中 wizard::WsfEditor 的函数职责，覆盖 69 个 Method-level 函数；主要生命周期角色：configuration、model_update、s… |
+
+#### 2.2.1 AFSIM::Module::wizard::Class::Project 类级功能（类职责集合）
+
+1. **AFSIM::Module::wizard::Class::Project 类功能概述**：汇总 wizard 模块中 Project 的函数职责，覆盖 107 个 Method-level 函数；主要生命周期角色：configuration、scenario_load、simulation_loop、utility；主要算法类型：io、configuration、none、math。
+2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=AFSIM::Module::wizard::Class::Project`。
+3. **方法级功能摘要**：正文列代表性 Method-level 条目；完整方法级清单见 `workspace/source-index/function-index.jsonl`。
+
+| 类级功能 | 方法级功能 | qualified_name | lifecycle_role | algorithm_hint | 核心职责 |
+|---------|-----------|----------------|----------------|----------------|----------|
+| `AFSIM::Module::wizard::Class::Project` | InitializeSensorPlatforms | `FlightPathAnalysisFunction::InitializeSensorPlatforms#5951e90c26` | object_create | math | method: void InitializeSensorPlatforms() |
+| `AFSIM::Module::wizard::Class::Project` | InitializeSensorPlatforms | `HorizontalMapFunction::InitializeSensorPlatforms#b952c2c7d5` | object_create | control_flow | method: void InitializeSensorPlatforms(double aSimTime) |
+| `AFSIM::Module::wizard::Class::Project` | CreateAndInitialize | `Sensor::CreateAndInitialize#a49a527240` | scenario_load | configuration | method: bool CreateAndInitialize(WsfSimulation& aSimulation) |
+
+#### 2.2.2 AFSIM::Module::wizard::Class::wizard::Project 类级功能（类职责集合）
+
+1. **AFSIM::Module::wizard::Class::wizard::Project 类功能概述**：汇总 wizard 模块中 wizard::Project 的函数职责，覆盖 107 个 Method-level 函数；主要生命周期角色：configuration、scenario_load、simulation_loop、utility；主要算法类型：io、configuration、none、math。
+2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=AFSIM::Module::wizard::Class::wizard::Project`。
+3. **方法级功能摘要**：正文列代表性 Method-level 条目；完整方法级清单见 `workspace/source-index/function-index.jsonl`。
+
+| 类级功能 | 方法级功能 | qualified_name | lifecycle_role | algorithm_hint | 核心职责 |
+|---------|-----------|----------------|----------------|----------------|----------|
+| `AFSIM::Module::wizard::Class::wizard::Project` | InitializeSensorPlatforms | `FlightPathAnalysisFunction::InitializeSensorPlatforms#5951e90c26` | object_create | math | method: void InitializeSensorPlatforms() |
+| `AFSIM::Module::wizard::Class::wizard::Project` | InitializeSensorPlatforms | `HorizontalMapFunction::InitializeSensorPlatforms#b952c2c7d5` | object_create | control_flow | method: void InitializeSensorPlatforms(double aSimTime) |
+| `AFSIM::Module::wizard::Class::wizard::Project` | CreateAndInitialize | `Sensor::CreateAndInitialize#a49a527240` | scenario_load | configuration | method: bool CreateAndInitialize(WsfSimulation& aSimulation) |
+
+### 2.3 core/wsf_mil 模块级功能（core/wsf_mil 能力集合）
+
+1. **core/wsf_mil 模块功能概述**：汇总 core/wsf_mil 模块的类级功能，覆盖 5764 个 Method-level 函数；主要生命周期角色：configuration、object_create、utility、simulation_loop；主要算法类型：none、control_flow、math、io。
+2. **功能对应条目**：见 function-index.jsonl 中 `level=Module-level` 的条目 `qualified_name=AFSIM::Module::core::wsf_mil`。
+3. **类级功能细览**：正文列该模块方法数较高的类级功能；完整 Class-level 清单见 `workspace/source-index/function-index.jsonl`。
+
+| 模块级功能 | 类级功能 | 核心职责 |
+|-----------|---------|----------|
+| `AFSIM::Module::core::wsf_mil` | `AFSIM::Module::core::wsf_mil::Class::WsfGuidanceComputer` | 汇总 core/wsf_mil 模块中 WsfGuidanceComputer 的函数职责，覆盖 104 个 Method-level 函数；主要生命周期角色：object_create、simul… |
+| `AFSIM::Module::core::wsf_mil` | `AFSIM::Module::core::wsf_mil::Class::wsf::WsfGuidanceComputer` | 汇总 core/wsf_mil 模块中 wsf::WsfGuidanceComputer 的函数职责，覆盖 102 个 Method-level 函数；主要生命周期角色：object_create、… |
+| `AFSIM::Module::core::wsf_mil` | `AFSIM::Module::core::wsf_mil::Class::WsfGuidedMover` | 汇总 core/wsf_mil 模块中 WsfGuidedMover 的函数职责，覆盖 80 个 Method-level 函数；主要生命周期角色：configuration、simulation_… |
+| `AFSIM::Module::core::wsf_mil` | `AFSIM::Module::core::wsf_mil::Class::WsfFalseTargetScreener` | 汇总 core/wsf_mil 模块中 WsfFalseTargetScreener 的函数职责，覆盖 79 个 Method-level 函数；主要生命周期角色：configuration、sim… |
+| `AFSIM::Module::core::wsf_mil` | `AFSIM::Module::core::wsf_mil::Class::WsfLaunchComputer` | 汇总 core/wsf_mil 模块中 WsfLaunchComputer 的函数职责，覆盖 78 个 Method-level 函数；主要生命周期角色：configuration、simulati… |
+| `AFSIM::Module::core::wsf_mil` | `AFSIM::Module::core::wsf_mil::Class::WsfRF_Jammer` | 汇总 core/wsf_mil 模块中 WsfRF_Jammer 的函数职责，覆盖 72 个 Method-level 函数；主要生命周期角色：configuration、object_create… |
+
+#### 2.3.1 AFSIM::Module::core::wsf_mil::Class::WsfGuidanceComputer 类级功能（类职责集合）
+
+1. **AFSIM::Module::core::wsf_mil::Class::WsfGuidanceComputer 类功能概述**：汇总 core/wsf_mil 模块中 WsfGuidanceComputer 的函数职责，覆盖 104 个 Method-level 函数；主要生命周期角色：object_create、simulation_loop、utility、configuration；主要算法类型：none、state_update、io…
+2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=AFSIM::Module::core::wsf_mil::Class::WsfGuidanceComputer`。
+3. **方法级功能摘要**：正文列代表性 Method-level 条目；完整方法级清单见 `workspace/source-index/function-index.jsonl`。
+
+| 类级功能 | 方法级功能 | qualified_name | lifecycle_role | algorithm_hint | 核心职责 |
+|---------|-----------|----------------|----------------|----------------|----------|
+| `AFSIM::Module::core::wsf_mil::Class::WsfGuidanceComputer` | InitializeSensorPlatforms | `FlightPathAnalysisFunction::InitializeSensorPlatforms#5951e90c26` | object_create | math | method: void InitializeSensorPlatforms() |
+| `AFSIM::Module::core::wsf_mil::Class::WsfGuidanceComputer` | InitializeSensorPlatforms | `HorizontalMapFunction::InitializeSensorPlatforms#b952c2c7d5` | object_create | control_flow | method: void InitializeSensorPlatforms(double aSimTime) |
+| `AFSIM::Module::core::wsf_mil::Class::WsfGuidanceComputer` | CreateAndInitialize | `Sensor::CreateAndInitialize#a49a527240` | scenario_load | configuration | method: bool CreateAndInitialize(WsfSimulation& aSimulation) |
+
+#### 2.3.2 AFSIM::Module::core::wsf_mil::Class::wsf::WsfGuidanceComputer 类级功能（类职责集合）
+
+1. **AFSIM::Module::core::wsf_mil::Class::wsf::WsfGuidanceComputer 类功能概述**：汇总 core/wsf_mil 模块中 wsf::WsfGuidanceComputer 的函数职责，覆盖 102 个 Method-level 函数；主要生命周期角色：object_create、simulation_loop、configuration、utility；主要算法类型：none、state_upda…
+2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=AFSIM::Module::core::wsf_mil::Class::wsf::WsfGuidanceComputer`。
+3. **方法级功能摘要**：正文列代表性 Method-level 条目；完整方法级清单见 `workspace/source-index/function-index.jsonl`。
+
+| 类级功能 | 方法级功能 | qualified_name | lifecycle_role | algorithm_hint | 核心职责 |
+|---------|-----------|----------------|----------------|----------------|----------|
+| `AFSIM::Module::core::wsf_mil::Class::wsf::WsfGuidanceComputer` | InitializeSensorPlatforms | `FlightPathAnalysisFunction::InitializeSensorPlatforms#5951e90c26` | object_create | math | method: void InitializeSensorPlatforms() |
+| `AFSIM::Module::core::wsf_mil::Class::wsf::WsfGuidanceComputer` | InitializeSensorPlatforms | `HorizontalMapFunction::InitializeSensorPlatforms#b952c2c7d5` | object_create | control_flow | method: void InitializeSensorPlatforms(double aSimTime) |
+| `AFSIM::Module::core::wsf_mil::Class::wsf::WsfGuidanceComputer` | CreateAndInitialize | `Sensor::CreateAndInitialize#a49a527240` | scenario_load | configuration | method: bool CreateAndInitialize(WsfSimulation& aSimulation) |
+
+### 2.4 mover_creator 模块级功能（mover_creator 能力集合）
+
+1. **mover_creator 模块功能概述**：汇总 mover_creator 模块的类级功能，覆盖 5609 个 Method-level 函数；主要生命周期角色：configuration、utility、object_create、shutdown；主要算法类型：none、math、io、factory。
+2. **功能对应条目**：见 function-index.jsonl 中 `level=Module-level` 的条目 `qualified_name=AFSIM::Module::mover_creator`。
+3. **类级功能细览**：正文列该模块方法数较高的类级功能；完整 Class-level 清单见 `workspace/source-index/function-index.jsonl`。
+
+| 模块级功能 | 类级功能 | 核心职责 |
+|-----------|---------|----------|
+| `AFSIM::Module::mover_creator` | `AFSIM::Module::mover_creator::Class::VehicleAeroCore` | 汇总 mover_creator 模块中 VehicleAeroCore 的函数职责，覆盖 222 个 Method-level 函数；主要生命周期角色：utility、configuration、… |
+| `AFSIM::Module::mover_creator` | `AFSIM::Module::mover_creator::Class::VehicleAero` | 汇总 mover_creator 模块中 VehicleAero 的函数职责，覆盖 216 个 Method-level 函数；主要生命周期角色：configuration、shutdown、obj… |
+| `AFSIM::Module::mover_creator` | `AFSIM::Module::mover_creator::Class::GeometryGLWidget` | 汇总 mover_creator 模块中 GeometryGLWidget 的函数职责，覆盖 187 个 Method-level 函数；主要生命周期角色：configuration、utility… |
+| `AFSIM::Module::mover_creator` | `AFSIM::Module::mover_creator::Class::Designer::GeometryGLWidget` | 汇总 mover_creator 模块中 Designer::GeometryGLWidget 的函数职责，覆盖 149 个 Method-level 函数；主要生命周期角色：configurati… |
+| `AFSIM::Module::mover_creator` | `AFSIM::Module::mover_creator::Class::Designer::GeometryWing` | 汇总 mover_creator 模块中 Designer::GeometryWing 的函数职责，覆盖 133 个 Method-level 函数；主要生命周期角色：configuration、u… |
+| `AFSIM::Module::mover_creator` | `AFSIM::Module::mover_creator::Class::GeometryWing` | 汇总 mover_creator 模块中 GeometryWing 的函数职责，覆盖 133 个 Method-level 函数；主要生命周期角色：configuration、utility、shu… |
+
+#### 2.4.1 AFSIM::Module::mover_creator::Class::VehicleAeroCore 类级功能（类职责集合）
+
+1. **AFSIM::Module::mover_creator::Class::VehicleAeroCore 类功能概述**：汇总 mover_creator 模块中 VehicleAeroCore 的函数职责，覆盖 222 个 Method-level 函数；主要生命周期角色：utility、configuration、shutdown；主要算法类型：none、math。
+2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=AFSIM::Module::mover_creator::Class::VehicleAeroCore`。
+3. **方法级功能摘要**：正文列代表性 Method-level 条目；完整方法级清单见 `workspace/source-index/function-index.jsonl`。
+
+| 类级功能 | 方法级功能 | qualified_name | lifecycle_role | algorithm_hint | 核心职责 |
+|---------|-----------|----------------|----------------|----------------|----------|
+| `AFSIM::Module::mover_creator::Class::VehicleAeroCore` | InitializeSensorPlatforms | `FlightPathAnalysisFunction::InitializeSensorPlatforms#5951e90c26` | object_create | math | method: void InitializeSensorPlatforms() |
+| `AFSIM::Module::mover_creator::Class::VehicleAeroCore` | InitializeSensorPlatforms | `HorizontalMapFunction::InitializeSensorPlatforms#b952c2c7d5` | object_create | control_flow | method: void InitializeSensorPlatforms(double aSimTime) |
+| `AFSIM::Module::mover_creator::Class::VehicleAeroCore` | CreateAndInitialize | `Sensor::CreateAndInitialize#a49a527240` | scenario_load | configuration | method: bool CreateAndInitialize(WsfSimulation& aSimulation) |
+
+#### 2.4.2 AFSIM::Module::mover_creator::Class::VehicleAero 类级功能（类职责集合）
+
+1. **AFSIM::Module::mover_creator::Class::VehicleAero 类功能概述**：汇总 mover_creator 模块中 VehicleAero 的函数职责，覆盖 216 个 Method-level 函数；主要生命周期角色：configuration、shutdown、object_create、output；主要算法类型：none、io、math、factory。
+2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=AFSIM::Module::mover_creator::Class::VehicleAero`。
+3. **方法级功能摘要**：正文列代表性 Method-level 条目；完整方法级清单见 `workspace/source-index/function-index.jsonl`。
+
+| 类级功能 | 方法级功能 | qualified_name | lifecycle_role | algorithm_hint | 核心职责 |
+|---------|-----------|----------------|----------------|----------------|----------|
+| `AFSIM::Module::mover_creator::Class::VehicleAero` | InitializeSensorPlatforms | `FlightPathAnalysisFunction::InitializeSensorPlatforms#5951e90c26` | object_create | math | method: void InitializeSensorPlatforms() |
+| `AFSIM::Module::mover_creator::Class::VehicleAero` | InitializeSensorPlatforms | `HorizontalMapFunction::InitializeSensorPlatforms#b952c2c7d5` | object_create | control_flow | method: void InitializeSensorPlatforms(double aSimTime) |
+| `AFSIM::Module::mover_creator::Class::VehicleAero` | CreateAndInitialize | `Sensor::CreateAndInitialize#a49a527240` | scenario_load | configuration | method: bool CreateAndInitialize(WsfSimulation& aSimulation) |
+
+### 2.5 warlock 模块级功能（warlock 能力集合）
+
+1. **warlock 模块功能概述**：汇总 warlock 模块的类级功能，覆盖 3533 个 Method-level 函数；主要生命周期角色：configuration、simulation_loop、model_update、utility；主要算法类型：none、io、control_flow、state_update。
+2. **功能对应条目**：见 function-index.jsonl 中 `level=Module-level` 的条目 `qualified_name=AFSIM::Module::warlock`。
+3. **类级功能细览**：正文列该模块方法数较高的类级功能；完整 Class-level 清单见 `workspace/source-index/function-index.jsonl`。
+
+| 模块级功能 | 类级功能 | 核心职责 |
+|-----------|---------|----------|
+| `AFSIM::Module::warlock` | `AFSIM::Module::warlock::Class::WkPlatformHistory::Plugin` | 汇总 warlock 模块中 WkPlatformHistory::Plugin 的函数职责，覆盖 83 个 Method-level 函数；主要生命周期角色：configuration、simul… |
+| `AFSIM::Module::warlock` | `AFSIM::Module::warlock::Class::wkf::vespa::WkPlatformHistory::Plugin` | 汇总 warlock 模块中 wkf::vespa::WkPlatformHistory::Plugin 的函数职责，覆盖 81 个 Method-level 函数；主要生命周期角色：configu… |
+| `AFSIM::Module::warlock` | `AFSIM::Module::warlock::Class::six_dof::WkSixDOF_Tuner::SimInterface` | 汇总 warlock 模块中 six_dof::WkSixDOF_Tuner::SimInterface 的函数职责，覆盖 80 个 Method-level 函数；主要生命周期角色：configu… |
+| `AFSIM::Module::warlock` | `AFSIM::Module::warlock::Class::wkf::sdl::WkP6DOF_Controller::PluginObject` | 汇总 warlock 模块中 wkf::sdl::WkP6DOF_Controller::PluginObject 的函数职责，覆盖 74 个 Method-level 函数；主要生命周期角色：ut… |
+| `AFSIM::Module::warlock` | `AFSIM::Module::warlock::Class::WkTuner::SimInterface` | 汇总 warlock 模块中 WkTuner::SimInterface 的函数职责，覆盖 73 个 Method-level 函数；主要生命周期角色：configuration、event_han… |
+| `AFSIM::Module::warlock` | `AFSIM::Module::warlock::Class::wsf::six_dof::WkSixDOF_Tuner::SimInterface` | 汇总 warlock 模块中 wsf::six_dof::WkSixDOF_Tuner::SimInterface 的函数职责，覆盖 73 个 Method-level 函数；主要生命周期角色：co… |
+
+#### 2.5.1 AFSIM::Module::warlock::Class::WkPlatformHistory::Plugin 类级功能（类职责集合）
+
+1. **AFSIM::Module::warlock::Class::WkPlatformHistory::Plugin 类功能概述**：汇总 warlock 模块中 WkPlatformHistory::Plugin 的函数职责，覆盖 83 个 Method-level 函数；主要生命周期角色：configuration、simulation_loop、object_create、scenario_load；主要算法类型：none、control_f…
+2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=AFSIM::Module::warlock::Class::WkPlatformHistory::Plugin`。
+3. **方法级功能摘要**：正文列代表性 Method-level 条目；完整方法级清单见 `workspace/source-index/function-index.jsonl`。
+
+| 类级功能 | 方法级功能 | qualified_name | lifecycle_role | algorithm_hint | 核心职责 |
+|---------|-----------|----------------|----------------|----------------|----------|
+| `AFSIM::Module::warlock::Class::WkPlatformHistory::Plugin` | InitializeSensorPlatforms | `FlightPathAnalysisFunction::InitializeSensorPlatforms#5951e90c26` | object_create | math | method: void InitializeSensorPlatforms() |
+| `AFSIM::Module::warlock::Class::WkPlatformHistory::Plugin` | InitializeSensorPlatforms | `HorizontalMapFunction::InitializeSensorPlatforms#b952c2c7d5` | object_create | control_flow | method: void InitializeSensorPlatforms(double aSimTime) |
+| `AFSIM::Module::warlock::Class::WkPlatformHistory::Plugin` | CreateAndInitialize | `Sensor::CreateAndInitialize#a49a527240` | scenario_load | configuration | method: bool CreateAndInitialize(WsfSimulation& aSimulation) |
+
+#### 2.5.2 AFSIM::Module::warlock::Class::wkf::vespa::WkPlatformHistory::Plugin 类级功能（类职责集合）
+
+1. **AFSIM::Module::warlock::Class::wkf::vespa::WkPlatformHistory::Plugin 类功能概述**：汇总 warlock 模块中 wkf::vespa::WkPlatformHistory::Plugin 的函数职责，覆盖 81 个 Method-level 函数；主要生命周期角色：configuration、simulation_loop、object_create、scenario_load；主要算法类型：no…
+2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=AFSIM::Module::warlock::Class::wkf::vespa::WkPlatformHistory::Plugin`。
+3. **方法级功能摘要**：正文列代表性 Method-level 条目；完整方法级清单见 `workspace/source-index/function-index.jsonl`。
+
+| 类级功能 | 方法级功能 | qualified_name | lifecycle_role | algorithm_hint | 核心职责 |
+|---------|-----------|----------------|----------------|----------------|----------|
+| `AFSIM::Module::warlock::Class::wkf::vespa::WkPlatformHistory::Plugin` | InitializeSensorPlatforms | `FlightPathAnalysisFunction::InitializeSensorPlatforms#5951e90c26` | object_create | math | method: void InitializeSensorPlatforms() |
+| `AFSIM::Module::warlock::Class::wkf::vespa::WkPlatformHistory::Plugin` | InitializeSensorPlatforms | `HorizontalMapFunction::InitializeSensorPlatforms#b952c2c7d5` | object_create | control_flow | method: void InitializeSensorPlatforms(double aSimTime) |
+| `AFSIM::Module::warlock::Class::wkf::vespa::WkPlatformHistory::Plugin` | CreateAndInitialize | `Sensor::CreateAndInitialize#a49a527240` | scenario_load | configuration | method: bool CreateAndInitialize(WsfSimulation& aSimulation) |
+
+### 2.6 mystic 模块级功能（mystic 能力集合）
+
+1. **mystic 模块功能概述**：汇总 mystic 模块的类级功能，覆盖 2324 个 Method-level 函数；主要生命周期角色：configuration、simulation_loop、utility、shutdown；主要算法类型：none、io、control_flow、state_update。
+2. **功能对应条目**：见 function-index.jsonl 中 `level=Module-level` 的条目 `qualified_name=AFSIM::Module::mystic`。
+3. **类级功能细览**：正文列该模块方法数较高的类级功能；完整 Class-level 清单见 `workspace/source-index/function-index.jsonl`。
+
+| 模块级功能 | 类级功能 | 核心职责 |
+|-----------|---------|----------|
+| `AFSIM::Module::mystic` | `AFSIM::Module::mystic::Class::RvStatistics::EventTableModel` | 汇总 mystic 模块中 RvStatistics::EventTableModel 的函数职责，覆盖 59 个 Method-level 函数；主要生命周期角色：utility、simulati… |
+| `AFSIM::Module::mystic` | `AFSIM::Module::mystic::Class::RvBAT::GraphicsNode` | 汇总 mystic 模块中 RvBAT::GraphicsNode 的函数职责，覆盖 58 个 Method-level 函数；主要生命周期角色：configuration、utility、mode… |
+| `AFSIM::Module::mystic` | `AFSIM::Module::mystic::Class::rv::RvStatistics::EventTableModel` | 汇总 mystic 模块中 rv::RvStatistics::EventTableModel 的函数职责，覆盖 58 个 Method-level 函数；主要生命周期角色：utility、simu… |
+| `AFSIM::Module::mystic` | `AFSIM::Module::mystic::Class::RvPlatformHistory::Plugin` | 汇总 mystic 模块中 RvPlatformHistory::Plugin 的函数职责，覆盖 43 个 Method-level 函数；主要生命周期角色：simulation_loop、conf… |
+| `AFSIM::Module::mystic` | `AFSIM::Module::mystic::Class::phase2-batch11` | 汇总 mystic 模块中 phase2-batch11 的函数职责，覆盖 40 个 Method-level 函数；主要生命周期角色：configuration、object_create、sim… |
+| `AFSIM::Module::mystic` | `AFSIM::Module::mystic::Class::phase2_batch07` | 汇总 mystic 模块中 phase2_batch07 的函数职责，覆盖 37 个 Method-level 函数；主要生命周期角色：simulation_loop、configuration、s… |
+
+#### 2.6.1 AFSIM::Module::mystic::Class::RvStatistics::EventTableModel 类级功能（类职责集合）
+
+1. **AFSIM::Module::mystic::Class::RvStatistics::EventTableModel 类功能概述**：汇总 mystic 模块中 RvStatistics::EventTableModel 的函数职责，覆盖 59 个 Method-level 函数；主要生命周期角色：utility、simulation_loop、event_handling、configuration；主要算法类型：control_flow、fac…
+2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=AFSIM::Module::mystic::Class::RvStatistics::EventTableModel`。
+3. **方法级功能摘要**：正文列代表性 Method-level 条目；完整方法级清单见 `workspace/source-index/function-index.jsonl`。
+
+| 类级功能 | 方法级功能 | qualified_name | lifecycle_role | algorithm_hint | 核心职责 |
+|---------|-----------|----------------|----------------|----------------|----------|
+| `AFSIM::Module::mystic::Class::RvStatistics::EventTableModel` | InitializeSensorPlatforms | `FlightPathAnalysisFunction::InitializeSensorPlatforms#5951e90c26` | object_create | math | method: void InitializeSensorPlatforms() |
+| `AFSIM::Module::mystic::Class::RvStatistics::EventTableModel` | InitializeSensorPlatforms | `HorizontalMapFunction::InitializeSensorPlatforms#b952c2c7d5` | object_create | control_flow | method: void InitializeSensorPlatforms(double aSimTime) |
+| `AFSIM::Module::mystic::Class::RvStatistics::EventTableModel` | CreateAndInitialize | `Sensor::CreateAndInitialize#a49a527240` | scenario_load | configuration | method: bool CreateAndInitialize(WsfSimulation& aSimulation) |
+
+#### 2.6.2 AFSIM::Module::mystic::Class::RvBAT::GraphicsNode 类级功能（类职责集合）
+
+1. **AFSIM::Module::mystic::Class::RvBAT::GraphicsNode 类功能概述**：汇总 mystic 模块中 RvBAT::GraphicsNode 的函数职责，覆盖 58 个 Method-level 函数；主要生命周期角色：configuration、utility、model_update、scenario_load；主要算法类型：none、configuration、io、state_up…
+2. **功能对应条目**：见 function-index.jsonl 中 `level=Class-level` 的条目 `qualified_name=AFSIM::Module::mystic::Class::RvBAT::GraphicsNode`。
+3. **方法级功能摘要**：正文列代表性 Method-level 条目；完整方法级清单见 `workspace/source-index/function-index.jsonl`。
+
+| 类级功能 | 方法级功能 | qualified_name | lifecycle_role | algorithm_hint | 核心职责 |
+|---------|-----------|----------------|----------------|----------------|----------|
+| `AFSIM::Module::mystic::Class::RvBAT::GraphicsNode` | InitializeSensorPlatforms | `FlightPathAnalysisFunction::InitializeSensorPlatforms#5951e90c26` | object_create | math | method: void InitializeSensorPlatforms() |
+| `AFSIM::Module::mystic::Class::RvBAT::GraphicsNode` | InitializeSensorPlatforms | `HorizontalMapFunction::InitializeSensorPlatforms#b952c2c7d5` | object_create | control_flow | method: void InitializeSensorPlatforms(double aSimTime) |
+| `AFSIM::Module::mystic::Class::RvBAT::GraphicsNode` | CreateAndInitialize | `Sensor::CreateAndInitialize#a49a527240` | scenario_load | configuration | method: bool CreateAndInitialize(WsfSimulation& aSimulation) |
+
+## 附录：方法级功能完整清单
+
+Method-level 条目数量超过正文可读范围，正文保留代表性样例。完整清单见 `workspace/source-index/function-index.jsonl`，该索引逐行记录 `qualified_name`、`lifecycle_role`、`algorithm_hint`、源码路径、行号和调用摘要。
+
+| qualified_name | lifecycle_role | algorithm_hint | 核心职责 |
+|----------------|----------------|----------------|----------|
+| `FlightPathAnalysisFunction::InitializeSensorPlatforms#5951e90c26` | object_create | math | method: void InitializeSensorPlatforms() |
+| `HorizontalMapFunction::InitializeSensorPlatforms#b952c2c7d5` | object_create | control_flow | method: void InitializeSensorPlatforms(double aSimTime) |
+| `Sensor::CreateAndInitialize#a49a527240` | scenario_load | configuration | method: bool CreateAndInitialize(WsfSimulation& aSimulation) |
+| `Target::CreateAndInitialize#3924fb0080` | scenario_load | configuration | method: bool CreateAndInitialize(WsfSimulation& aSim) |
+| `WsfAdvancedBehaviorTree::Initialize#43a4d4a5e4` | scenario_load | io | method: bool Initialize(double aSimTime, WsfScriptProcessor* aParentPtr, WsfScriptContext* aParentC… |
+| `BT::WsfAdvancedBehaviorTreeCompositeNode::Initialize#816a3c95a6` | object_create | none | method: bool Initialize(double aSimTime, WsfScriptContext* aParentContextPtr) override |
+| `BT::WsfAdvancedBehaviorTreeNode::Initialize#d6d272b7bd` | object_create | control_flow | method: virtual bool Initialize(double aSimTime, WsfScriptContext* aParentContextPtr) |
+| `BaseData::Initialize#2673dc8d64` | object_create | none | method: virtual bool Initialize(WsfAntennaPattern& aAntennaPattern) |
+| `BaseData::InitializeAverageGain#b40b477985` | object_create | math | method: virtual void InitializeAverageGain(double aFrequency) |
+| `WsfAntennaPattern::Initialize#2673dc8d64` | object_create | none | method: virtual bool Initialize(WsfAntennaPattern& aAntennaPattern) |
+| `WsfAntennaPattern::Initialize#1a530f5394` | object_create | none | method: virtual bool Initialize(WsfSimulation* aSimulationPtr) |
+| `WsfAntennaPattern::InitializeAverageGain#b40b477985` | object_create | math | method: virtual void InitializeAverageGain(double aFrequency) |
+| `WsfAntennaPatternTypes::InitializeType#d4ece0ba7c` | object_create | none | method: bool InitializeType(WsfAntennaPattern* aObjectPtr) override |
+| `WsfApplication::InitializeTestEnvironment#ec3693bcf6` | object_create | control_flow | method: bool InitializeTestEnvironment() |
+| `WsfArticulatedPart::Initialize#271bbe4cdd` | scenario_load | io | method: bool Initialize(double aSimTime) override |
+| `WsfBehaviorTree::Initialize#43a4d4a5e4` | object_create | none | method: bool Initialize(double aSimTime, WsfScriptProcessor* aParentPtr, WsfScriptContext* aParentC… |
+| `WsfBehaviorTreeNode::Initialize#bdd2f9fc68` | object_create | control_flow | method: virtual bool Initialize(double aSimTime, WsfScriptContext* aParentContext) |
+| `WsfComponent::Initialize#9c9b3829f1` | object_create | none | method: virtual bool Initialize(double aSimTime) |
+| `WsfComponent::Initialize2#57ee9d3c2f` | utility | none | method: virtual bool Initialize2(double aSimTime) |
+| `WsfComponent::PreInitialize#8d53da36f3` | object_create | none | method: virtual bool PreInitialize(double aSimTime) |
+| `WsfComponentFactory::PreInitialize#d043845bab` | object_create | factory | method: virtual bool PreInitialize(double aSimTime, PARENT_TYPE& aParent) |
+| `WsfDefaultFusion::Initialize#58e00c25e3` | simulation_loop | state_update | method: bool Initialize(WsfTrackManager* aTrackManagerPtr) override |
+| `WsfEM_Antenna::Initialize#5c3e794630` | object_create | none | method: virtual bool Initialize(WsfArticulatedPart* aArticulatedPartPtr) |
+| `WsfEM_Attenuation::Initialize#060255d34d` | object_create | none | method: virtual bool Initialize(WsfEM_Xmtr* aXmtrPtr) |

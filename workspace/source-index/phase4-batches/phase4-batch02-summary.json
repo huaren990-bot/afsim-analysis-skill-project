@@ -1,0 +1,46 @@
+{
+  "schema_version": "1",
+  "batch_id": "phase4-batch02",
+  "status": "completed",
+  "input_candidate_count": 1903,
+  "read_file_count": 165,
+  "method_done_count": 1823,
+  "body_summary_count": 1823,
+  "skip_count": 80,
+  "coverage": 0.958,
+  "skip_reasons": {
+    "declaration_only": 80
+  },
+  "matched_files_not_in_original_path": 580,
+  "duplicate_name_fix_count": 0,
+  "top_matched_files": {
+    "afsim-2_9/swdev/src/core/wsf/source/WsfSimulation.cpp": 91,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfPlatform.cpp": 65,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfScenario.hpp": 65,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfTerrain.cpp": 65,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfSimulation.hpp": 61,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfPlatform.hpp": 59,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfTrackManager.cpp": 56,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfZoneDefinition.cpp": 56,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfLOS_Manager.cpp": 52,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfScenario.cpp": 49,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfTimeDelayQueue.cpp": 37,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfPlatformPart.hpp": 33,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfStandardAntennaPattern.cpp": 33,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfStandardRadarSignature.cpp": 33,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfPlatformPart.cpp": 32,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfTrackManager.hpp": 32,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfThermalSystem.cpp": 29,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfMessage.hpp": 27,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfTrackStateController.cpp": 27,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfZoneRouteFinder.cpp": 26
+  },
+  "output_function_index": "workspace/source-index/phase4-batches/phase4-batch02-function-index.jsonl",
+  "output_body_summary": "workspace/source-index/phase4-batches/phase4-batch02-function-body-summary.jsonl",
+  "output_skips": "workspace/source-index/phase4-batches/phase4-batch02-skips.jsonl",
+  "notes": [
+    "增强匹配：同时搜索 definition_path、path、declaration_path、同名头文件和 inline 文件。",
+    "每个候选搜索文件读取后复用缓存；同一文件不重复读取。",
+    "qualified_name 追加 signature_digest 以避免重载静默覆盖；若仍重复则追加 candidate_id 短后缀。"
+  ]
+}

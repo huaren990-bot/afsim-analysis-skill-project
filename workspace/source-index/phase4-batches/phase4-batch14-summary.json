@@ -1,0 +1,52 @@
+{
+  "schema_version": "1",
+  "batch_id": "phase4-batch14",
+  "status": "completed",
+  "input_candidate_count": 2419,
+  "effective_candidate_count": 2417,
+  "invalid_candidate_count": 2,
+  "read_file_count": 313,
+  "method_done_count": 2278,
+  "body_summary_count": 2278,
+  "skip_count": 141,
+  "raw_coverage": 0.9417,
+  "coverage": 0.9425,
+  "skip_reasons": {
+    "declaration_only": 139,
+    "variable_not_function": 2
+  },
+  "matched_files_not_in_original_path": 682,
+  "duplicate_name_fix_count": 592,
+  "top_matched_files": {
+    "afsim-2_9/swdev/src/mover_creator/source/VehicleAero.cpp": 238,
+    "afsim-2_9/swdev/src/mover_creator/source/VehicleAeroCore.hpp": 216,
+    "afsim-2_9/swdev/src/mover_creator/source/ScriptGeneratorSixDOF.cpp": 166,
+    "afsim-2_9/swdev/src/mover_creator/source/VehicleAeroCore.cpp": 117,
+    "afsim-2_9/swdev/src/warlock/plugins/P6DOF_Controller/source/P6DOF_ControllerPluginObject.cpp": 72,
+    "afsim-2_9/swdev/src/warlock/plugins/P6DOF_Controller/source/P6DOF_ControllerHUD.cpp": 65,
+    "afsim-2_9/swdev/src/warlock/plugins/Joystick/source/SDL_JoystickManager.cpp": 58,
+    "afsim-2_9/swdev/src/warlock/plugins/P6DOF_Controller/source/SDL_JoystickManager.cpp": 58,
+    "afsim-2_9/swdev/src/mover_creator/source/VehicleAero.hpp": 57,
+    "afsim-2_9/swdev/src/mover_creator/source/VehicleAeroMovable.hpp": 56,
+    "afsim-2_9/swdev/src/warlock/plugins/Joystick/source/JoystickPlugin.cpp": 52,
+    "afsim-2_9/swdev/src/mover_creator/source/VehicleGeometry.cpp": 46,
+    "afsim-2_9/swdev/src/warlock/plugins/Chat/source/ChatPlugin.cpp": 45,
+    "afsim-2_9/swdev/src/mover_creator/source/VehicleAeroMovable.cpp": 35,
+    "afsim-2_9/swdev/src/mover_creator/source/Vehicle.cpp": 34,
+    "afsim-2_9/swdev/src/mover_creator/source/StartDialog.cpp": 31,
+    "afsim-2_9/swdev/src/warlock/plugins/Astrolabe/source/AstrolabeDockWidget.cpp": 29,
+    "afsim-2_9/swdev/src/warlock/plugins/BattleManagement/source/BM_RuleSets.cpp": 19,
+    "afsim-2_9/swdev/src/mover_creator/source/SolidRocketEngineWidget.cpp": 18,
+    "afsim-2_9/swdev/src/warlock/plugins/Chat/source/ChatDockWidget.cpp": 18
+  },
+  "output_function_index": "workspace/source-index/phase4-batches/phase4-batch14-function-index.jsonl",
+  "output_body_summary": "workspace/source-index/phase4-batches/phase4-batch14-function-body-summary.jsonl",
+  "output_skips": "workspace/source-index/phase4-batches/phase4-batch14-skips.jsonl",
+  "notes": [
+    "增强匹配：同时搜索 definition_path、path、declaration_path、同名头文件和 inline 文件。",
+    "补充匹配：从 owner/qualified_name 提取类名，搜索类名同 stem 的源/头/inline 文件，覆盖声明头文件与实现文件不同名的场景。",
+    "每个候选搜索文件读取后复用缓存；同一文件不重复读取。",
+    "qualified_name 追加 signature_digest 以避免重载静默覆盖；若仍重复则追加 candidate_id 短后缀。",
+    "coverage 使用有效候选口径；raw_coverage 保留未剔除变量/表达式误报前的原始口径。"
+  ]
+}

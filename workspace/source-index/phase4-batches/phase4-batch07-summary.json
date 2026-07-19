@@ -1,0 +1,46 @@
+{
+  "schema_version": "1",
+  "batch_id": "phase4-batch07",
+  "status": "completed",
+  "input_candidate_count": 2565,
+  "read_file_count": 248,
+  "method_done_count": 2361,
+  "body_summary_count": 2361,
+  "skip_count": 204,
+  "coverage": 0.9205,
+  "skip_reasons": {
+    "declaration_only": 204
+  },
+  "matched_files_not_in_original_path": 1002,
+  "duplicate_name_fix_count": 0,
+  "top_matched_files": {
+    "afsim-2_9/swdev/src/wizard/lib/source/revision/RevisionDb.cpp": 88,
+    "afsim-2_9/swdev/src/wizard/lib/source/map/Platform.cpp": 85,
+    "afsim-2_9/swdev/src/wizard/lib/source/revision/RevisionStore.cpp": 74,
+    "afsim-2_9/swdev/src/wizard/lib/source/gui/AutoCompletePopup.cpp": 64,
+    "afsim-2_9/swdev/src/wizard/lib/source/revision/RevisionSqlStmt.cpp": 64,
+    "afsim-2_9/swdev/src/wizard/lib/source/gui/RangeRingPropertiesWidget.cpp": 53,
+    "afsim-2_9/swdev/src/wizard/lib/source/map/VtkInterface.cpp": 53,
+    "afsim-2_9/swdev/src/wizard/lib/source/revision/ChangeHistory.cpp": 53,
+    "afsim-2_9/swdev/src/wizard/lib/source/util/AttributeSet.cpp": 52,
+    "afsim-2_9/swdev/src/wizard/lib/source/gui/CreatePlatformDialog.cpp": 49,
+    "afsim-2_9/swdev/src/wizard/plugins/CommandChainBrowser/source/DockWidget.cpp": 47,
+    "afsim-2_9/swdev/src/wizard/plugins/CRDImporter/lib/Intent.hpp": 44,
+    "afsim-2_9/swdev/src/wizard/lib/source/gui/EditAssist.cpp": 43,
+    "afsim-2_9/swdev/src/wizard/plugins/EventOutput/source/Tokenizer.cpp": 42,
+    "afsim-2_9/swdev/src/wizard/plugins/CommandChainBrowser/source/View.cpp": 40,
+    "afsim-2_9/swdev/src/wizard/plugins/ACOImporter/source/ImporterDialog.cpp": 38,
+    "afsim-2_9/swdev/src/wizard/plugins/CRDImporter/lib/OrbitIntent.cpp": 32,
+    "afsim-2_9/swdev/src/wizard/lib/source/map/Zone.cpp": 31,
+    "afsim-2_9/swdev/src/wizard/lib/source/util/NewFilePrefObject.cpp": 31,
+    "afsim-2_9/swdev/src/wizard/lib/source/gui/ClonePlatformDialog.cpp": 29
+  },
+  "output_function_index": "workspace/source-index/phase4-batches/phase4-batch07-function-index.jsonl",
+  "output_body_summary": "workspace/source-index/phase4-batches/phase4-batch07-function-body-summary.jsonl",
+  "output_skips": "workspace/source-index/phase4-batches/phase4-batch07-skips.jsonl",
+  "notes": [
+    "增强匹配：同时搜索 definition_path、path、declaration_path、同名头文件和 inline 文件。",
+    "每个候选搜索文件读取后复用缓存；同一文件不重复读取。",
+    "qualified_name 追加 signature_digest 以避免重载静默覆盖；若仍重复则追加 candidate_id 短后缀。"
+  ]
+}

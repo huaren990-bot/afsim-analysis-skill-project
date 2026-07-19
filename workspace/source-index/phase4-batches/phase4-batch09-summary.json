@@ -1,0 +1,46 @@
+{
+  "schema_version": "1",
+  "batch_id": "phase4-batch09",
+  "status": "completed",
+  "input_candidate_count": 2494,
+  "read_file_count": 246,
+  "method_done_count": 2323,
+  "body_summary_count": 2323,
+  "skip_count": 171,
+  "coverage": 0.9314,
+  "skip_reasons": {
+    "declaration_only": 171
+  },
+  "matched_files_not_in_original_path": 507,
+  "duplicate_name_fix_count": 38,
+  "top_matched_files": {
+    "afsim-2_9/swdev/src/core/wsf_mil/source/WsfMilEventResults.hpp": 144,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/WsfMilEventResults.cpp": 112,
+    "afsim-2_9/swdev/src/wizard/plugins/TaskList/source/TaskListDockWidget.cpp": 74,
+    "afsim-2_9/swdev/src/wizard/plugins/SpaceTools/source/OrbitalSequenceToInput.cpp": 66,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/WsfClusterManager.cpp": 64,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/WsfLaserDesignations.cpp": 57,
+    "afsim-2_9/swdev/src/wizard/plugins/SimulationManager/source/WsfScriptDebugger.cpp": 53,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/WsfLaserDesignations.hpp": 50,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/WsfMil.hpp": 44,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/WsfBayesClassification.cpp": 43,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/WsfCompositeOpticalSignature.cpp": 41,
+    "afsim-2_9/swdev/src/wizard/plugins/ScenarioImporter/source/ScenarioImporterPlugin.cpp": 40,
+    "afsim-2_9/swdev/src/wizard/plugins/TypeBrowser/source/DockWidget.cpp": 37,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/WsfMil.cpp": 34,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/WsfMilRadarSignature.cpp": 34,
+    "afsim-2_9/swdev/src/wizard/plugins/TaskList/source/TaskListPrefObject.cpp": 34,
+    "afsim-2_9/swdev/src/wizard/plugins/SimulationManager/source/WsfDebugValueModel.cpp": 33,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/WsfMilDisInterface.cpp": 31,
+    "afsim-2_9/swdev/src/wizard/plugins/SimulationManager/source/SimulationManagerPlugin.cpp": 31,
+    "afsim-2_9/swdev/src/wizard/plugins/TypeBrowser/source/Model.cpp": 31
+  },
+  "output_function_index": "workspace/source-index/phase4-batches/phase4-batch09-function-index.jsonl",
+  "output_body_summary": "workspace/source-index/phase4-batches/phase4-batch09-function-body-summary.jsonl",
+  "output_skips": "workspace/source-index/phase4-batches/phase4-batch09-skips.jsonl",
+  "notes": [
+    "增强匹配：同时搜索 definition_path、path、declaration_path、同名头文件和 inline 文件。",
+    "每个候选搜索文件读取后复用缓存；同一文件不重复读取。",
+    "qualified_name 追加 signature_digest 以避免重载静默覆盖；若仍重复则追加 candidate_id 短后缀。"
+  ]
+}

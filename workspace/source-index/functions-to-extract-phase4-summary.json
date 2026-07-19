@@ -1,0 +1,231 @@
+{
+  "schema_version": "1",
+  "generated_on": "2026-07-16",
+  "input_symbol_index": "workspace/source-index/symbol-index.jsonl",
+  "input_file_index": "workspace/source-index/file-index.jsonl",
+  "candidate_total": 53064,
+  "skip_total": 56419,
+  "kind_counts": {
+    "constructor": 3806,
+    "method": 47136,
+    "destructor": 1978,
+    "function": 153
+  },
+  "source_counts": {
+    "symbol-index.member_functions": 52717,
+    "symbol-index": 356
+  },
+  "module_counts": {
+    "core/wsf": 9996,
+    "wizard": 9083,
+    "core/wsf_mil": 6038,
+    "mover_creator": 5870,
+    "warlock": 3791,
+    "mystic": 2462,
+    "tools/utilosg": 1976,
+    "tools/wkf": 1482,
+    "tools/util": 1176,
+    "wsf_plugins/wsf_iads_c2_lib": 1074,
+    "core/wsf_space": 1040,
+    "tools/util_script": 694,
+    "wsf_plugins/wsf_p6dof": 635,
+    "post_processor": 630,
+    "tools/vespatk": 616,
+    "core/wsf_cyber": 538,
+    "wsf_plugins/wsf_oms_uci": 525,
+    "core/wsf_nx": 478,
+    "core/wsf_parser": 450,
+    "core/wsf_l16": 432,
+    "tools/dis": 402,
+    "wsf_plugins/wsf_brawler": 374,
+    "engage": 308,
+    "core/wsf_ripr": 286,
+    "wsf_plugins/wsf_coverage": 261,
+    "wsf_plugins/wsf_sosm": 238,
+    "wsf_plugins/wsf_air_combat": 202,
+    "core/wsf_util": 199,
+    "tools/utilqt": 199,
+    "wsf_plugins/wsf_six_dof": 195,
+    "core/sensor_plot_lib": 188,
+    "tools/genio": 175,
+    "tools/tracking_filters": 116,
+    "wsf_plugins/wsf_argo8": 108,
+    "core/wsf_mtt": 104,
+    "wsf_plugins/wsf_fires": 75,
+    "weapon_tools": 74,
+    "wsf_plugins/wsf_scenario_analyzer_iads_c2": 65,
+    "wsf_plugins/wsf_multiresolution": 62,
+    "tools/geodata": 51,
+    "wsf_plugins/wsf_alternate_locations": 51,
+    "core/wsf_weapon_server": 50,
+    "tools/artificer": 43,
+    "wsf_plugins/wsf_simdis": 39,
+    "tools/packetio": 33,
+    "tools/scene_gen": 31,
+    "wsf_plugins/wsf_scenario_analyzer": 30,
+    "evt_reader": 28,
+    "tools/profiling": 25,
+    "core/wsf_mil_parser": 24,
+    "wsf_plugins/wsf_annotation": 24,
+    "sensor_plot": 9,
+    "core/wsf_grammar_check": 8,
+    "mission": 1
+  },
+  "top_path_counts": {
+    "afsim-2_9/swdev/src/core/wsf/source/WsfEventResults.cpp": 400,
+    "afsim-2_9/swdev/src/wsf_plugins/wsf_p6dof/source/WsfP6DOF_Mover.cpp": 390,
+    "afsim-2_9/swdev/src/mover_creator/source/VehicleAeroCore.cpp": 226,
+    "afsim-2_9/swdev/src/mover_creator/source/GeometryGLWidget.hpp": 198,
+    "afsim-2_9/swdev/src/mover_creator/source/VehicleAero.cpp": 187,
+    "afsim-2_9/swdev/src/wsf_plugins/wsf_brawler/brawler/source/BrawlerPlatform.hpp": 183,
+    "afsim-2_9/swdev/src/tools/vespatk/source/VaViewer.hpp": 169,
+    "afsim-2_9/swdev/src/wsf_plugins/wsf_air_combat/source/WsfSA_Processor.hpp": 167,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfAdvancedBehaviorTreeNode.cpp": 164,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfExchange.cpp": 161,
+    "afsim-2_9/swdev/src/core/wsf_l16/source/FieldTypes.cpp": 158,
+    "afsim-2_9/swdev/src/mover_creator/source/GeometryGLWidget.cpp": 158,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfSimulation.cpp": 153,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/WsfMilEventResults.hpp": 142,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/ew/WsfFalseTarget.cpp": 140,
+    "afsim-2_9/swdev/src/wsf_plugins/wsf_brawler/brawler/source/BrawlerMover.hpp": 137,
+    "afsim-2_9/swdev/src/core/wsf/source/dis/WsfDisInterface.cpp": 134,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/sensor/WsfOTH_RadarSensor.cpp": 134,
+    "afsim-2_9/swdev/src/mover_creator/source/GeometryWing.cpp": 133,
+    "afsim-2_9/swdev/src/mover_creator/source/GeometryWing.hpp": 133,
+    "afsim-2_9/swdev/src/tools/utilosg/source/include/UtoShapeImp.hpp": 133,
+    "afsim-2_9/swdev/src/tools/util_script/source/UtScriptLanguageCtx.hpp": 132,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfDraw.cpp": 128,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfPlatform.cpp": 124,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/processor/WsfGuidanceComputer.cpp": 124,
+    "afsim-2_9/swdev/src/warlock/plugins/PlatformHistory/source/PlatformHistoryPlugin.cpp": 122,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/mover/WsfGuidedMover.cpp": 116,
+    "afsim-2_9/swdev/src/tools/util/source/UtGraph.hpp": 116,
+    "afsim-2_9/swdev/src/tools/utilosg/uto/UtoViewer.hpp": 116,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfScenario.cpp": 115,
+    "afsim-2_9/swdev/src/wizard/lib/source/Us/UsCtx.hpp": 115,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/WsfMilEventResults.cpp": 114,
+    "afsim-2_9/swdev/src/mover_creator/source/VehicleAeroCore.hpp": 113,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/WsfLaserDesignations.cpp": 111,
+    "afsim-2_9/swdev/src/mover_creator/source/GeometryWidget.hpp": 111,
+    "afsim-2_9/swdev/src/wizard/lib/source/core/Project.cpp": 111,
+    "afsim-2_9/swdev/src/wizard/lib/source/core/Project.hpp": 111,
+    "afsim-2_9/swdev/src/mover_creator/source/GeometryWidget.cpp": 110,
+    "afsim-2_9/swdev/src/mover_creator/source/VehicleAero.hpp": 109,
+    "afsim-2_9/swdev/src/tools/util/source/UtVec3.hpp": 109,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/processor/WsfGuidanceComputer.hpp": 107,
+    "afsim-2_9/swdev/src/tools/util_script/source/UtScriptClass.hpp": 107,
+    "afsim-2_9/swdev/src/wsf_plugins/wsf_iads_c2_lib/source/WsfWMAIEngagementMod.cpp": 106,
+    "afsim-2_9/swdev/src/tools/dis/source/DisEntityTypesEnum.hpp": 105,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/weapon/WsfMobilityAndFirepowerLethality.cpp": 103,
+    "afsim-2_9/swdev/src/tools/dis/source/DisIff.cpp": 102,
+    "afsim-2_9/swdev/src/tools/dis/source/DisIff.hpp": 102,
+    "afsim-2_9/swdev/src/tools/vespatk/source/VaEnvironment.hpp": 102,
+    "afsim-2_9/swdev/src/wizard/lib/source/editor/Editor.hpp": 101,
+    "afsim-2_9/swdev/src/wizard/plugins/ProjectBrowser/source/Item.cpp": 100
+  },
+  "skip_counts": {
+    "macro_generated_unexpanded": 5964,
+    "parse_failed": 50191,
+    "variable_not_function": 255
+  },
+  "duplicate_qualified_name_count": 3469,
+  "top_duplicate_qualified_names": [
+    [
+      "State::State",
+      17
+    ],
+    [
+      "OrbitalPropagatorConditionVisitor::Accept",
+      12
+    ],
+    [
+      "wsf::space::OrbitalPropagatorConditionVisitor::Accept",
+      12
+    ],
+    [
+      "wsf::space::SpaceTools::ConditionProducer::Accept",
+      12
+    ],
+    [
+      "wsf::space::SpaceTools::OrbitalSequenceToInput::Accept",
+      12
+    ],
+    [
+      "SharedData::SharedData",
+      11
+    ],
+    [
+      "Table::Table",
+      10
+    ],
+    [
+      "DisIff::DisIff",
+      10
+    ],
+    [
+      "SharedData::ProcessInput",
+      9
+    ],
+    [
+      "Vec3::Set",
+      9
+    ],
+    [
+      "ChangeWrapper::ChangeWrapper",
+      9
+    ],
+    [
+      "SharedData::InitializeType",
+      8
+    ],
+    [
+      "SharedData::IsA_ValidState",
+      8
+    ],
+    [
+      "SharedData::~SharedData",
+      8
+    ],
+    [
+      "Vec3::Add",
+      8
+    ],
+    [
+      "Vec3::Subtract",
+      8
+    ],
+    [
+      "Vec3::Vec3",
+      8
+    ],
+    [
+      "UtoCallback::connect",
+      8
+    ],
+    [
+      "UtoCallback::disconnect",
+      8
+    ],
+    [
+      "UtoCmeLineFunctor::case",
+      8
+    ]
+  ],
+  "exclude_prefixes": [
+    "afsim-2_9/demos/",
+    "afsim-2_9/documentation/",
+    "afsim-2_9/training/",
+    "afsim-2_9/resources/"
+  ],
+  "unique_key": "qualified_name + signature + path",
+  "notes": [
+    "Phase4 基线；候选来自 Phase3 function-like symbols、class/struct member_functions 和 file-index.functions 补充。",
+    "对 Phase3 中被误抽为 override/const/void 等的成员函数，已从 signature 反推真实函数名并保留 source_qualified_name。",
+    "宏调用候选（如 UT_DECLARE_SCRIPT_METHOD）记录为 macro_generated_unexpanded；控制语句、成员调用表达式、无返回类型的普通调用记录为 parse_failed，不进入 Method-level。",
+    "demos/documentation/training/resources、隐藏路径和 vx.json 按 Phase1 边界排除。",
+    "compile_commands.json 缺失，后续 Method-level 解析采用 CodeGraph + 源码文本批量证据。",
+    "Phase4 批次计划已生成；最小目录单元 295 个，超大目录按文件范围拆分后打包。"
+  ],
+  "batch_plan": "workspace/source-index/phase4-function-batch-plan.jsonl",
+  "batch_count": 23
+}

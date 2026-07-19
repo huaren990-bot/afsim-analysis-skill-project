@@ -212,7 +212,7 @@
 
 ## Phase 2 v2 增量批次状态
 
-> **最近更新**：2026-07-11
+> **最近更新**：2026-07-14
 
 | 批次 | 状态 | 增量验证报告 |
 |------|------|--------------|
@@ -243,15 +243,50 @@
 | batch31 | 已完成 | `docs/verification/phase2-followup-batch31-verify-report.md` |
 | batch32 | 已完成 | `docs/verification/phase2-followup-batch32-verify-report.md` |
 | batch33 | 已完成 | `docs/verification/phase2-followup-batch33-verify-report.md` |
+| batch34 | 已完成 | `docs/verification/phase2-followup-batch34-verify-report.md` |
+| batch35 | 已完成 | `docs/verification/phase2-followup-batch35-verify-report.md` |
+| batch36 | 已完成 | `docs/verification/phase2-followup-batch36-verify-report.md` |
+| batch37 | 已完成 | `docs/verification/phase2-followup-batch37-verify-report.md` |
+| batch38 | 已完成 | `docs/verification/phase2-followup-batch38-verify-report.md` |
+| batch39 | 已完成 | `docs/verification/phase2-followup-batch39-verify-report.md` |
+| batch40 | 已完成 | `docs/verification/phase2-followup-batch40-verify-report.md` |
+| batch41 | 已完成 | `docs/verification/phase2-followup-batch41-verify-report.md` |
+| batch42 | 已完成 | `docs/verification/phase2-followup-batch42-verify-report.md` |
+| batch43 | 已完成 | `docs/verification/phase2-followup-batch43-verify-report.md` |
+| batch44 | 已完成 | `docs/verification/phase2-followup-batch44-verify-report.md` |
+| batch45 | 已完成 | `docs/verification/phase2-followup-batch45-verify-report.md` |
+| batch46 | 已完成 | `docs/verification/phase2-followup-batch46-verify-report.md` |
+| batch47 | 已完成 | `docs/verification/phase2-followup-batch47-verify-report.md` |
+| batch48 | 已完成 | `docs/verification/phase2-followup-batch48-verify-report.md` |
+| batch49 | 已完成 | `docs/verification/phase2-followup-batch49-verify-report.md` |
+| batch50 | 已完成 | `docs/verification/phase2-followup-batch50-verify-report.md` |
+| batch51 | 已完成 | `docs/verification/phase2-followup-batch51-verify-report.md` |
+| batch52 | 已完成 | `docs/verification/phase2-followup-batch52-verify-report.md` |
+| batch53 | 已完成 | `docs/verification/phase2-followup-batch53-verify-report.md` |
+| batch54 | 已完成 | `docs/verification/phase2-followup-batch54-verify-report.md` |
+| batch55 | 已完成 | `docs/verification/phase2-followup-batch55-verify-report.md` |
+| batch56 | 已完成 | `docs/verification/phase2-followup-batch56-verify-report.md` |
+| batch57 | 已完成 | `docs/verification/phase2-followup-batch57-verify-report.md` |
+| batch58 | 已完成 | `docs/verification/phase2-followup-batch58-verify-report.md` |
 
-### Phase 2 v2 最新进度（2026-07-11）
+### Phase 2 v2 最新进度（2026-07-15）
 
 | 指标 | 值 |
 |------|-----|
 | 最小目录单元总数 | 237 |
-| 已完成单元 | 174 |
-| 剩余单元 | 63 |
-| 最新完成批次 | batch28-batch33 |
-| 本次新增 | 36 个目录、785 个 source/header、180 条代表性符号 |
+| 已完成单元 | 237 |
+| 剩余单元 | 0 |
+| 最新完成批次 | batch53-batch58 |
+| 本次新增 | 22 个目录、12,979 个 source/header、82 条新增代表性符号 |
 
-本次继续按最小目录单元推进，并确认 `core/wsf_parser`、`wizard/plugins`、`core/wsf_space`、`wsf_plugins/wsf_coverage` 等实际展开较大的目录不应作为小批次整体完成。
+本次继续按最小目录单元推进，并确认 `tools/utilosg` 按实际展开 222 个 source/header 计入，而不是沿用旧工作清单小计数。
+
+本次继续按最小目录单元推进，并确认 `tools/artificer` 含测试目录计入 40 个 source/header；`vx.json` 未计入 source/header。
+本次继续按最小目录单元推进，并完成 `core/wsf_util`、`post_processor/lib`、`wsf_argo8`、`wsf_multiresolution`、`sensor_plot_lib`、`wsf_air_combat`、`wkf_air_combat_common/source` 和 `PatternVisualization/source` 共 8 个目录；`vx.json` 未计入 source/header。
+本次继续按最小目录单元推进，并完成 batch53-batch58 共 22 个剩余目录；父目录 residual 与 `source` 子目录分开闭环，`vx.json` 未计入 source/header。
+
+## Phase2 最终闭环补充（2026-07-15）
+
+本次完成 batch53-batch58，共 22 个剩余最小目录单元、12979 个 C/C++ 源/头，并补充 82 条新的代表符号记录。Phase2 工作清单已全部完成，剩余单元为 0。
+
+下一步建议进入业务逻辑分析：从 `core/wsf/source` 生命周期、P6DOF/SixDOF 运动链路、OMS-UCI 消息桥接、DIS 协议读写和 Wizard/WKF 工具输入校验分别建立调用链。

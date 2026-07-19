@@ -34,6 +34,26 @@ metadata:
 
 ## 执行步骤
 
+### 推荐自动化入口
+
+优先运行项目内生成器，保证四份最终报告、最终验证报告和记录文件来自同一批索引数据：
+
+```bash
+python3 tools/indexers/phase7_generate_reports.py
+```
+
+该脚本只汇总 Phase 1-6 产物，不执行新的源码分析；脚本会生成：
+
+- `docs/architecture/afsim-architecture.md`
+- `docs/architecture/x-level-capabilities.md`
+- `docs/architecture/module-dependency.md`
+- `docs/architecture/business-logic-readiness.md`
+- `docs/verification/phase7-final-verify-report.md`
+- `docs/records/107-phase7-final-reports.md`
+- `workspace/source-index/phase7-report-summary.json`
+
+脚本内置交叉验证：章节完整性、方法级 `qualified_name` 命中率、Mermaid 依赖边 `dependency_id` 追溯率、业务候选 `evidence_level`、JSONL 解析、省略标记检查。
+
 ### Step 1: 汇总全部索引数据
 
 1. 读取所有 JSONL 索引文件，载入内存。**每个文件仅读取 1 次**，后续所有引用都复用该次读取的内容。

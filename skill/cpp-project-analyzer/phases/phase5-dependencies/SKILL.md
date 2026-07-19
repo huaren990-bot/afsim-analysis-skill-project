@@ -141,6 +141,14 @@ metadata:
 - `source-index/dependency-index.jsonl`
 - `docs/architecture/dependency-graph.md`
 
+推荐使用项目脚本生成 Phase5 产物：
+
+```bash
+python3 tools/indexers/phase5_build_dependencies.py --root <project_root>
+```
+
+该脚本会读取 Phase1 边界与 Phase2-4 索引，生成 `dependency-index.jsonl`、`phase5-dependency-summary.json`、`docs/architecture/dependency-graph.md`、`docs/architecture/module-dependency.md` 与 `docs/verification/phase5-verify-report.md`。脚本必须保留 `raw` 证据字段和 `dependency_id`，确保 Mermaid 摘要边可回溯到 JSONL 全量清单。
+
 ## 质量门槛
 
 1. **条目数不少于 200**。

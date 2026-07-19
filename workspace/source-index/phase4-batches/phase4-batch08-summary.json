@@ -1,0 +1,46 @@
+{
+  "schema_version": "1",
+  "batch_id": "phase4-batch08",
+  "status": "completed",
+  "input_candidate_count": 2587,
+  "read_file_count": 274,
+  "method_done_count": 2358,
+  "body_summary_count": 2358,
+  "skip_count": 229,
+  "coverage": 0.9115,
+  "skip_reasons": {
+    "declaration_only": 229
+  },
+  "matched_files_not_in_original_path": 730,
+  "duplicate_name_fix_count": 0,
+  "top_matched_files": {
+    "afsim-2_9/swdev/src/wizard/plugins/ProjectBrowser/source/Item.cpp": 139,
+    "afsim-2_9/swdev/src/wizard/plugins/MapUtils/source/MapUtilsPlugin.cpp": 56,
+    "afsim-2_9/swdev/src/wizard/plugins/MapRoute/source/MapRoutePlugin.cpp": 55,
+    "afsim-2_9/swdev/src/wizard/plugins/MapAnnotation/source/WizAnnotationPlugin.cpp": 50,
+    "afsim-2_9/swdev/src/wizard/plugins/MapRoute/source/Route.cpp": 50,
+    "afsim-2_9/swdev/src/wizard/plugins/PatternVisualization/source/PatternsTreeModel.cpp": 47,
+    "afsim-2_9/swdev/src/wizard/plugins/MapUtils/source/LineEditSliderManager.cpp": 45,
+    "afsim-2_9/swdev/src/wizard/plugins/PatternVisualization/source/Canvas.cpp": 44,
+    "afsim-2_9/swdev/src/wizard/plugins/PlatformBrowser/source/DockWidget.cpp": 42,
+    "afsim-2_9/swdev/src/wizard/plugins/SPLAT/source/TargetPlatformTypeDialog.cpp": 41,
+    "afsim-2_9/swdev/src/wizard/plugins/PatternVisualization/source/RowColumnVector.hpp": 39,
+    "afsim-2_9/swdev/src/wizard/plugins/PatternVisualization/source/Session.cpp": 39,
+    "afsim-2_9/swdev/src/wizard/plugins/ProjectBrowser/source/DockWidget.cpp": 37,
+    "afsim-2_9/swdev/src/wizard/plugins/MapUtils/source/RotateScenarioDialog.cpp": 35,
+    "afsim-2_9/swdev/src/wizard/plugins/PatternVisualization/source/Pattern.cpp": 34,
+    "afsim-2_9/swdev/src/wizard/plugins/PatternVisualization/source/GlobalPlotOptions.cpp": 33,
+    "afsim-2_9/swdev/src/wizard/plugins/PatternVisualization/source/GlobalPlotSettings.cpp": 31,
+    "afsim-2_9/swdev/src/wizard/plugins/MapUtils/source/TranslateScenarioDialog.cpp": 29,
+    "afsim-2_9/swdev/src/wizard/plugins/PartManager/source/Widget.cpp": 29,
+    "afsim-2_9/swdev/src/wizard/plugins/PatternVisualization/source/Camera.cpp": 29
+  },
+  "output_function_index": "workspace/source-index/phase4-batches/phase4-batch08-function-index.jsonl",
+  "output_body_summary": "workspace/source-index/phase4-batches/phase4-batch08-function-body-summary.jsonl",
+  "output_skips": "workspace/source-index/phase4-batches/phase4-batch08-skips.jsonl",
+  "notes": [
+    "增强匹配：同时搜索 definition_path、path、declaration_path、同名头文件和 inline 文件。",
+    "每个候选搜索文件读取后复用缓存；同一文件不重复读取。",
+    "qualified_name 追加 signature_digest 以避免重载静默覆盖；若仍重复则追加 candidate_id 短后缀。"
+  ]
+}

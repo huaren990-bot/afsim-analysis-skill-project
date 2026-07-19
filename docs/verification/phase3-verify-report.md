@@ -1,83 +1,65 @@
-# Phase 3 v2 验证报告：独立验证修复版
+# Phase 3 符号级细粒度分析验证报告
 
-> **完成日期**：2026-06-17
-> **阶段**：Phase 3 / 7
-> **版本**：v2（针对独立验证报告 10 个问题的修复版）
+> **日期**：2026-07-16  
+> **阶段**：Phase 3 / 7  
+> **状态**：通过；Phase2 粗符号追溯闭环覆盖率已达到 100%
 
 ## 验证对象
 
-- `source-index/symbol-index.jsonl`（精细化版，含 69,159 个独立成员条目）
-- `source-index/macro-index.jsonl`（9,381 个宏定义）
-- `source-index/enum-index.jsonl`（814 个枚举）
+| 产物 | 路径 | 当前条目数 | 说明 |
+|---|---|---:|---|
+| Phase2 粗符号快照 | `workspace/source-index/symbol-index-phase2.jsonl` | 12,108 | Phase3 追溯分母 |
+| Phase3 精细符号索引 | `workspace/source-index/symbol-index.jsonl` | 90,524 | 已清理导出宏伪符号并补入 batch01-batch29 |
+| 宏索引 | `workspace/source-index/macro-index.jsonl` | 9,371 | 已过滤导出/API/import 宏、include guard、边界外 training 宏 |
+| 枚举索引 | `workspace/source-index/enum-index.jsonl` | 1,159 | DIS xenum include 已补齐；仍有 2 个旧有空枚举 |
+| Phase3 工作清单 | `workspace/source-index/symbols-to-refine-phase3.jsonl` | 12,108 | `pending=0` |
 
-## 10 个问题修复状态
+## 检查结果汇总
 
-| # | 问题 | 优先级 | 状态 | 详情 |
-|---|------|--------|------|------|
-| 1 | 符号索引粒度缺少成员独立条目 | High | ✅ 已修复 | 新增 method:39,820, constructor:3,805, destructor:1,978, variable:23,556 |
-| 2 | 6 个模板必填字段为空 | High | ✅ 已修复 | access_modifier:83.2%, is_virtual:54.9%, is_static:83.2%, is_const:83.2%, definition_path:55.6%, initial_value:2.9% |
-| 3 | member_variables 准确性低 | Medium | ✅ 已修复 | 嵌套类成员隔离；零成员类为 0 个 |
-| 4 | 构造/析构函数遗漏 | Medium | ✅ 已修复 | constructor:3,805, destructor:1,978 独立条目 |
-| 5 | 多行宏 replacement 丢失 | High | ✅ 已修复 | replacement 为空 function_like 宏：从 37→2 个 |
-| 6 | 宏名含数字误判为 function-like | Medium | ✅ 已修复 | aero2: has_params=False; 96个末尾数字宏中的80个是合法function-like宏 |
-| 7 | 模板字段/枚举值不合规 | High | ✅ 已修复 | macro_type 统一为 constant/expression/function_like；enum values.brief:100%；字段名已修正 |
-| 8 | qualified_name 大量重复 | Medium | ✅ 已修复 | 通过命名空间前缀去重 |
-| 9 | signature 偶发错误 | Low | ⚠️ known-issue | WSF_PARSER_EXPORT/WsfParseError 为 Phase 1/2 数据问题（0.0024%） |
-| 10 | 枚举行号偏移 | Low | ✅ 已修复 | 括号匹配计算 end_line |
+| # | 检查项 | 结果 | 当前证据 |
+|---|---|---|---|
+| 1 | JSONL 可解析 | 通过 | 5 个 JSONL 文件均可逐行解析 |
+| 2 | 导出宏伪符号过滤 | 通过 | `symbol-index.jsonl` 中匹配 `*_EXPORT/*_IMPORT/*_API/*_LIB_EXPORT` 的伪符号为 0 |
+| 3 | macro-index 过滤 | 通过 | 违规宏为 0 |
+| 4 | enum-index values 完整性 | 警告 | 1,159 个枚举中仍有 2 个旧有空枚举：`engage::Phase`、`UtStringEnumId` |
+| 5 | Phase2 到 Phase3 追溯 | 通过 | 12,108 个 Phase2 粗符号均已转为已完成或有明确跳过原因 |
+| 6 | 粗版快照保留 | 通过 | `symbol-index-phase2.jsonl` 存在且可解析 |
 
-## 核心统计数据
+## 闭环统计
 
-| 指标 | Phase 2 粗版 | Phase 3 v2 |
-|------|:-----------:|:-----------:|
-| 总符号数 | 13,936 | **83,095** |
-| class 含 signature | ~70% | **99.9%** |
-| class 含 base_symbols | ~22% | **63.4%** |
-| 成员函数独立条目 | 0 | **45,603** |
-| 成员变量独立条目 | 0 | **23,556** |
-| 宏定义 | 0 | **9,381** |
-| 枚举（含完整 values） | 0 | **814（809 含 values）** |
+| 指标 | 数量 |
+|---|---:|
+| Phase2 粗符号分母 | 12,108 |
+| 已完成/已有匹配 | 11,971 |
+| 已记录跳过 | 137 |
+| 未解释缺失 | 0 |
+| pending | 0 |
+| 闭环覆盖率 | 100.00% |
 
-## 字段覆盖率（symbol-index）
+## batch19-batch29 收尾
 
-| 字段 | 非空数 | 比例 |
-|------|--------|------|
-| signature | 78,952 | 95.0% |
-| access_modifier | 69,159 | 83.2% |
-| is_virtual | 45,603 | 54.9% |
-| is_static | 69,159 | 83.2% |
-| is_const | 69,159 | 83.2% |
-| definition_path | 46,213 | 55.6% |
-| initial_value | 2,429 | 2.9% |
-| base_symbols | 3,766 | 4.5% |
+| 批次 | 范围 | 输入 | 补齐 | 跳过 | 说明 |
+|---|---|---:|---:|---:|---|
+| batch19 | `tools/dis` | 218 | 218 | 0 | DIS 协议枚举、结构、namespace；xenum include values 已补齐 |
+| batch20 | `core/wsf_space` | 189 | 184 | 5 | 空间模型；跳过项为测试宏/测试文件名/实现文件名误分类 |
+| batch21 | `wsf_plugins/wsf_iads_c2_lib` | 183 | 177 | 6 | IADS C2 库；跳过项为注释词 typedef 和错误路径函数引用 |
+| batch22 | `core/wsf_cyber` | 169 | 164 | 5 | Cyber C++ 符号；CMake/grammar 条目按非 C++ formal symbol 跳过 |
+| batch23 | `tools/util_script` | 151 | 148 | 3 | 脚本工具 C++ 符号；test/cmake 条目跳过 |
+| batch24 | `wizard/usmtf` | 138 | 134 | 4 | USMTF C++ 符号；测试文件名误分类跳过 |
+| batch25 | `wsf_plugins/wsf_oms_uci` | 128 | 125 | 3 | OMS/UCI C++ 符号；实现文件名误分类跳过 |
+| batch26 | `post_processor/WizPostProcessor` | 113 | 113 | 0 | 后处理插件符号全闭环 |
+| batch27 | `wsf_plugins/wsf_coverage` | 112 | 107 | 5 | Coverage C++ 符号；CMake/grammar 条目跳过 |
+| batch28 | `core/wsf_parser` | 94 | 90 | 4 | Parser C++ 符号；错误路径函数引用跳过 |
+| batch29 | residual scopes | 445 | 431 | 14 | 小目录收尾；宏/test_case 等非 symbol 条目跳过，7 条真实模板/嵌套类型已补正 |
 
-## Kind 分布
+## 剩余警告
 
-| Kind | 数量 |
-|------|------|
-| method | 39,820 |
-| variable | 23,556 |
-| class | 4,653 |
-| namespace | 4,138 |
-| constructor | 3,805 |
-| destructor | 1,978 |
-| using | 1,824 |
-| struct | 1,288 |
-| typedef | 1,219 |
-| enum | 814 |
+| 问题 | 当前状态 | 建议 |
+|---|---|---|
+| 2 个旧有枚举 `values` 为空 | 不影响 Phase2 → Phase3 追溯闭环 | 后续可单独定位 `engage::Phase`、`UtStringEnumId` 的真实定义来源 |
+| `refined_by_qualified_name` 仍有 711 条 | 属于早期同名追溯口径，不是 pending 缺失 | 后续若需要更强一致性，可做 Phase3.1 exact-key 对齐 |
 
-## 模板合规性
+## 结论
 
-### macro-index
-- 所有 12 个模板必填字段 100% 覆盖
-- macro_type 值域：constant (8,718) / expression (415) / function_like (248)
-- 无 EXPORT 宏或 include guard 泄漏
+Phase3 已达到本轮目标：`symbols-to-refine-phase3.jsonl` 中无 `pending`，Phase2 粗符号追溯闭环覆盖率为 100%。当前产物可作为下一步 AFSIM 业务逻辑分析的符号级基础输入。
 
-### enum-index
-- 所有 13 个模板必填字段 100% 覆盖
-- 5,181 个枚举值 100% 含 brief 字段
-- 2 个枚举 values 为空（Phase, UtStringEnumId）
-
-## known-issue
-
-1. **#9 signature 偶发错误**（2/83,095 = 0.0024%）：`WSF_PARSER_EXPORT`（应为 WsfPProxyDiff）和 `WsfParseError` 的 signature 指向错误，均来自 Phase 2 粗版索引的原始数据问题。
-2. **enum_class 0 条目**：代码库中不存在严格的 `enum class` 语法（大部分 C++14 enum class 在 AFSIM 中以 `enum` 形式被识别）。

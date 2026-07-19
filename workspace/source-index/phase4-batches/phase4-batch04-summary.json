@@ -1,0 +1,46 @@
+{
+  "schema_version": "1",
+  "batch_id": "phase4-batch04",
+  "status": "completed",
+  "input_candidate_count": 2203,
+  "read_file_count": 243,
+  "method_done_count": 2132,
+  "body_summary_count": 2132,
+  "skip_count": 71,
+  "coverage": 0.9678,
+  "skip_reasons": {
+    "declaration_only": 71
+  },
+  "matched_files_not_in_original_path": 539,
+  "duplicate_name_fix_count": 22,
+  "top_matched_files": {
+    "afsim-2_9/swdev/src/core/wsf/source/processor/WsfTaskManager.cpp": 82,
+    "afsim-2_9/swdev/src/core/wsf/source/mover/WsfMover.cpp": 57,
+    "afsim-2_9/swdev/src/core/wsf/source/script/WsfScriptStateMachine.cpp": 57,
+    "afsim-2_9/swdev/src/core/wsf/source/mover/WsfFuel.cpp": 50,
+    "afsim-2_9/swdev/src/core/wsf/source/mover/WsfRoute.cpp": 50,
+    "afsim-2_9/swdev/src/core/wsf/source/mover/WsfWaypoint.hpp": 50,
+    "afsim-2_9/swdev/src/core/wsf/source/script/WsfScriptContext.cpp": 48,
+    "afsim-2_9/swdev/src/core/wsf/source/processor/WsfTrackProcessor.cpp": 44,
+    "afsim-2_9/swdev/src/core/wsf/source/mover/WsfPathGuidance.hpp": 42,
+    "afsim-2_9/swdev/src/core/wsf/source/mover/WsfRotorcraftMover.cpp": 42,
+    "afsim-2_9/swdev/src/core/wsf/source/mover/WsfRouteFinder.cpp": 41,
+    "afsim-2_9/swdev/src/core/wsf/source/mover/WsfWaypointMover.cpp": 40,
+    "afsim-2_9/swdev/src/core/wsf/source/processor/WsfTask.hpp": 40,
+    "afsim-2_9/swdev/src/core/wsf/source/mover/WsfNavigationErrors.cpp": 38,
+    "afsim-2_9/swdev/src/core/wsf/source/mover/WsfPathGuidance.cpp": 38,
+    "afsim-2_9/swdev/src/core/wsf/source/mover/WsfRouteMover.cpp": 38,
+    "afsim-2_9/swdev/src/core/wsf/source/mover/WsfNavigationMesh.cpp": 36,
+    "afsim-2_9/swdev/src/core/wsf/source/mover/WsfTSPI_Mover.cpp": 36,
+    "afsim-2_9/swdev/src/core/wsf/source/processor/WsfExchangeProcessor.cpp": 36,
+    "afsim-2_9/swdev/src/core/wsf/source/processor/WsfMessageProcessor.cpp": 35
+  },
+  "output_function_index": "workspace/source-index/phase4-batches/phase4-batch04-function-index.jsonl",
+  "output_body_summary": "workspace/source-index/phase4-batches/phase4-batch04-function-body-summary.jsonl",
+  "output_skips": "workspace/source-index/phase4-batches/phase4-batch04-skips.jsonl",
+  "notes": [
+    "增强匹配：同时搜索 definition_path、path、declaration_path、同名头文件和 inline 文件。",
+    "每个候选搜索文件读取后复用缓存；同一文件不重复读取。",
+    "qualified_name 追加 signature_digest 以避免重载静默覆盖；若仍重复则追加 candidate_id 短后缀。"
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "schema_version": "1",
+  "batch_id": "phase4-batch23",
+  "status": "completed",
+  "input_candidate_count": 858,
+  "effective_candidate_count": 858,
+  "invalid_candidate_count": 0,
+  "read_file_count": 181,
+  "method_done_count": 774,
+  "body_summary_count": 774,
+  "skip_count": 84,
+  "raw_coverage": 0.9021,
+  "coverage": 0.9021,
+  "skip_reasons": {
+    "declaration_only": 84
+  },
+  "matched_files_not_in_original_path": 308,
+  "duplicate_name_fix_count": 9,
+  "top_matched_files": {
+    "afsim-2_9/swdev/src/wsf_plugins/wsf_scenario_analyzer_iads_c2/source/ScenarioAnalyzerIADSC2.cpp": 64,
+    "afsim-2_9/swdev/src/core/wsf_weapon_server/source/WsfWeaponServer.cpp": 35,
+    "afsim-2_9/swdev/src/wsf_plugins/wsf_simdis/source/WsfSIMDIS_Interface.cpp": 30,
+    "afsim-2_9/swdev/src/wsf_plugins/wsf_alternate_locations/source/WsfAltLocComponent.cpp": 29,
+    "afsim-2_9/swdev/src/wsf_plugins/wsf_argo8/source/WsfARGO8_Mover.cpp": 24,
+    "afsim-2_9/swdev/src/tools/artificer/source/lib/RunData.cpp": 17,
+    "afsim-2_9/swdev/src/weapon_tools/source/WeaponObserver.cpp": 17,
+    "afsim-2_9/swdev/src/wsf_plugins/wsf_multiresolution/source/WsfMultiresolutionMultirunTable.cpp": 16,
+    "afsim-2_9/swdev/src/core/wsf_weapon_server/source/WsfWeaponServer.hpp": 15,
+    "afsim-2_9/swdev/src/tools/scene_gen/source/SceneGenInputFileReader.cpp": 15,
+    "afsim-2_9/swdev/src/wsf_plugins/wsf_fires/source/BallisticPath.cpp": 15,
+    "afsim-2_9/swdev/src/evt_reader/source/EventTableDialog.cpp": 14,
+    "afsim-2_9/swdev/src/weapon_tools/source/Tool.cpp": 13,
+    "afsim-2_9/swdev/src/wsf_plugins/wsf_scenario_analyzer/source/ScenarioAnalyzerMessage.cpp": 13,
+    "afsim-2_9/swdev/src/wsf_plugins/wsf_scenario_analyzer/source/ScenarioAnalyzerMessage.hpp": 13,
+    "afsim-2_9/swdev/src/core/wsf_mtt/source/MTT_Parameters.cpp": 12,
+    "afsim-2_9/swdev/src/tools/geodata/source/DtedTileManager.cpp": 12,
+    "afsim-2_9/swdev/src/weapon_tools/source/WeaponObserver.hpp": 12,
+    "afsim-2_9/swdev/src/tools/profiling/source/TimedRegion.cpp": 11,
+    "afsim-2_9/swdev/src/wsf_plugins/wsf_annotation/source/WsfAnnotation.cpp": 11
+  },
+  "output_function_index": "workspace/source-index/phase4-batches/phase4-batch23-function-index.jsonl",
+  "output_body_summary": "workspace/source-index/phase4-batches/phase4-batch23-function-body-summary.jsonl",
+  "output_skips": "workspace/source-index/phase4-batches/phase4-batch23-skips.jsonl",
+  "notes": [
+    "增强匹配：同时搜索 definition_path、path、declaration_path、同名头文件和 inline 文件。",
+    "补充匹配：从 owner/qualified_name 提取类名，搜索类名同 stem 的源/头/inline 文件，覆盖声明头文件与实现文件不同名的场景。",
+    "每个候选搜索文件读取后复用缓存；同一文件不重复读取。",
+    "qualified_name 追加 signature_digest 以避免重载静默覆盖；若仍重复则追加 candidate_id 短后缀。",
+    "coverage 使用有效候选口径；raw_coverage 保留未剔除变量/表达式误报前的原始口径。"
+  ]
+}

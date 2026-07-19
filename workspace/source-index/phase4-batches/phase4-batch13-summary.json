@@ -1,0 +1,46 @@
+{
+  "schema_version": "1",
+  "batch_id": "phase4-batch13",
+  "status": "completed",
+  "input_candidate_count": 2341,
+  "read_file_count": 86,
+  "method_done_count": 2196,
+  "body_summary_count": 2196,
+  "skip_count": 145,
+  "coverage": 0.9381,
+  "skip_reasons": {
+    "declaration_only": 145
+  },
+  "matched_files_not_in_original_path": 1149,
+  "duplicate_name_fix_count": 0,
+  "top_matched_files": {
+    "afsim-2_9/swdev/src/mover_creator/source/GeometryWidget.cpp": 215,
+    "afsim-2_9/swdev/src/mover_creator/source/ScriptGeneratorP6DOF.cpp": 175,
+    "afsim-2_9/swdev/src/mover_creator/source/GeometryWing.cpp": 144,
+    "afsim-2_9/swdev/src/mover_creator/source/GeometryWing.hpp": 122,
+    "afsim-2_9/swdev/src/mover_creator/source/GeometrySurface.cpp": 106,
+    "afsim-2_9/swdev/src/mover_creator/source/ScriptGeneratorRigidBodySixDOF.cpp": 87,
+    "afsim-2_9/swdev/src/mover_creator/source/PlotManagerWidget.cpp": 85,
+    "afsim-2_9/swdev/src/mover_creator/source/GeometryObjFile.cpp": 82,
+    "afsim-2_9/swdev/src/mover_creator/source/MoverCreatorWidget.cpp": 75,
+    "afsim-2_9/swdev/src/mover_creator/source/GeometrySurface.hpp": 64,
+    "afsim-2_9/swdev/src/mover_creator/source/GeometryOptionsDialog.cpp": 63,
+    "afsim-2_9/swdev/src/mover_creator/source/GeometryMassProperties.cpp": 61,
+    "afsim-2_9/swdev/src/mover_creator/source/GeometryObject.cpp": 60,
+    "afsim-2_9/swdev/src/mover_creator/source/PerformanceWidget.cpp": 60,
+    "afsim-2_9/swdev/src/mover_creator/source/GeometryPropulsionData.cpp": 55,
+    "afsim-2_9/swdev/src/mover_creator/source/GraphicalPointCollection.cpp": 46,
+    "afsim-2_9/swdev/src/mover_creator/source/ObjPointCollection.cpp": 46,
+    "afsim-2_9/swdev/src/mover_creator/source/GeometrySettingsDialog.cpp": 39,
+    "afsim-2_9/swdev/src/mover_creator/source/MoverCreatorMainWindow.cpp": 38,
+    "afsim-2_9/swdev/src/mover_creator/source/PerformanceTestWidget.cpp": 35
+  },
+  "output_function_index": "workspace/source-index/phase4-batches/phase4-batch13-function-index.jsonl",
+  "output_body_summary": "workspace/source-index/phase4-batches/phase4-batch13-function-body-summary.jsonl",
+  "output_skips": "workspace/source-index/phase4-batches/phase4-batch13-skips.jsonl",
+  "notes": [
+    "增强匹配：同时搜索 definition_path、path、declaration_path、同名头文件和 inline 文件。",
+    "每个候选搜索文件读取后复用缓存；同一文件不重复读取。",
+    "qualified_name 追加 signature_digest 以避免重载静默覆盖；若仍重复则追加 candidate_id 短后缀。"
+  ]
+}

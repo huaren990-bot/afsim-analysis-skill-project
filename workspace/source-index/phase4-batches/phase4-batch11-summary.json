@@ -1,0 +1,46 @@
+{
+  "schema_version": "1",
+  "batch_id": "phase4-batch11",
+  "status": "completed",
+  "input_candidate_count": 2251,
+  "read_file_count": 152,
+  "method_done_count": 2183,
+  "body_summary_count": 2183,
+  "skip_count": 68,
+  "coverage": 0.9698,
+  "skip_reasons": {
+    "declaration_only": 68
+  },
+  "matched_files_not_in_original_path": 703,
+  "duplicate_name_fix_count": 2,
+  "top_matched_files": {
+    "afsim-2_9/swdev/src/core/wsf_mil/source/sensor/WsfOTH_RadarSensor.cpp": 83,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/weapon/WsfBallisticMissileLaunchComputer.cpp": 81,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/weapon/WsfWeaponEffects.hpp": 77,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/weapon/WsfRF_Jammer.cpp": 72,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/weapon/WsfDirectedEnergyWeapon.hpp": 67,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/sensor/WsfAcousticSensor.cpp": 66,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/sensor/WsfSAR_Sensor.cpp": 66,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/sensor/WsfOpticalSensor.cpp": 59,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/weapon/WsfMobilityAndFirepowerLethality.cpp": 56,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/weapon/WsfATA_LaunchComputer.cpp": 55,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/weapon/WsfWeaponEffects.cpp": 55,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/sensor/WsfOTH_RadarSensor.hpp": 51,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/weapon/WsfAirToAirLaunchComputer.cpp": 47,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/weapon/WsfMobilityAndFirepowerLethality.hpp": 47,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/weapon/WsfPkTable.cpp": 46,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/weapon/WsfWeaponEngagement.cpp": 45,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/weapon/WsfLaunchComputer.cpp": 43,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/sensor/WsfEOIR_Sensor.cpp": 38,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/sensor/WsfLaserDesignator.cpp": 38,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/sensor/WsfBeamDirector.hpp": 35
+  },
+  "output_function_index": "workspace/source-index/phase4-batches/phase4-batch11-function-index.jsonl",
+  "output_body_summary": "workspace/source-index/phase4-batches/phase4-batch11-function-body-summary.jsonl",
+  "output_skips": "workspace/source-index/phase4-batches/phase4-batch11-skips.jsonl",
+  "notes": [
+    "增强匹配：同时搜索 definition_path、path、declaration_path、同名头文件和 inline 文件。",
+    "每个候选搜索文件读取后复用缓存；同一文件不重复读取。",
+    "qualified_name 追加 signature_digest 以避免重载静默覆盖；若仍重复则追加 candidate_id 短后缀。"
+  ]
+}

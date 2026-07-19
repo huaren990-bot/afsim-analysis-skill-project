@@ -1,0 +1,52 @@
+{
+  "schema_version": "1",
+  "batch_id": "phase4-batch18",
+  "status": "completed",
+  "input_candidate_count": 2466,
+  "effective_candidate_count": 2399,
+  "invalid_candidate_count": 67,
+  "read_file_count": 345,
+  "method_done_count": 2184,
+  "body_summary_count": 2184,
+  "skip_count": 282,
+  "raw_coverage": 0.8856,
+  "coverage": 0.9104,
+  "skip_reasons": {
+    "declaration_only": 215,
+    "variable_not_function": 67
+  },
+  "matched_files_not_in_original_path": 428,
+  "duplicate_name_fix_count": 20,
+  "top_matched_files": {
+    "afsim-2_9/swdev/src/tools/util/source/UtGraph.hpp": 168,
+    "afsim-2_9/swdev/src/tools/util/source/UtVec3.hpp": 103,
+    "afsim-2_9/swdev/src/tools/util/source/UtMatrix.hpp": 53,
+    "afsim-2_9/swdev/src/tools/util/source/UtInputPreprocessor.cpp": 46,
+    "afsim-2_9/swdev/src/tools/wkf/wsfg/wsf_spaceg/source/TargetSelectionConfigWidget.cpp": 45,
+    "afsim-2_9/swdev/src/tools/util/source/UtGapBuffer.hpp": 39,
+    "afsim-2_9/swdev/src/tools/util/source/UtSortedVector.hpp": 37,
+    "afsim-2_9/swdev/src/tools/wkf/wsfg/wsf_spaceg/source/OrbitalMissionItem.cpp": 37,
+    "afsim-2_9/swdev/src/wsf_plugins/wsf_iads_c2_lib/iadsLib/include/vclMath/Vector3.hpp": 36,
+    "afsim-2_9/swdev/src/tools/util/source/UtMat3.hpp": 34,
+    "afsim-2_9/swdev/src/wsf_plugins/wsf_iads_c2_lib/iadsLib/source/assignmentContainers.cpp": 34,
+    "afsim-2_9/swdev/src/tools/wkf/plugins/CoverageOverlay/source/CoverageData.cpp": 33,
+    "afsim-2_9/swdev/src/tools/util/source/TblLookup.hpp": 32,
+    "afsim-2_9/swdev/src/tools/wkf/plugins/CoverageOverlay/source/HeatmapOverlay.cpp": 32,
+    "afsim-2_9/swdev/src/tools/wkf/plugins/MapDisplay/source/MapDockWidget.cpp": 32,
+    "afsim-2_9/swdev/src/tools/util/source/UtAttribute.hpp": 31,
+    "afsim-2_9/swdev/src/tools/util/source/UtFortMat3.hpp": 31,
+    "afsim-2_9/swdev/src/tools/wkf/core/source/WkfPluginManager.cpp": 31,
+    "afsim-2_9/swdev/src/tools/wkf/wsfg/wsf_spaceg/source/OrbitalModelToSequence.cpp": 30,
+    "afsim-2_9/swdev/src/tools/wkf/wsfg/wsf_spaceg/source/VerificationResults.hpp": 30
+  },
+  "output_function_index": "workspace/source-index/phase4-batches/phase4-batch18-function-index.jsonl",
+  "output_body_summary": "workspace/source-index/phase4-batches/phase4-batch18-function-body-summary.jsonl",
+  "output_skips": "workspace/source-index/phase4-batches/phase4-batch18-skips.jsonl",
+  "notes": [
+    "增强匹配：同时搜索 definition_path、path、declaration_path、同名头文件和 inline 文件。",
+    "补充匹配：从 owner/qualified_name 提取类名，搜索类名同 stem 的源/头/inline 文件，覆盖声明头文件与实现文件不同名的场景。",
+    "每个候选搜索文件读取后复用缓存；同一文件不重复读取。",
+    "qualified_name 追加 signature_digest 以避免重载静默覆盖；若仍重复则追加 candidate_id 短后缀。",
+    "coverage 使用有效候选口径；raw_coverage 保留未剔除变量/表达式误报前的原始口径。"
+  ]
+}

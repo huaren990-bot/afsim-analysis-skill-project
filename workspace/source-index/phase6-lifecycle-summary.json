@@ -1,0 +1,26 @@
+{
+  "schema_version": "1",
+  "phase": "phase6-lifecycle",
+  "status": "verified",
+  "stage_summary": {
+    "entry": 5,
+    "scenario_load": 8,
+    "object_create": 8,
+    "simulation_loop": 8,
+    "model_update": 8,
+    "event_handling": 8,
+    "output": 8,
+    "shutdown": 8
+  },
+  "stage_coverage_ok": true,
+  "call_chain_count": 24,
+  "data_object_count": 5,
+  "extension_mechanism_count": 10,
+  "mermaid_block_count": 7,
+  "outputs": {
+    "lifecycle": "docs/architecture/lifecycle.md",
+    "dataflow": "docs/architecture/dataflow.md",
+    "extension_points": "docs/architecture/extension-points.md",
+    "verify_report": "docs/verification/phase6-verify-report.md"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "schema_version": "1",
+  "batch_id": "phase4-batch01",
+  "status": "completed",
+  "input_candidate_count": 2329,
+  "read_file_count": 180,
+  "method_done_count": 2212,
+  "body_summary_count": 2212,
+  "skip_count": 117,
+  "coverage": 0.9498,
+  "skip_reasons": {
+    "declaration_only": 117
+  },
+  "matched_files_not_in_original_path": 754,
+  "top_matched_files": {
+    "afsim-2_9/swdev/src/core/wsf/source/WsfEventResults.hpp": 204,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfEventResults.cpp": 196,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfAdvancedBehaviorTreeNode.cpp": 125,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfExchange.cpp": 93,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfImage.hpp": 73,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfDraw.cpp": 66,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfDraw.hpp": 62,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfExchange.hpp": 59,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfEM_Antenna.cpp": 43,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfArticulatedPart.hpp": 41,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfArticulatedPart.cpp": 40,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfEM_Antenna.hpp": 38,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfAdvancedBehaviorTreeNode.hpp": 36,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfBehaviorTreeNode.cpp": 36,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfEM_XmtrRcvr.cpp": 33,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfEM_XmtrRcvr.hpp": 30,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfAntennaPattern.cpp": 28,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfExternalLinks.cpp": 28,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfAdvancedBehaviorTree.cpp": 27,
+    "afsim-2_9/swdev/src/core/wsf/source/WsfGeoPoint.cpp": 27
+  },
+  "output_function_index": "workspace/source-index/phase4-batches/phase4-batch01-function-index.jsonl",
+  "output_body_summary": "workspace/source-index/phase4-batches/phase4-batch01-function-body-summary.jsonl",
+  "output_skips": "workspace/source-index/phase4-batches/phase4-batch01-skips.jsonl",
+  "notes": [
+    "增强匹配：同时搜索 definition_path、path、declaration_path、同名头文件和 inline 文件。",
+    "每个候选搜索文件读取后复用缓存；同一文件不重复读取。",
+    "qualified_name 追加 signature_digest 以避免重载静默覆盖；canonical_qualified_name 保留原限定名。"
+  ]
+}

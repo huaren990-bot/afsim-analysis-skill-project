@@ -1,0 +1,52 @@
+{
+  "schema_version": "1",
+  "batch_id": "phase4-batch16",
+  "status": "completed",
+  "input_candidate_count": 2439,
+  "effective_candidate_count": 2434,
+  "invalid_candidate_count": 5,
+  "read_file_count": 336,
+  "method_done_count": 2302,
+  "body_summary_count": 2302,
+  "skip_count": 137,
+  "raw_coverage": 0.9438,
+  "coverage": 0.9458,
+  "skip_reasons": {
+    "declaration_only": 132,
+    "variable_not_function": 5
+  },
+  "matched_files_not_in_original_path": 738,
+  "duplicate_name_fix_count": 6,
+  "top_matched_files": {
+    "afsim-2_9/swdev/src/mystic/plugins/ResultStatistics/source/RvEventTableModel.cpp": 117,
+    "afsim-2_9/swdev/src/mystic/plugins/ResultP6DOFData/source/RvP6DOFDataUpdater.cpp": 88,
+    "afsim-2_9/swdev/src/mystic/plugins/ResultSixDOF_Data/source/RvSixDOF_DataUpdater.cpp": 87,
+    "afsim-2_9/swdev/src/mystic/plugins/ResultPlatformData/source/RvPlatformDataUpdater.cpp": 47,
+    "afsim-2_9/swdev/src/mystic/plugins/ResultTracks/source/TracksPlugin.cpp": 44,
+    "afsim-2_9/swdev/src/mystic/plugins/ResultPlatformHistory/source/RvPluginPlatformHistory.cpp": 43,
+    "afsim-2_9/swdev/src/mystic/plugins/ResultBehaviorAnalysisTool/source/RvBAT_GraphicsNode.cpp": 39,
+    "afsim-2_9/swdev/src/mystic/plugins/ResultSensorVolumes/source/RvPluginSensorVolumes.cpp": 39,
+    "afsim-2_9/swdev/src/mystic/plugins/ResultRoute/source/RvPluginRoute.cpp": 37,
+    "afsim-2_9/swdev/src/mystic/plugins/ResultEngagementAnalysis/source/RvPluginEngagement.cpp": 36,
+    "afsim-2_9/swdev/src/mystic/plugins/ResultInteractionLines/source/RvPluginInteraction.cpp": 36,
+    "afsim-2_9/swdev/src/mystic/plugins/ResultMerger/source/RvMergerUtils.cpp": 35,
+    "afsim-2_9/swdev/src/mystic/plugins/ResultTracks/source/PlotUpdater.cpp": 35,
+    "afsim-2_9/swdev/src/mystic/plugins/ResultSensorVolumes/source/RvPlatformSensorVolumes.cpp": 34,
+    "afsim-2_9/swdev/src/mystic/plugins/ResultAcesDisplay/source/RvAcesDisplayPlugin.cpp": 33,
+    "afsim-2_9/swdev/src/mystic/plugins/ResultSixDOF_Data/source/RvSixDOF_DataPlotUpdater.cpp": 32,
+    "afsim-2_9/swdev/src/mystic/plugins/ResultP6DOFData/source/RvP6DOFDataPlotUpdater.cpp": 30,
+    "afsim-2_9/swdev/src/mystic/plugins/ResultBattleManagement/source/RvBM_Plugin.cpp": 29,
+    "afsim-2_9/swdev/src/mystic/plugins/ResultPlatformData/source/RvPluginPlatformData.cpp": 29,
+    "afsim-2_9/swdev/src/mystic/plugins/ResultTracks/source/PlottingWidget.cpp": 29
+  },
+  "output_function_index": "workspace/source-index/phase4-batches/phase4-batch16-function-index.jsonl",
+  "output_body_summary": "workspace/source-index/phase4-batches/phase4-batch16-function-body-summary.jsonl",
+  "output_skips": "workspace/source-index/phase4-batches/phase4-batch16-skips.jsonl",
+  "notes": [
+    "增强匹配：同时搜索 definition_path、path、declaration_path、同名头文件和 inline 文件。",
+    "补充匹配：从 owner/qualified_name 提取类名，搜索类名同 stem 的源/头/inline 文件，覆盖声明头文件与实现文件不同名的场景。",
+    "每个候选搜索文件读取后复用缓存；同一文件不重复读取。",
+    "qualified_name 追加 signature_digest 以避免重载静默覆盖；若仍重复则追加 candidate_id 短后缀。",
+    "coverage 使用有效候选口径；raw_coverage 保留未剔除变量/表达式误报前的原始口径。"
+  ]
+}

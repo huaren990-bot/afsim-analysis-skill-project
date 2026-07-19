@@ -130,6 +130,14 @@ metadata:
 - `docs/architecture/dataflow.md`
 - `docs/architecture/extension-points.md`
 
+推荐使用项目脚本生成 Phase6 产物：
+
+```bash
+python3 tools/indexers/phase6_build_lifecycle.py --root <project_root>
+```
+
+该脚本读取 Phase4 `function-index.jsonl`、Phase5 `dependency-index.jsonl` 与 Phase3 `symbol-index.jsonl`，生成生命周期、数据流、配置流、扩展点和验证报告。若 Phase4 没有 `entry` 标记，必须按本阶段规则只使用一次 CodeGraph 批量入口查询补充入口证据；配置流和扩展点补充只能使用各一次批量 grep。
+
 ## lifecycle.md 结构
 
 ```markdown

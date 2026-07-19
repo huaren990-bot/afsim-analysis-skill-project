@@ -1,0 +1,29 @@
+{
+  "schema_version": "1",
+  "phase": "phase4-functions",
+  "status": "merged",
+  "batch_count": 23,
+  "input_candidate_count": 53064,
+  "effective_candidate_count": 52946,
+  "invalid_candidate_count": 118,
+  "method_done_count": 49561,
+  "body_summary_count": 49561,
+  "skip_count": 3503,
+  "raw_coverage": 0.934,
+  "coverage": 0.9361,
+  "system_level_count": 1,
+  "module_level_count": 54,
+  "class_level_count": 5415,
+  "method_level_count": 49561,
+  "function_index_count": 55031,
+  "global_duplicate_name_fix_count": 248,
+  "skip_reasons": {
+    "declaration_only": 3385,
+    "variable_not_function": 118
+  },
+  "outputs": {
+    "function_index": "workspace/source-index/function-index.jsonl",
+    "function_body_summary": "workspace/source-index/function-body-summary.jsonl",
+    "skips": "workspace/source-index/phase4-function-skips.jsonl"
+  }
+}

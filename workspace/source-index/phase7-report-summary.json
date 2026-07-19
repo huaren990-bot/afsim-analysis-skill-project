@@ -1,0 +1,32 @@
+{
+  "date": "2026-07-16",
+  "outputs": [
+    "docs/architecture/afsim-architecture.md",
+    "docs/architecture/x-level-capabilities.md",
+    "docs/architecture/module-dependency.md",
+    "docs/architecture/business-logic-readiness.md",
+    "docs/verification/phase7-final-verify-report.md",
+    "docs/records/107-phase7-final-reports.md"
+  ],
+  "function_rows": 55031,
+  "symbol_rows": 90524,
+  "dependency_rows": 273350,
+  "validation": {
+    "arch_missing_sections": [],
+    "xlevel_title_ok": true,
+    "xlevel_method_qname_count": 142,
+    "xlevel_method_misses": [],
+    "xlevel_method_hit_rate": 1.0,
+    "dependency_edge_count": 58,
+    "dependency_edge_misses": [],
+    "dependency_trace_rate": 1.0,
+    "blr_missing_sections": [],
+    "blr_evidence_level_count": 27,
+    "blr_bad_evidence_level_count": 0,
+    "jsonl_error_count": 0,
+    "jsonl_errors": [],
+    "ellipsis_dot_count": 0,
+    "ellipsis_deng_count": 0,
+    "business_readiness_ok": true
+  }
+}

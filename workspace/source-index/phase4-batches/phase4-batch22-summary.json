@@ -1,0 +1,52 @@
+{
+  "schema_version": "1",
+  "batch_id": "phase4-batch22",
+  "status": "completed",
+  "input_candidate_count": 2447,
+  "effective_candidate_count": 2444,
+  "invalid_candidate_count": 3,
+  "read_file_count": 336,
+  "method_done_count": 2296,
+  "body_summary_count": 2296,
+  "skip_count": 151,
+  "raw_coverage": 0.9383,
+  "coverage": 0.9394,
+  "skip_reasons": {
+    "declaration_only": 148,
+    "variable_not_function": 3
+  },
+  "matched_files_not_in_original_path": 888,
+  "duplicate_name_fix_count": 0,
+  "top_matched_files": {
+    "afsim-2_9/swdev/src/wsf_plugins/wsf_air_combat/source/WsfSA_Processor.cpp": 101,
+    "afsim-2_9/swdev/src/engage/source/Events.cpp": 78,
+    "afsim-2_9/swdev/src/core/wsf_ripr/source/WsfRIPRProcessor.cpp": 75,
+    "afsim-2_9/swdev/src/wsf_plugins/wsf_air_combat/source/WsfSA_Processor.hpp": 67,
+    "afsim-2_9/swdev/src/core/wsf_ripr/source/xio/WsfXIO_JobBoardService.cpp": 46,
+    "afsim-2_9/swdev/src/core/wsf_ripr/source/WsfRIPRJobBoard.cpp": 43,
+    "afsim-2_9/swdev/src/wsf_plugins/wsf_sosm/source/WsfSOSM_Sensor.cpp": 38,
+    "afsim-2_9/swdev/src/engage/source/SimulationExtension.cpp": 36,
+    "afsim-2_9/swdev/src/tools/utilqt/source/UtQtGL2DPlot.cpp": 36,
+    "afsim-2_9/swdev/src/tools/tracking_filters/source/KalmanFilter.cpp": 35,
+    "afsim-2_9/swdev/src/core/wsf_ripr/source/WsfRIPRJob.cpp": 32,
+    "afsim-2_9/swdev/src/tools/genio/source/GenUmpIOServerCC.hpp": 31,
+    "afsim-2_9/swdev/src/core/wsf_util/source/Utml.cpp": 29,
+    "afsim-2_9/swdev/src/tools/tracking_filters/source/OrbitDeterminationKalmanFilter.cpp": 29,
+    "afsim-2_9/swdev/src/wsf_plugins/wsf_argo8/argo8/source/Argo8Missile.cpp": 27,
+    "afsim-2_9/swdev/src/wsf_plugins/wsf_six_dof/source/WsfRigidBodySixDOF_AeroMovableObject.cpp": 26,
+    "afsim-2_9/swdev/src/core/wsf_util/source/UtPackMessage.hpp": 25,
+    "afsim-2_9/swdev/src/wsf_plugins/wsf_coverage/source/WsfCoverage.cpp": 25,
+    "afsim-2_9/swdev/src/wsf_plugins/wsf_sosm/sosm/source/SOSM_TableTarget.cpp": 25,
+    "afsim-2_9/swdev/src/wsf_plugins/wsf_coverage/source/WsfCoverageAsset.hpp": 24
+  },
+  "output_function_index": "workspace/source-index/phase4-batches/phase4-batch22-function-index.jsonl",
+  "output_body_summary": "workspace/source-index/phase4-batches/phase4-batch22-function-body-summary.jsonl",
+  "output_skips": "workspace/source-index/phase4-batches/phase4-batch22-skips.jsonl",
+  "notes": [
+    "增强匹配：同时搜索 definition_path、path、declaration_path、同名头文件和 inline 文件。",
+    "补充匹配：从 owner/qualified_name 提取类名，搜索类名同 stem 的源/头/inline 文件，覆盖声明头文件与实现文件不同名的场景。",
+    "每个候选搜索文件读取后复用缓存；同一文件不重复读取。",
+    "qualified_name 追加 signature_digest 以避免重载静默覆盖；若仍重复则追加 candidate_id 短后缀。",
+    "coverage 使用有效候选口径；raw_coverage 保留未剔除变量/表达式误报前的原始口径。"
+  ]
+}

@@ -1,7 +1,7 @@
 # Phase 2 最小目录单元分析计划
 
 > **日期**：2026-06-24
-> **最近更新**：2026-07-11，batch28-batch33 完成 SixDOF、Tracks、Prompt、Route、ScenarioAnalyzer、multiresolution、Result/Brawler/Joystick/Engage/PostProcessor、PlatformMovement、SimController、fires/RIPR/weapon tools/CommVis、MTT/air combat/SPLAT/sensor plot 等 36 个最小目录单元；继续由子 agent 只读取证，主 agent 统一合并 JSONL 与文档。
+> **最近更新**：2026-07-15，batch53-batch58 完成剩余 22 个最小目录单元，Phase2 工作清单闭环；继续保持 CodeGraph 优先、最小目录单元、父目录 residual 不覆盖子目录的规则。
 > **依据**：`workspace/project-boundary/project-boundary.json` 的 `analysis_boundaries` 与 `module_hierarchy`
 > **目标**：面对大型 AFSIM C++ 源码，按目录树中的最小可验证源码单元逐步补强 Phase 2，而不是一次性重写全部模块。
 
@@ -29,8 +29,8 @@ Phase 2 后续分析按“系统 -> 子系统 -> 最小目录单元”推进：
 |------|-----|
 | 最小目录单元数 | 237 |
 | 默认范围内 source/header 数 | 17,179 |
-| 已完成单元 | 174 |
-| 当前完成单元 | batch33：`core/wsf_mtt/source`、`wsf_plugins/wsf_air_combat/source`、`wizard/plugins/CommVis/source`、`tools/artificer/source`、`wizard/plugins/SPLAT/source`、`core/sensor_plot_lib/source` |
+| 已完成单元 | 237 |
+| 当前完成单元 | batch58：`wsf_plugins/wsf_oms_uci/source` |
 
 ## 3. 批次规则
 
@@ -70,20 +70,20 @@ Phase 2 后续分析按“系统 -> 子系统 -> 最小目录单元”推进：
 
 ## 5. 下一批候选
 
-batch15-batch33 已完成 114 个 WKF/Warlock/Wizard/WSF/Mystic/Core/Tools 小目录。batch05-batch33 已按实际源码展开数修正执行范围：`core/wsf_util`、`wsf_p6dof`、`wsf_six_dof`、`tools/util_script`、`tools/utilqt`、`tools/wkf`、`core/sensor_plot_lib`、`core/wsf_cyber`、`core/wsf_mil`、`post_processor/lib`、`wsf_plugins/wsf_air_combat`、`wsf_plugins/wsf_argo8`、`wsf_plugins/wsf_multiresolution`、`tools/geodata`、`tools/artificer`、`tools/vespatk`、`core/wsf` 等虽在工作清单中显示为小计数，但按路径前缀可能覆盖较多 source/header，因此不得直接并入小批次。后续候选必须同时检查工作清单计数和实际 file-index 路径展开数。
+batch15-batch58 已完成 WKF/Warlock/Wizard/WSF/Mystic/Core/Tools 等剩余最小目录单元，Phase2 目录/模块边界已闭环。后续进入业务逻辑分析时仍需同时检查工作清单计数和 file-index 路径展开数；父目录 wrapper 只可按 residual 闭环，不得覆盖已完成子目录。
 
-按“文件少、边界清晰、优先核心源码”排序，下一批建议可继续作为一个多目录批次处理；实际执行时根据 CodeGraph 证据复杂度动态拆分：
+按“可控优先、核心源码优先、避免超大目录整体吞并”排序，下一批建议：
 
 | 优先级 | 最小目录单元 | source/header 数 | 说明 |
 |--------|--------------|------------------|------|
-| 1 | `afsim-2_9/swdev/src/wizard/plugins/PartManager/source` | 43 | Wizard part manager；执行前复核实际展开。 |
-| 2 | `afsim-2_9/swdev/src/engage/source` | 45 | Engage 核心源码；交战业务高价值入口，建议单独或小批处理。 |
-| 3 | `afsim-2_9/swdev/src/wsf_plugins/wsf_sosm/sosm/source` | 45 | SOSM 传感器/探测模型源码；业务价值高，执行前用 CodeGraph 深挖。 |
-| 4 | `afsim-2_9/swdev/src/tools/packetio/source` | 48 | packet IO 工具；边界清晰。 |
-| 5 | `afsim-2_9/swdev/src/mystic/lib/source` | 待复核 | Mystic 公共库；执行前必须计算实际展开。 |
-| 6 | `afsim-2_9/swdev/src/tools/utilosg` | 待复核 | OSG 工具库；执行前必须按最小目录拆分。 |
+| 1 | `afsim-2_9/swdev/src/wsf_plugins/wsf_p6dof/source` | 191 | P6DOF WSF 包装层，衔接 batch48 的 p6dof/source 核心模型与 WSF mover/plugin 生命周期。 |
+| 2 | `afsim-2_9/swdev/src/wsf_plugins/wsf_six_dof/source` | 331 | SixDOF 核心插件源码，文件数较大，建议单独批次。 |
+| 3 | `afsim-2_9/swdev/src/core/wsf_space/source` | 304 | space 核心源码，建议单独批次并重点追轨道/任务/事件输出。 |
+| 4 | `afsim-2_9/swdev/src/tools/util/source` | 341 | 通用工具库大目录，建议拆分或单独批次。 |
+| 5 | `afsim-2_9/swdev/src/core/wsf_mil/source` | 429 | MIL 核心源码，文件数大，建议单独批次。 |
+| 6 | `afsim-2_9/swdev/src/tools/dis/source` | 433 | DIS 工具/协议源码，文件数大，建议单独批次。 |
 
-建议 batch34 从上述候选中选择 3-6 个目录，但 `engage/source`、`wsf_sosm/sosm/source` 属高价值业务目录，若 CodeGraph 调用链复杂应主动缩小批次。`afsim-2_9/swdev/src/core/wsf` 已确认实际展开 1125 个 source/header，不能作为一个小批次目录处理，应另建拆分计划。
+`afsim-2_9/swdev/src/core/wsf` 和 `afsim-2_9/swdev/src/wsf_plugins/wsf_oms_uci/source` 仍属于超大目录或大生成头目录，不应作为单个小批次整体标记完成，应另建拆分计划。
 
 ## 6. 已知注意事项
 
@@ -113,3 +113,15 @@ batch15-batch33 已完成 114 个 WKF/Warlock/Wizard/WSF/Mystic/Core/Tools 小�
 24. `afsim-2_9/swdev/src/core/wsf` 已复核为 1125 个 source/header，必须按 `source/` 下业务域或文件组拆分，不能按工作清单中 12 的小计数直接标记完成。
 25. batch28-batch33 补齐 SixDOF/Tracks/Prompt/Route/ScenarioAnalyzer/multiresolution、Result/Brawler/Joystick/Engage/PostProcessor、PlatformMovement、SimController、fires/RIPR/weapon_tools/CommVis、MTT/air combat/artificer/SPLAT/sensor_plot_lib 等 36 个目录。高价值入口包括 `WkTracks::Plugin::SetTrackState`、`PlatformMovementSimCommands`、`WkSimController::SimControllerEvent`、`weapon_tools`、`wkf::CommVisPacketGraphicsItem`、`WkCommVis::CommVisEvent`、`wsf_mtt`、`wsf_air_combat` 和 `sensor_plot_lib`。
 26. 已复核并延期拆分的大目录包括 `core/wsf_parser`（158 个 source/header）、`wizard/plugins`（555）、`core/wsf_space`（329）和 `wsf_plugins/wsf_coverage`（118）；这些目录不得被小批次整体标记完成。
+27. batch34-batch37 补齐 PartManager、packetio、engage、SOSM、Mystic lib、SpaceTools、IADS C2 iadsLib 和 Warlock core。高价值入口包括 `PartManager::Plugin::ActionsForNodeRequested`、`PakProcessor::ReadPacket/ProcessPacket`、`TaskManager::Execute`、`SimulationExtension::AddedToSimulation`、`SOSM_SensorTarget::ComputeTargetIrradiance`、`rv::Environment::OpenEventRecording`、`SpaceTools::Astrolabe`、`AssetManagerInterface::processMessage`、`unclassifiedBattleManager::run`、`DisseminateC2Interface::updateOutgoingMessages`、`RunManager::SimThread::run`、`SimInterfaceBase::ProcessCommands` 和 `wk::EventPipe`。
+
+28. batch38-batch40 补齐 wsf_spaceg、WizPostProcessor、wsf_nx、utilosg、wsf_coverage/source 和 wsf_cyber/source。高价值入口包括 `AstrolabeDockWidgetBase::OnVerify`、`MissionVerifierBase::Verify`、`ReportDialog::GenerateClickedHandler`、`Register_wsf_nx`、`WsfChaffWeapon::DropChaffCloud`、`WsfCoherentSensorProcessor::ProcessResults`、`UtoViewer`、`UtoResourceDB`、`Register_wsf_coverage`、`SensorCoverage::OnSensorDetectionChanged`、`Measure::CollectionCompleting`、`Register_wsf_cyber`、`EngagementManager::CyberAttack/CyberScan`、`CyberAttackEffect`、`MITM_Layer::Send/Receive` 和 `Event::Execute`。
+
+
+29. batch41-batch43 补齐 geodata/source、artificer、vespatk/source、wsf_l16/source、utilqt/source 和 util_script/source。高价值入口包括 `DtedTileManager::LoadTile`、`GeotiffTileManager::LoadTile`、`GeoShapeFile::ReadShapeFile`、`artificer::TransformFile`、`V1Parser::Parse`、`RunData::CollectStats`、`VaEnvironment::Initialize`、`VaScenario::UpdateFrame`、`VaFactory::CreateAttachment`、`Register_wsf_l16`、`WsfL16::Messages::Factory::ReadMessage`、`WsfL16::Interface::SendJMessage`、`UtQtDockArea::UpdateLayout`、`UtQtGLWidgetBase::paintGL`、`UtScriptContext::Parse/Execute`、`UtScriptLanguage::Parser::func_def` 和 `UtScriptExecutor::Execute`。
+
+30. batch44-batch46 补齐 core/wsf_util、post_processor/lib、wsf_argo8、wsf_multiresolution、sensor_plot_lib、wsf_air_combat、wkf_air_combat_common/source 和 PatternVisualization/source。高价值入口包括 `UtPackSerializer::Initialize/RegisterMessage`、`Configuration::Execute`、`WsfARGO8_Mover::Update`、`WsfMultiresolutionWrapperMetaModel::ProcessInput`、`Register_sensor_plot_lib`、`WsfSA_Processor::ProcessInput/Update`、`AirCombatDisplayInterface::Update`、`PatternVisualizer::Plugin::RunPatternVisualization`、`Session::RequestPatternUpdate` 和 `Canvas::paintGL`。
+
+31. batch47-batch52 补齐 geodata/vespatk/util_script/utilqt/cyber/coverage/wizard/plugins residual、utilosg/source 闭环、P6DOF 核心、WSF parser、genio、IADS C2 lib 和 WKF core。高价值入口包括 `P6DofVehicle::UpdateObject`、`P6DofIntegrator::Update`、`WsfParser::ParseFiles`、`WsfParseDefinitions::Initialize`、`GenI/GenO`、`GenUmpIO::Receive`、`WsfDefaultAssetManagerImpl::on_message`、`WsfDefaultDisseminationImpl::on_update`、`wkf::Environment::StartUp` 和 `wkf::PluginManager::LoadPluginInitialize`。
+
+32. batch53-batch58 完成剩余 22 个最小目录单元：父目录 residual、P6DOF/SixDOF source、Wizard/WKF/USMTF 工具、core/wsf_space、tools/util、core/wsf_mil、tools/dis、core/wsf/source 与 wsf_oms_uci/source。Phase2 已无 pending 单元；下一步以业务逻辑调用链分析为主。

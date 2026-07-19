@@ -1,0 +1,46 @@
+{
+  "schema_version": "1",
+  "batch_id": "phase4-batch06",
+  "status": "completed",
+  "input_candidate_count": 2595,
+  "read_file_count": 104,
+  "method_done_count": 2383,
+  "body_summary_count": 2383,
+  "skip_count": 212,
+  "coverage": 0.9183,
+  "skip_reasons": {
+    "declaration_only": 212
+  },
+  "matched_files_not_in_original_path": 1172,
+  "duplicate_name_fix_count": 0,
+  "top_matched_files": {
+    "afsim-2_9/swdev/src/wizard/lib/source/core/Project.cpp": 180,
+    "afsim-2_9/swdev/src/wizard/lib/source/editor/WsfEditor.cpp": 131,
+    "afsim-2_9/swdev/src/wizard/lib/source/core/ActionManager.cpp": 126,
+    "afsim-2_9/swdev/src/wizard/lib/source/core/ProjectWorkspace.cpp": 106,
+    "afsim-2_9/swdev/src/wizard/lib/source/editor/EditorManager.cpp": 99,
+    "afsim-2_9/swdev/src/wizard/lib/source/editor/Editor.cpp": 94,
+    "afsim-2_9/swdev/src/wizard/lib/source/editor/TextSource.cpp": 86,
+    "afsim-2_9/swdev/src/wizard/lib/source/core/ParseResults.cpp": 72,
+    "afsim-2_9/swdev/src/wizard/lib/source/core/WsfScriptData.cpp": 61,
+    "afsim-2_9/swdev/src/wizard/lib/source/core/AbstractModel.cpp": 55,
+    "afsim-2_9/swdev/src/wizard/lib/source/core/AutoComplete.cpp": 53,
+    "afsim-2_9/swdev/src/wizard/lib/source/core/WsfScriptLookup.cpp": 52,
+    "afsim-2_9/swdev/src/wizard/lib/source/core/ParseResults.hpp": 49,
+    "afsim-2_9/swdev/src/wizard/lib/source/core/RunEnvManager.cpp": 48,
+    "afsim-2_9/swdev/src/wizard/lib/source/core/WsfExeManager.cpp": 48,
+    "afsim-2_9/swdev/src/wizard/lib/source/core/RunManager.cpp": 46,
+    "afsim-2_9/swdev/src/wizard/lib/source/core/Undo.cpp": 44,
+    "afsim-2_9/swdev/src/wizard/lib/source/core/WsfExe.cpp": 43,
+    "afsim-2_9/swdev/src/wizard/lib/source/editor/EditorDock.cpp": 42,
+    "afsim-2_9/swdev/src/wizard/lib/source/core/SyntaxTips.cpp": 38
+  },
+  "output_function_index": "workspace/source-index/phase4-batches/phase4-batch06-function-index.jsonl",
+  "output_body_summary": "workspace/source-index/phase4-batches/phase4-batch06-function-body-summary.jsonl",
+  "output_skips": "workspace/source-index/phase4-batches/phase4-batch06-skips.jsonl",
+  "notes": [
+    "增强匹配：同时搜索 definition_path、path、declaration_path、同名头文件和 inline 文件。",
+    "每个候选搜索文件读取后复用缓存；同一文件不重复读取。",
+    "qualified_name 追加 signature_digest 以避免重载静默覆盖；若仍重复则追加 candidate_id 短后缀。"
+  ]
+}

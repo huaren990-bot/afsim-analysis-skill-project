@@ -1,0 +1,46 @@
+{
+  "schema_version": "1",
+  "batch_id": "phase4-batch12",
+  "status": "completed",
+  "input_candidate_count": 2388,
+  "read_file_count": 110,
+  "method_done_count": 2312,
+  "body_summary_count": 2312,
+  "skip_count": 76,
+  "coverage": 0.9682,
+  "skip_reasons": {
+    "declaration_only": 76
+  },
+  "matched_files_not_in_original_path": 1222,
+  "duplicate_name_fix_count": 0,
+  "top_matched_files": {
+    "afsim-2_9/swdev/src/mover_creator/source/GeometryGLWidget.cpp": 334,
+    "afsim-2_9/swdev/src/mover_creator/source/AeroTable4d.cpp": 91,
+    "afsim-2_9/swdev/src/mover_creator/source/AeroTable3d.cpp": 75,
+    "afsim-2_9/swdev/src/mover_creator/source/AerodynamicsWidget.cpp": 71,
+    "afsim-2_9/swdev/src/mover_creator/source/AeroTable2d.cpp": 62,
+    "afsim-2_9/swdev/src/mover_creator/source/GeometryMassProperties.cpp": 57,
+    "afsim-2_9/swdev/src/mover_creator/source/GeometryEngine.cpp": 56,
+    "afsim-2_9/swdev/src/mover_creator/source/AeroEngine.hpp": 52,
+    "afsim-2_9/swdev/src/mover_creator/source/AeroData.cpp": 49,
+    "afsim-2_9/swdev/src/mover_creator/source/AutopilotWidget.cpp": 49,
+    "afsim-2_9/swdev/src/mover_creator/source/ControlsWidget.cpp": 49,
+    "afsim-2_9/swdev/src/mover_creator/source/GeometryLandingGear.cpp": 48,
+    "afsim-2_9/swdev/src/mover_creator/source/GeometryBody.cpp": 46,
+    "afsim-2_9/swdev/src/mover_creator/source/AeroSurface.cpp": 44,
+    "afsim-2_9/swdev/src/mover_creator/source/AeroSolidRocketEngine.cpp": 37,
+    "afsim-2_9/swdev/src/mover_creator/source/AeroTable4d.hpp": 36,
+    "afsim-2_9/swdev/src/mover_creator/source/GeometryEngine.hpp": 36,
+    "afsim-2_9/swdev/src/mover_creator/source/AeroObject.cpp": 35,
+    "afsim-2_9/swdev/src/mover_creator/source/AeroBody.cpp": 33,
+    "afsim-2_9/swdev/src/mover_creator/source/AeroBody.hpp": 32
+  },
+  "output_function_index": "workspace/source-index/phase4-batches/phase4-batch12-function-index.jsonl",
+  "output_body_summary": "workspace/source-index/phase4-batches/phase4-batch12-function-body-summary.jsonl",
+  "output_skips": "workspace/source-index/phase4-batches/phase4-batch12-skips.jsonl",
+  "notes": [
+    "增强匹配：同时搜索 definition_path、path、declaration_path、同名头文件和 inline 文件。",
+    "每个候选搜索文件读取后复用缓存；同一文件不重复读取。",
+    "qualified_name 追加 signature_digest 以避免重载静默覆盖；若仍重复则追加 candidate_id 短后缀。"
+  ]
+}

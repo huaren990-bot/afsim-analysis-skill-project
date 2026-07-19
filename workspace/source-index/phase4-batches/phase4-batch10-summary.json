@@ -1,0 +1,46 @@
+{
+  "schema_version": "1",
+  "batch_id": "phase4-batch10",
+  "status": "completed",
+  "input_candidate_count": 2456,
+  "read_file_count": 167,
+  "method_done_count": 2325,
+  "body_summary_count": 2325,
+  "skip_count": 131,
+  "coverage": 0.9467,
+  "skip_reasons": {
+    "declaration_only": 131
+  },
+  "matched_files_not_in_original_path": 691,
+  "duplicate_name_fix_count": 4,
+  "top_matched_files": {
+    "afsim-2_9/swdev/src/core/wsf_mil/source/processor/WsfGuidanceComputer.cpp": 195,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/mover/WsfGuidedMover.cpp": 83,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/comm/WsfJTIDS_SlotGroup.cpp": 75,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/ew/WsfFalseTarget.cpp": 71,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/processor/WsfWeaponFuse.cpp": 62,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/ew/WsfFalseTarget.hpp": 60,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/processor/WsfPerceptionProcessor.cpp": 55,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/ew/WsfFalseTargetScreener.cpp": 51,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/processor/WsfImageProcessor.hpp": 51,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/ew/WsfEW_TrackEffect.cpp": 49,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/processor/WsfQuantumTaskerProcessor.cpp": 49,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/mover/WsfTBM_Mover.cpp": 44,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/processor/WsfWeaponTaskManager.cpp": 37,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/ew/WsfEW_Effect.cpp": 36,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/ew/WsfEW_RepeaterEffect.cpp": 36,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/processor/WsfGuidanceComputer.hpp": 36,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/ew/WsfEW_FalseTargetEffect.cpp": 34,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/processor/WsfUplinkProcessor.cpp": 34,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/mover/WsfGuidedMover.hpp": 32,
+    "afsim-2_9/swdev/src/core/wsf_mil/source/ew/WsfEW_EP.cpp": 29
+  },
+  "output_function_index": "workspace/source-index/phase4-batches/phase4-batch10-function-index.jsonl",
+  "output_body_summary": "workspace/source-index/phase4-batches/phase4-batch10-function-body-summary.jsonl",
+  "output_skips": "workspace/source-index/phase4-batches/phase4-batch10-skips.jsonl",
+  "notes": [
+    "增强匹配：同时搜索 definition_path、path、declaration_path、同名头文件和 inline 文件。",
+    "每个候选搜索文件读取后复用缓存；同一文件不重复读取。",
+    "qualified_name 追加 signature_digest 以避免重载静默覆盖；若仍重复则追加 candidate_id 短后缀。"
+  ]
+}
