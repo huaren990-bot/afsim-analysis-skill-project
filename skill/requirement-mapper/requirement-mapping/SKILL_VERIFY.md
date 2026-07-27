@@ -1,44 +1,87 @@
 ---
 name: requirement-mapping-verify
-description: 检验requirement-mapping skill生成产物的质量。
+description: 验证 requirement-mapping 的需求缺口报告、功能映射矩阵、AFSIM 追溯矩阵和 gap-specs JSONL 是否覆盖完整、证据真实、ID/状态一致且可供迁移规划使用。用于需求映射验收和修复后复验，不生成新的需求或 FU。
 ---
 
-# function-mapping-matrix
-1. 表格是否符合模板格式、模板结构。
-2. `需求ID`是否在需求规范文档中存在。
-3. `需求描述`是否为中文描述。
-4. `afsim对应功能`是否为AFSIM 函数或模块的功能中文描述
-5. `目标系统当前功能`是否为目标系统当前功能的中文描述
-6. `状态`是否符合状态图例
-7. `匹配证据 / 差异说明`是否每行都列举了证据，说明了差异，证据和差异之间是否有`<br>`隔开
-8. 所有确认后需求是否均已在矩阵中出现
+# 需求映射验证
 
-# requirement-to-afsim-trace
-1. 矩阵是否符合模板格式、模板结构
-2. `需求ID`是否包含所有确认需求
-3. `需求描述`是否有加粗的功能模块名称、是否有子功能描述
-4. `AFSIM源函数`是否都能与function-index.jsonl中的函数对应上
-5. `AFSIM源函数`是否有函数说明的`brife`字段
-6. `备注`是否有参考文献
+## 输入
 
-# requirement-gap-analysis
-1. 报告是否符合模板格式、模板结构
-2. 报告是否覆盖了确认后的所有需求
-3. 管线完整性：每个 FU 的输入参数是否有上游 FU 提供，输出参数是否有下游 FU 消费，不存在"孤儿参数"（即输入变量无人产出、输出变量无人消费）。
-4. 算法卡片一致性：每个 FU 的 AFSIM 参考描述是否与对应完整算法卡片正文（`docs/algorithms/flight-dynamics-*.md`）一致，不可仅凭 `CompendiumofAlgorithms.md` 的一句话摘要替代。
+- 人工确认的 `2_<req-id>-requirement-<slug>.md`
+- `3_<req-id>-requirement-gap-analysis.md`
+- `3_<req-id>-function-mapping-matrix.md`
+- `3_<req-id>-requirement-to-afsim-trace.md`
+- `workspace/requirements/<req-id>/<req-id>-gap-specs.jsonl`
+- AFSIM evidence JSONL、完整算法卡片、索引和真实源码
+- 目标系统证据或 `empty_system` 假设
 
-# 总体
-1. 不同文档中是否FU ID统一
-2. 不同文档中是否需求ID统一
-3. 不同文档中是否覆盖状态统一
-4. gap-specs.jsonl是否与文档内容相符
-5. 算法卡片覆盖率：所有被引用的 AFSIM 算法卡片是否均已逐张打开阅读，不存在仅凭摘要引用的卡片。
+## 验证步骤
 
-# 输入
-- `3_<requirement_index>-requirement-gap-analysis.md` — 完整缺口报告
-- `3_<requirement_index>-function-mapping-matrix.md` — 功能映射矩阵
-- `3_<requirement_index>-requirement-to-afsim-trace.md` — 需求到AFSIM的追溯矩阵
-- `<requirement_index>-gap-specs.jsonl` — 结构化缺口规格（供下游迁移 Skill 使用）
+### 1. 结构和解析
 
-# 输出
-1. 生成检验报告，报告要求包括所有检验问题，以便其他skill问题修复，检验报告放入`docs\records`。
+- 逐行解析 gap-specs，报告无效 JSON、重复 `fu_id` 和缺失必填字段。
+- 核对四类输出路径、版本、req-id 和模板结构。
+- 不以固定行数判断文档质量。
+
+### 2. 需求覆盖
+
+- 从确认版需求枚举全部原子 REQ ID。
+- 核对每个 ID 在映射矩阵和追溯矩阵中恰好出现一次主记录。
+- 核对 gap 报告中的状态、优先级和验收标准与确认版一致。
+
+### 3. AFSIM 证据
+
+对每个 `full`/`partial` AFSIM 覆盖或 `missing_with_afsim_reference` 状态：
+
+- `qualified_name` 在 function-index 中存在。
+- `path:line_start-line_end` 能打开真实源码并支持所述行为。
+- 同名函数已按模块消歧。
+- 引用算法时已打开完整卡片，且卡片与源码不冲突。
+
+仅有 Compendium 摘要、函数名或索引 brief 时失败。
+
+### 4. 目标系统证据
+
+- `satisfied`/`partial` 必须有目标源码、接口或测试证据。
+- 按空系统处理时必须显式记录假设，不得伪造“不存在”的检索证据。
+- 需求证据、AFSIM 证据与目标证据分栏或分字段保存。
+
+### 5. 状态与迁移方式
+
+核对统一状态与建议方式：
+
+- `satisfied` 通常不生成 FU。
+- `partial` 可为 `direct_adaptation` 或 `partial_rewrite`。
+- `missing_with_afsim_reference` 可为 `cleanroom` 或经许可证确认的适配方式。
+- `missing_without_afsim_reference` 为 `novel`。
+- `unknown` 不得进入已确认迁移实施。
+
+### 6. FU 完整性
+
+每个 FU 必须有稳定 ID、关联需求、验收标准、完整接口、单位/坐标系、状态、副作用、数据流、证据、耦合度、风险和优先级。文档与 JSONL 必须一致。
+
+### 7. 管线检查
+
+- 区分外部输入、上游 FU、持久状态、最终输出和诊断输出。
+- 只把真正无来源的中间输入或无用途的中间输出报告为断链。
+- 核对边上的类型、单位、坐标系和采样时刻。
+- 核对初始化、更新、重置和终止。
+
+### 8. 交叉一致性
+
+核对所有产物中的 REQ ID、FU ID、名称、状态、AFSIM 源位置、目标证据、迁移方式和优先级。任何相互矛盾均为阻断项。
+
+## 通过门禁
+
+以下任一情况存在时不得通过：
+
+- JSONL 无法完整解析。
+- 确认需求遗漏或重复。
+- 非 unknown 状态没有证据。
+- AFSIM 路径/行号不存在或不支持结论。
+- FU 文档与 JSONL 不一致。
+- 数据流存在未解释断链。
+
+## 输出
+
+写入 `docs/verification/requirement-mapping-<req-id>-verify-report.md`，包含范围、输入摘要、逐项结果、缺陷严重程度、文件/FU/REQ 定位、最小修复建议和结论：`通过`、`修复后复验` 或 `上游阻塞`。

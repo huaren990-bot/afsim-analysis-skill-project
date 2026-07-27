@@ -1,6 +1,6 @@
 ---
 name: cpp-proj-boundary
-description: Phase 1: C++项目边界确认与结构发现 — 扫描目录树、识别构建系统、文件分类、模块识别。产出 project-boundary.json 和 file-classification.jsonl。
+description: "Phase 1: C++项目边界确认与结构发现 — 扫描目录树、识别构建系统、文件分类、模块识别。产出 project-boundary.json 和 file-classification.jsonl。"
 metadata:
   phase: 1
   requires-codegraph: false

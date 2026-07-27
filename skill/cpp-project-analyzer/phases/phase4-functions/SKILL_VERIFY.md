@@ -1,6 +1,6 @@
 ---
 name: cpp-proj-functions-verify
-description: Phase 4 验证: 检查 function-index.jsonl 四层完整性、参数覆盖、qualified_name 唯一性、function-body-summary.jsonl 质量。
+description: "Phase 4 验证: 检查 function-index.jsonl 四层完整性、参数覆盖、qualified_name 唯一性、function-body-summary.jsonl 质量。"
 metadata:
   phase: 4
   role: verifier

@@ -30,28 +30,15 @@
 
 ---
 
-## 二、Agent 体系设计（1个总体Agent + 5 个专职 Agent）
+## 二、Skill 体系设计（5 个阶段）
 
 ### Agent-Skill 双层架构
 
 ```mermaid
 flowchart TB
-    subgraph Analyst["afsim-analyst（总控 Agent）"]
+    subgraph Cognition["cpp-project-analyzer（源码结构化分析）"]
         direction LR
-        TO["task-orchestration<br/>（任务编排 Skill）"]
-        PV["plan-validation<br/>（计划校验 Skill）"]
-    end
-
-    Analyst --> Cognition
-    Analyst --> AlgoExtract
-    Analyst --> ReqMap
-    Analyst --> MigBuild
-    Analyst --> KnowledgeCurator
-
-    subgraph Cognition["afsim-source-cognition（源码认知 Agent）"]
-        direction LR
-        SI["source-indexing<br/>（产出 Skill）"]
-        IV["index-verification<br/>（检验 Skill）"]
+        SI["7 阶段分析<br/>边界→模块→符号→函数→依赖→生命周期→报告"]
     end
 
     subgraph AlgoExtract["algorithm-extractor（算法提取 Agent）"]
@@ -66,10 +53,11 @@ flowchart TB
         RV["requirement-verification<br/>（检验 Skill）"]
     end
 
-    subgraph MigBuild["afsim-migration-builder（迁移构建 Agent）"]
+    subgraph MigBuild["migration-builder（迁移构建）"]
         direction LR
-        MG["migration-generation<br/>（产出 Skill）"]
-        MV["migration-verification<br/>（检验 Skill）"]
+        MP["migration-planner<br/>（设计 Skill）"]
+        MG["migration-implementer<br/>（实现 Skill）"]
+        MV["migration-generation-verify<br/>（检验 Skill）"]
     end
 
     subgraph KnowledgeCurator["afsim-knowledge-curator（知识策展 Agent）"]
@@ -77,18 +65,25 @@ flowchart TB
         KC["knowledge-curation<br/>（产出 Skill）"]
         KV["knowledge-verification<br/>（检验 Skill）"]
     end
+
+    Cognition --> AlgoExtract
+    AlgoExtract --> ReqMap
+    ReqMap --> MigBuild
+    Cognition --> KnowledgeCurator
+    AlgoExtract --> KnowledgeCurator
+    ReqMap --> KnowledgeCurator
+    MigBuild --> KnowledgeCurator
 ```
 
 基于大模型（如 GPT-4/Claude 3.5 级别）搭建 Agent，每个 Agent 有明确的角色、输入、输出和可调用的工具。
 
 | Agent 名称                                | 作用                                                   | 主要产物                                 | 状态                                        |
 | --------------------------------------- | ---------------------------------------------------- | ------------------------------------ | ----------------------------------------- |
-| `afsim-analyst`                         | 总控入口，判断任务类型并协调其他 skill                               | 阶段计划、路由决策、综合报告                       | ✅ SKILL.md + references 就绪                |
 | `cpp-project-analyzer`(源码分析 Agent)    | 基于 CodeGraph 的 7 阶段 C++ 项目细粒度分析，从粗到细：边界-模块-符号-函数-依赖-生命周期-报告 | 源码索引（8 类 JSONL）、架构报告（10 份）、验证报告     | ✅ 已执行全量 7 阶段流水线（17,342 源文件，107 模块） |
-| `algorithm-extractor`(数学解析 Agent) | 识别并解释源码中的算法、公式、变量映射，转化为标准数学表示和伪代码                    | 算法卡片、伪代码、接口规格                        | ✅ 已执行，产出 32 张算法卡片 + 26 份接口规格              |
+| `algorithm-extractor`(数学解析 Agent) | 从全量候选账本识别并解释源码中的算法、公式、变量映射，转化为标准数学表示和伪代码                    | 候选/覆盖账本、算法卡片、伪代码、接口规格                        | ▶ Skill 已完善；已有 32 张卡片为首轮资产，全量候选闭环待执行 |
 | `requirement-mapper`(需求分析 Agent)  | 阅读规范需求文档，推断自有仿真器缺少的功能，生成待补充功能列表                      | 需求缺口报告、功能映射矩阵                        | ▶ 进行中（REQ-001/002 缺口分析完成）                         |
-| `afsim-migration-builder`(代码迁移 Agent)   | 在 AFSIM 源码中定位所需功能，进行代码切片、简化、适配，生成迁移方案、适配接口、代码原型和测试计划 | 迁移记录、适配方案、测试计划                       | ▶ 进行中（REQ-001 编译通过，REQ-002 验证通过）                         |
-| `afsim-knowledge-curator`(知识记录 Agent)   | 整理知识库、追溯矩阵、决策记录和后续任务，全程记录每一步的输入、思考链、决策、输出，生成阶段性文档    | 知识地图、追溯矩阵、过程记录、文档模板、Markdown 生成、版本快照 | ⏳ SKILL.md 就绪，待执行                         |
+| `migration-builder`(代码迁移 Agent)   | 基于已验证证据生成迁移设计、适配接口、代码和测试，不默认复制 AFSIM 源码 | 迁移记录、适配方案、代码、测试证据                       | ▶ 进行中（已有 REQ-001/002 历史产物，需按新门禁复验）                         |
+| `afsim-knowledge-curator`(知识记录 Agent)   | 整理知识库、追溯矩阵、证据、决策记录和后续任务，生成机器账本与阶段性文档    | 知识地图、追溯矩阵、覆盖统计、断链/过期清单 | ⏳ Skill 已完善，待执行                         |
 
 ---
 
@@ -96,7 +91,7 @@ flowchart TB
 
 ### 当前进展
 
-首轮分析已完成 **阶段 1（AFSIM 源码结构化分析）** 和 **阶段 2（算法提取）**，阶段 3（需求映射）和阶段 4（迁移代码生成）已启动并完成首批需求验证：
+当前确认完成 **阶段 1（AFSIM 源码结构化分析）**。阶段 2 已有 32 张算法卡片和 26 份接口规格作为首轮资产，但尚未按全量候选账本完成覆盖闭环；阶段 3、4 有历史样例产物，需按新版证据和验证门禁复验。
 
 ### 阶段 1 — 源码认知
 
@@ -135,37 +130,25 @@ afsim-analysis-skill-project/
 ├── .obsidian/                                  # Obsidian 笔记工具配置（个人工作区，不纳入版本管理）
 │
 ├── skill/                                      # ═══════════ 可被大模型调用的 Skill 系统 ═══════════
-│   ├── afsim-analyst/                          # 【总控 Agent】判断任务类型并协调其他 skill
-│   │   ├── SKILL.md                            #   总控入口：任务路由、标准工作流（6 步）、输出规则、证据规则、迁移原则
-│   │   ├── references/                         #   参考规范（定义执行约束）
-│   │   │   ├── baseline-workflow.md            #     阶段模型与 Agent 职责（Phase 0-6）
-│   │   │   ├── output-contracts.md             #     输出字段规范（架构报告、算法卡片、需求缺口、迁移记录）
-│   │   │   ├── skill-routing.md                #     Skill 选择规则（单任务路由 + 组合任务路由 + 停止条件）
-│   │   │   └── traceability-rules.md           #     证据等级（5 级）、追溯链和记录规则
-│   │   ├── scripts/                            #   编排脚本（预留）
-│   │   │   └── README.md
-│   │   └── assets/                             #   静态资源（预留）
-│   │       └── README.md
-│   │
 │   ├── cpp-project-analyzer/                   # 【源码认知 Skill】基于 CodeGraph 的 7 阶段 C++ 项目细粒度分析
 │   │   └── SKILL.md                            #   7 步工作流：确认边界→发现文件→符号索引→依赖索引→生命周期→数据流→生成报告
 │   │                                           #   输出规范：4 个 JSONL 索引文件(file/symbol/function/dependency) + 架构文档
 │   │                                           #   质量门槛 + 基线记录（已完成全量 7 阶段流水线分析）
 │   │
-│   ├── algorithm-extractor/              # 【算法提取 Skill】从源码中识别并抽取算法与数学公式
-│   │   └── SKILL.md                            #   7 步执行：定位→区分→抽取→转换→映射→评估→验证
-│   │                                           #   输出：算法卡片 + 伪代码 + 接口规格 + 原型代码
+│   ├── algorithm-extractor/                    # 【算法提取 Skill】候选发现、公式还原、覆盖闭环
+│   │   └── algorithm-extraction/               #   SKILL + references + 候选生成脚本
 │   │
-│   ├── requirement-mapper/               # 【需求映射 Skill】自有需求与 AFSIM 能力的缺口分析
-│   │   └── SKILL.md                            #   6 步执行：抽取需求→识别能力→拆分原子能力→查找候选→判断状态→推荐下一步
-│   │                                           #   四类判断：已满足/部分满足/缺失/未知
+│   ├── requirement-mapper/                     # 【需求映射 Skill】需求基线、参考实现、缺口分析
+│   │   ├── requirement-spec-generator/
+│   │   ├── reference-implementation/
+│   │   └── requirement-mapping/
 │   │
-│   ├── afsim-migration-builder/                # 【迁移生成 Skill】生成可落地的迁移方案和代码原型
-│   │   └── SKILL.md                            #   6 步执行：确认接入点→评估耦合度→选择迁移方式→接口适配→迁移记录→按需生成代码
-│   │                                           #   三种迁移方式：直接适配 / 局部重写 / clean-room 重实现
+│   ├── migration-builder/                      # 【迁移生成 Skill】先设计确认，再实现和验证
+│   │   ├── FU-design-generation/
+│   │   └── migration-generation/
 │   │
-│   └── afsim-knowledge-curator/                # 【知识沉淀 Skill】整理分析结果为可复用知识库
-│       └── SKILL.md                            #   5 步执行：检查已有→合并重复→更新追溯矩阵→记录决策→标记风险
+│   └── knowledge-curator/                      # 【知识沉淀 Skill】整理分析结果为可复用知识库
+│       └── knowledge-curation/                 #   增量资产索引、追溯图、缺口和知识地图
 │                                               #   输出：过程记录 + 追溯矩阵 + 迁移汇总 + 知识地图
 │
 ├── docs/                                       # ═══════════ 人工可读、可审查的分析产物 ═══════════
@@ -272,7 +255,7 @@ afsim-analysis-skill-project/
 
 ### 阶段 1：AFSIM 源码结构化分析
 
-**Agent：`afsim-source-cognition`(源码分析 Agent)**
+**Skill：`cpp-project-analyzer`（源码分析）**
 
 **输入：** AFSIM 源码目录
 
@@ -300,7 +283,7 @@ afsim-analysis-skill-project/
   └── module-dependency.md    # 模块依赖关系
   ```
 
-**记录要求：** 文档 Agent 记录每个总结所依据的代码片段、模型思考过程（通过 Chain-of-Thought 提示生成）。
+**记录要求：** 记录每个结论所依据的源码、索引、文档、假设、决策和验证结果；不记录隐藏推理过程。
 
 ### 2. 算法与功能提取
 
@@ -312,22 +295,22 @@ afsim-analysis-skill-project/
 - 可直接迁移部分
 - 应重新实现部分
 
-输出保存到 `docs/algorithms/` 和 `workspace/extracted-algorithms/`。
+输出保存到 `docs/algorithms/`、`docs/extracted-algorithms/` 和 `workspace/algorithm-extraction/`。
 
 ### 3. 自有项目需求映射
 
 ```text
 [用户] 自然语言需求描述
     ↓
-[requirement-spec-generator] 
-    → 读取 AFSIM 认知资产
-    → 生成待确认需求规范文档（含复选框/选项）
+[requirement-spec-generator]
+    → 先独立固化用户需求、验收标准和歧义
+    → 后置添加 AFSIM 候选提示
     ↓
 [人工] 勾选必须/可选、选择简化/详细、确认优先级
     ↓
 [requirement-mapping]
     → 读取确认后规范
-    → 映射到 AFSIM 功能 + 对比目标系统
+    → 验证 AFSIM 源码证据 + 对比目标系统
     → 生成缺口报告 + 映射矩阵
     ↓
 [下游] 代码迁移 Agent
@@ -335,10 +318,11 @@ afsim-analysis-skill-project/
 
 使用 `requirement-mapper` 读取自有项目需求文档、接口定义或源码，形成需求到 AFSIM 能力的映射。每条需求分类为：
 
-- 已满足
-- 部分满足
-- 缺失
-- 未知
+- `satisfied`
+- `partial`
+- `missing_with_afsim_reference`
+- `missing_without_afsim_reference`
+- `unknown`
 
 输出保存到 `docs/requirements/`。
 
@@ -348,13 +332,13 @@ afsim-analysis-skill-project/
 ```text
 [gap-specs.jsonl + 映射矩阵]
     ↓
-[migration-planner] → 生成含 Y/N 的计划文档
+[migration-planner] → 生成逐函数设计、来源和测试契约
     ↓
-[人工] 勾选 Y/N 并填写要求（多轮迭代）
-    ↓ 全部 Y
+[人工] 确认接口、单位、策略和未决问题（多轮迭代）
+    ↓ 阻塞项全部关闭
 [标记为可执行计划]
     ↓
-[migration-implementer] → 读取计划 + 模板 → 生成 SDD + 代码 + demo
+[migration-implementer] → 读取确认计划 → 生成 SDD + 代码 + 自动化测试
     ↓
 [检验 Skill 验证] → 人工 HCP 审核 → 交付
 ```
@@ -366,10 +350,10 @@ afsim-analysis-skill-project/
 |软件设计说明|	docs/migration/<req_index>-SDD.md	|依据 template_sdd.md 撰写|
 |功能头文件|	tests/migration_src/<req_index>/fu_xxx.h	|接口定义，详细注释|
 |功能实现文件|	tests/migration_src/<req_index>/fu_xxx.cpp	|核心算法实现，完整注释|
-|测试 Demo|	tests/migration_src/<req_index>/test_demo.cpp	|包含 main，快速验证|
+|自动化测试|	tests/migration_src/<req-id>/<requirement-name>_test.cpp	|包含断言、失败退出码和行为 oracle|
 |使用说明|	tests/migration_src/<req_index>/README.md	|编译、依赖、运行示例|
 
-使用 `afsim-migration-builder` 选择可迁移算法和功能，生成：
+使用 `migration-planner` 与 `migration-implementer` 选择可迁移算法和功能，生成：
 
 - 候选 AFSIM 源码位置
 - 选择理由
@@ -379,7 +363,7 @@ afsim-analysis-skill-project/
 - 测试计划
 - 必要时生成代码原型
 
-输出保存到 `docs/migration/` 和 `workspace/own-kernel-adapters/`。
+输出保存到 `docs/migration/`、`workspace/migration/` 和用户指定的目标代码目录；默认原型位于 `tests/migration_src/`。
 
 ### 5. 知识沉淀
 
@@ -392,24 +376,19 @@ afsim-analysis-skill-project/
 
 ## 目录职责
 
-`skill/` — 可被大模型直接使用的 Skill 系统，包含 6 个 skill（1 个总控 + 5 个专职）。每个 skill 只放执行规则和必要引用文件，保持精简。其中：
-
-- `afsim-analyst` 是总控入口，负责判任务类型、选 skill、定输入输出、保证据追溯
-- `afsim-source-cognition` 是最先开发完成的 skill，已对 AFSIM 全部源码完成 7 阶段流水线分析（产出了 8 类 JSONL 索引和 10 份架构报告）
-- 其余 4 个专职 skill（算法提取/需求映射/迁移生成/知识沉淀）SKILL.md 已就绪，等待后续阶段执行
+`skill/` — 可被大模型直接使用的阶段 Skill 系统。`cpp-project-analyzer` 已完成结构化分析；算法提取、需求映射、迁移生成和知识沉淀按各自输入门禁、机器契约和验证规则继续执行。
 
 `docs/` — 人工可读、可审查的分析结果。架构、算法、需求、迁移和过程记录分开存放：
 
-- `architecture/` 已有 4 份产出：总体架构报告、模块依赖说明、源码目录树、四层功能体系
-- `baseline/` 存放 AFSIM 官方设计文档作为分析参考输入（2 份，共 177KB）
-- `records/` 已有 7 份过程记录，覆盖边界确认、模块清单、分批计划、进度跟踪、架构决策和分析计划
-- `templates/` 包含 5 份输出模板和检查清单
-- `algorithms/`、`requirements/`、`migration/` 当前为空，待后续阶段产出
+- `architecture/` 保存结构、依赖、生命周期、数据流和业务逻辑承接报告。
+- `baseline/` 保存用户提供的 AFSIM 基线资料。
+- `algorithms/` 与 `extracted-algorithms/` 保存首轮算法卡片和接口规格，后续按候选账本增量完善。
+- `requirements/`、`migration/`、`verification/` 和 `records/` 保存需求、迁移、验证与过程证据。
 
 `workspace/` — 机器生成物和中间产物：
 
-- `source-index/` 已产出 4 个 JSONL 索引文件（共约 13,464 条记录），是后续所有分析的基础资产
-- 其余子目录当前为空，待后续阶段填充
+- `source-index/` 保存 `cpp-project-analyzer` 已生成的全量结构化索引。
+- `algorithm-extraction/`、`requirements/`、`migration/` 和 `knowledge/` 保存后续阶段的机器可读账本。
 
 `tools/` — 工具脚本和 Prompt 模板（4 个子目录已建好 README，具体工具脚本待实现）。
 
@@ -433,10 +412,10 @@ afsim-analysis-skill-project/
 ## 推荐落地顺序
 
 1. ~~先完善 `tools/indexers/`，实现 C/C++ 源码扫描和 JSONL 索引输出。~~ → 首轮分析已通过 Agent 直接扫描完成
-2. ~~用 `afsim-source-cognition` 生成第一版 AFSIM 架构报告。~~ → ✅ 已完成（7 阶段全量流水线，17,342 源文件）
-3. ~~选择一个小功能，用 `algorithm-extractor` 生成算法卡片。~~ → ✅ 已完成（32 张算法卡片 + 26 份接口规格，经全面质量补全）
-4. 输入一个自有项目需求，用 `requirement-mapper` 做缺口分析。
-5. 用 `afsim-migration-builder` 生成迁移方案和最小代码原型。
+2. ~~用 `cpp-project-analyzer` 生成第一版 AFSIM 架构报告。~~ → ✅ 已完成（7 阶段全量流水线，17,342 源文件）
+3. 运行算法候选生成脚本，按模块闭环 `extracted/rejected/deferred`，逐批补全卡片、接口规格和覆盖账本。
+4. 对具体目标输入需求，先固化需求基线，再验证 AFSIM 参考实现并做缺口分析。
+5. 用 `migration-planner` 生成确认版设计，再由 `migration-implementer` 生成并验证代码。
 6. 用 `afsim-knowledge-curator` 更新追溯矩阵和知识地图。
 
 ## 未来扩展

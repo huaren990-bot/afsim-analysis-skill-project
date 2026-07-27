@@ -1,6 +1,6 @@
 ---
 name: cpp-proj-dependencies-verify
-description: Phase 5 验证: 检查 dependency-index.jsonl 的覆盖率（≥200条）、relation 种类（≥6种）、dependency-graph.md 的可追溯性。
+description: "Phase 5 验证: 检查 dependency-index.jsonl 的覆盖率（≥200条）、relation 种类（≥6种）、dependency-graph.md 的可追溯性。"
 metadata:
   phase: 5
   role: verifier

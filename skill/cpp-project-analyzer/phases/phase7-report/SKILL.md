@@ -1,6 +1,6 @@
 ---
 name: cpp-proj-report
-description: Phase 7: 综合报告生成 — 汇总前 6 阶段产出，生成 afsim-architecture.md、x-level-capabilities.md、module-dependency.md、business-logic-readiness.md 四份最终产物。
+description: "Phase 7: 综合报告生成 — 汇总前 6 阶段产出，生成 afsim-architecture.md、x-level-capabilities.md、module-dependency.md、business-logic-readiness.md 四份最终产物。"
 metadata:
   phase: 7
   requires-codegraph: false

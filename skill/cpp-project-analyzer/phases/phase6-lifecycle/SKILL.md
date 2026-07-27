@@ -1,6 +1,6 @@
 ---
 name: cpp-proj-lifecycle
-description: Phase 6: 生命周期与数据流分析 — 追踪仿真/应用生命周期、数据流路径、配置流路径、扩展点识别。产出 lifecycle.md、dataflow.md、extension-points.md。
+description: "Phase 6: 生命周期与数据流分析 — 追踪仿真/应用生命周期、数据流路径、配置流路径、扩展点识别。产出 lifecycle.md、dataflow.md、extension-points.md。"
 metadata:
   phase: 6
   requires-codegraph: true

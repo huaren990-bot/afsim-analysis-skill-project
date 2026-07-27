@@ -1,81 +1,105 @@
 ---
 name: migration-planner
-description: AFSIM 功能迁移的计划制定者与迭代协调者。它负责将上游需求映射阶段产生的每个原子功能单元（FU）转化为详细的、可逐项确认的迁移计划，并驱动与人工的多轮交互，直至所有计划获得人工“Y”确认，形成可执行基线。
+description: 将 requirement-mapping 生成并验证的 AFSIM 功能缺口 FU 转化为可逐函数审查的迁移设计，完成源码证据复核、耦合与许可证评估、目标接口映射、状态生命周期、错误处理、测试策略和人工确认，产出确认版 FU 设计与 migration-function JSONL。用于迁移实施前设计；不生成最终代码。
 ---
 
-# 迁移计划生成与迭代确认 Skill
+# AFSIM 功能迁移设计
 
-## 输入
-- 需求侧：
-   - `docs/requirements/<requirement_index>/3_<requirement_index>-requirement-gap-analysis.md` — 完整缺口报告
-   - `docs/requirements/<requirement_index>/3_<requirement_index>-function-mapping-matrix.md` — 功能映射矩阵
-   - `docs/requirements/<requirement_index>/3_<requirement_index>-requirement-to-afsim-trace.md` — 需求到AFSIM的追溯矩阵
-   - `workspace/requirements/<requirement_index>/<requirement_index>-gap-specs.jsonl` — 结构化缺口规格
-- AFSIM侧：
-   - `docs/architecture/afsim-architecture.md` — AFSIM 架构报告
-   - `docs/algorithms/CompendiumofAlgorithms.md` — 算法卡片概览
-   - `workspace/source-index/function-index.jsonl` — AFSIM 源码功能索引
-- 目标系统侧：
-   - `docs/migration/<requirement_index>/target-interfaces.md` — 目标系统公共接口定义（如有）。
+只规划已确认需求和已验证 FU。AFSIM 参考实现用于理解和设计，不默认获得复制源码的许可。
 
-## 工作流程（步骤）
-1. **加载输入与上下文**
-   - 读取全部缺口规格，提取所有待迁移 FU。
-   - 加载 AFSIM 索引与架构报告，建立快速查找能力。
+## 输入门禁
 
-2. **为每个 FU 生成初步迁移计划**
-   - 对每个 FU：
-      - 读取 FU 的缺口规格和缺口报告，获取 `fu_id`、`name` 和 FU 功能描述。
-      - 按照是否可复用？是否可单独测试？是否降低了主流程的可读性？ 把一个 FU 拆成多个函数。
-      - 检查 AFSIM 是否有参考实现：
-         - 若 `migration_approach == “novel”`（AFSIM 无参考）：
-            - 查阅设计依据来源：领域文献、算法教材、数学公式或网络资源。
-            - 耦合分析：无 AFSIM 专有依赖，仅评估第三方库和标准 C++ 依赖。
-            - 迁移策略：`novel`（全新设计——AFSIM 无参考，从领域文献/算法教材中寻找设计依据）。
-            - 接口方案：无 AFSIM 源接口，改为”定义目标接口”——从需求描述和核心算法公式推导接口签名。
-            - 关键设计决策：记录核心算法选择、数据结构设计、边界条件处理等关键决策点。
-         - 若 AFSIM 有参考实现：
-            - 通过`workspace\source-index`中的`function-index.jsonl`等索引文件快速定位 AFSIM 源函数。
-            - 运行耦合分析：列出所有外部依赖，标注为 `标准C++`、`第三方库`、`AFSIM专有` 三类。
-            - 选择迁移策略：`直接适配`（仅需替换少量接口/依赖）、`局部重写`（需要修改部分逻辑但保留核心算法）、`Clean-room重实现`（仅参考功能描述重写，不直接使用代码）。
-            - 生成接口适配方案：源接口 → 目标接口映射，列出需要转换的类型、新增的参数。
-            - 确定关键修改点：需移除/替换/保留的代码块、宏、全局变量。
-     - 拟定测试策略与风险评估。
-     - 附加人工确认选项：提供”修改要求”填写区。
+必须读取：
 
-3. **汇编计划文档**
-   - 将所有 FU 的计划按照合并写入 `docs/migration/<requirement_index>/<requirement_index>-FU-design.md`。
-   - 文档头部包含需求索引编号、生成时间、状态（草稿/待确认）。
+- `docs/requirements/<req-id>/3_<req-id>-requirement-gap-analysis.md`
+- `docs/requirements/<req-id>/3_<req-id>-function-mapping-matrix.md`
+- `docs/requirements/<req-id>/3_<req-id>-requirement-to-afsim-trace.md`
+- `workspace/requirements/<req-id>/<req-id>-gap-specs.jsonl`
+- requirement-mapping 验证报告
+- 目标系统接口、编码规范、构建方式和落盘目录；缺失时列为阻塞或明确假设
 
-4. **人工确认迭代**
-   - 提示人工审阅计划文档，对每个函数内容进行确认后进行勾选。
-   - 读取人工反馈，包括`接口详细定义`和`修改要求`。
-   - 重新生成修改后的 FU 章节，并保留历史修改记录（在文档底部添加修订表）。
-   - 循环直至所有 函数设计确认 均被勾选。
-   - 将文档标记为“已确认”，添加确认时间和人工签字（电子记录）。
+按需读取完整算法卡片、接口规格、AFSIM 索引和真实源码。若 requirement-mapping 未通过，不进入确认版设计。
 
-5. **输出最终计划**
-   -  **功能迁移设计文档**：保存确认版 `docs/migration/<requirement_index>/<requirement_index>-FU-design-confirmed.md`并要求：
-      1. `### 接口详细定义（API）：本节需要人工修改、确认`修改为`### 接口详细定义（API）：已人工确认`
-      2. 删掉每个函数`设计确认`勾选框
-      3. 删掉每个FU的修改要求填写区、确认人、确认日期（如有）
-   - **功能迁移设计规格**：生成 `workspace/migration/<requirement_index>/<requirement_index>-migration-function.jsonl`，记录每个 函数 的设计规格：
-      1. source_location 中的 exists_in_afsim 为 false 时，class_name, method_name, file, line_start, line_end字段需要根据`workspace/source-index/function-index.jsonl` AFSIM 源码功能索引生成。
-      2. source_location 中的 exists_in_afsim 为 false 时，其他字段可留空或填 ""
-      3. 包含每个函数的 fu_id, function_name, display_name, description, source_location, interface, exists_in_afsim 等字段。
-      4. 功能迁移设计文档和功能迁移设计规格的内容必须保持一致。
+## 工作流
 
-6.**操作留痕**
-   - 每次修改 FU 计划时，记录修改内容、修改原因、修改时间，形成完整的迭代历史。
-   - 把每一步的决策依据和执行计划生成文档进行记录归档，放在目录docs/records里面，以便人工追溯。
+### 1. 校验 FU 基线
 
-## 输出文件
-- `docs/migration/<requirement_index>/<requirement_index>-FU-design.md`：功能迁移计划文档，包含每个 FU 的详细迁移方案和人工确认状态。
-  - 确认后为最终执行计划。
-  - 按模板 `skill\afsim-migration-builder\template_list\template_FU-migration.md` 格式输出。
-  - 所有需要用户确认的条目，均标亮（红色）显示，并提供修改要求填写区。
-- `docs/records/`：操作留痕文件，记录每次修改的内容、原因、时间等，形成完整的迭代历史。
-- `workspace/migration/<requirement_index>/<requirement_index>-migration-function.jsonl`：功能迁移设计规格文件，记录每个 函数 的迁移关键信息。
-   - 按模板 `skill\afsim-migration-builder\template_list\template_migration-function.md` 格式输出。
+逐行解析 gap-specs，核对 FU/REQ ID、验收标准、接口、单位、坐标系、数据流、AFSIM 证据和迁移方式。任何 `unknown`、断链或相互矛盾先退回上游。
 
+### 2. 复核 AFSIM 证据
 
+对 `missing_with_afsim_reference` 或 `partial` FU：
+
+- 打开 `qualified_name` 对应的真实源码。
+- 核对路径、行号、输入输出、状态读写、生命周期和依赖。
+- 列出标准 C++、第三方库、AFSIM 框架、平台/构建依赖。
+- 检查许可证或用户给出的使用边界。
+
+未验证或许可证不明确时，计划采用 `cleanroom`：只基于可审查行为、公式、接口和测试 oracle 重实现，不复制实现表达。
+
+对 `missing_without_afsim_reference` FU，AFSIM 源位置必须为空，设计依据使用用户提供或后续验证的领域资料；不得伪造 AFSIM 类/函数。
+
+### 3. 把 FU 分解为函数
+
+按单一职责、独立测试、状态所有权和可读性分解。每个函数定义：
+
+- 稳定 `function_id`、`fu_id`、名称和职责。
+- 完整签名、输入输出、单位、坐标系、约束和错误语义。
+- 读写状态、副作用、线程安全与生命周期。
+- 输入来源和输出消费者。
+- AFSIM 参考或非 AFSIM 设计依据。
+- 依赖、替换方案和边界条件。
+- 验收测试与 oracle。
+
+不要把一个 FU 机械等同于一个函数，也不要把仅为日志/包装的步骤拆成无价值函数。
+
+### 4. 选择迁移策略
+
+- `direct_adaptation`：许可证允许、耦合低、接口变化小。
+- `partial_rewrite`：保留可用结构，替换框架/类型/状态管理。
+- `cleanroom`：参考行为与算法规格独立重实现。
+- `novel`：记录范围内没有 AFSIM 参考，根据经验证的外部设计依据全新设计。
+
+记录选择原因、被否决方案和风险。不可仅按 gap-specs 的建议字段自动决定。
+
+### 5. 设计测试
+
+每个函数至少定义正常、边界、退化/异常测试；数值算法增加基准值、容差、守恒量/单调性/范围等 oracle。端到端 FU 测试覆盖数据流、状态初始化/重置和目标系统接入点。
+
+### 6. 生成设计
+
+读取 `skill/migration-builder/template_list/template_FU-migration.md`，生成：
+
+- `docs/migration/<req-id>/<req-id>-FU-design.md`
+- `workspace/migration/<req-id>/<req-id>-migration-function.jsonl`
+
+JSONL 每行一个拟实现函数，不是一次执行的摘要事件。按
+`skill/migration-builder/template_list/template_migration-function.md` 生成。
+
+`source_location` 规则：
+
+- `exists_in_afsim == true`：`candidate_id`、`qualified_name`、`class_name`、`method_name`、`file`、`line_start`、`line_end` 必须来自已验证 AFSIM 证据。
+- `exists_in_afsim == false`：上述 AFSIM 定位字段为空字符串或 `null`，并填写 `design_basis` 与 `search_scope`。
+
+### 7. 人工确认
+
+待确认版只突出真正需要选择的接口、单位、依赖、策略和未决问题。根据反馈修订并保留修订记录。全部阻塞项关闭后生成：
+
+- `docs/migration/<req-id>/<req-id>-FU-design-confirmed.md`
+
+确认版删除空白填写区和未选方案，保留已批准决策、确认来源、日期和版本。同步更新 JSONL 的 `approval.status`、版本和接口，确保文档与机器规格一致。
+
+### 8. 验证和留痕
+
+按 `SKILL_VERIFY.md` 验证，写入
+`docs/verification/migration-plan-<req-id>-verify-report.md`。在
+`docs/records/<date>-migration-plan-<req-id>.md` 记录输入版本、设计决策、证据、反馈、产物和未决风险。
+
+## 完成门禁
+
+- 所有 FU 与函数均能追溯到需求和验收标准。
+- AFSIM 定位字段与 `exists_in_afsim` 逻辑一致。
+- 文档与 JSONL 的签名、单位、状态、依赖和策略一致。
+- 数据流、生命周期、错误处理和测试 oracle 完整。
+- 所有实施阻塞项已关闭并有人工确认记录。
+- 不记录隐藏推理过程。

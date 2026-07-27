@@ -1,169 +1,162 @@
 ---
 name: algorithm-extraction
-description: 一个专门从 C++ 仿真源码中提取数学公式并还原为标准数学表示的 skill。
+description: 从 cpp-project-analyzer 已生成的 AFSIM C++ 索引和真实源码中，系统发现、聚类、还原并验证数学模型、数值算法、状态更新与控制算法，产出可追溯的算法卡片、接口规格、算法汇总和全量覆盖账本。用于“继续分析 AFSIM”“提取某模块/某功能算法”“把源码还原为公式与伪代码”“检查 AFSIM 算法是否提取完整”等任务；不用于仅做目录/符号索引、需求缺口分析或直接迁移代码。
 ---
 
-# AFSIM 算法提取 Skill
+# AFSIM 算法发现与提取
 
-本 skill 负责：
-1. 识别其中密集的数值计算逻辑（如矩阵运算、迭代循环、状态更新、物理模型方程）。
-2. 将代码逻辑转换为对应的数学公式，使用 LaTeX 表示（即 $...$ 行内公式）。
-3. 解释公式的物理或数学意义，并建立代码变量与公式符号之间的映射表。
-4. 识别公式中的假设、简化条件或近似方法。
-5. 输出结构化的“数学公式卡片”和汇总文档。
-6. 检验上游agent输出结果是否合格，如果缺少了必要的信息，意味着上游agent工作存在不足，请向人工明确提出。
+把 `cpp-project-analyzer` 的结构化结果当作定位入口，把真实 AFSIM 源码当作行为证据。禁止仅凭索引摘要、函数名或旧算法卡片断言算法行为。
 
-## 核心能力与限制
+## 开始前读取
 
-- 你能阅读 C++ 代码，但不需要重新划分函数边界，因为这些边界已由上游 Agent 完成。
-- 你必须为每个公式提供完整的变量映射和物理意义解释，不能只给出公式。
-- 如果公式中存在明显的数值常量或拟合系数，请尝试推导其来源或标注”代码中直接给定的经验值”。
-- 对于不确定的推导，你必须标记为”需要人工复核”，不得强行确定。
+1. 读取 [references/upstream-contract.md](references/upstream-contract.md)，确认索引字段、源码路径解析和证据等级。
+2. 读取 [references/output-contract.md](references/output-contract.md)，确认候选、卡片、接口规格和覆盖账本的输出契约。
+3. 生成卡片、接口规格或汇总前，分别读取：
+   - `skill/algorithm-extractor/template_list/template_algorithm-card.md`
+   - `skill/algorithm-extractor/template_list/template_interface-spec.md`
+   - `skill/algorithm-extractor/template_list/template_CompendiumofAlgorithms.md`
 
-## 算法识别与分类准则
+## 输入门禁
 
-### 模块归属验证
+确认以下输入存在且可解析：
 
-在创建任何算法卡片前，必须验证算法的正确模块归属。验证方法：
+- `workspace/source-index/function-index.jsonl`
+- `workspace/source-index/function-body-summary.jsonl`
+- `workspace/source-index/file-index.jsonl`
+- `workspace/source-index/symbol-index.jsonl`
+- `workspace/source-index/dependency-index.jsonl`
+- AFSIM 源码根目录，默认在 `source_root/` 下解析，不假定固定版本目录名
 
-1. **从 function-index.jsonl 获取路径**：在 function-index 中搜索目标函数，记录的 `path` 字段以模块名开头（如 `wsf_space/source/...`、`wsf_six_dof/source/...`）。
-2. **对照源码目录**：验证源文件确实位于 `source_root/src/<模块>/` 下。
-3. **注意同名混淆**：AFSIM 中存在多个模块有类似功能的类（如 `wsf_p6dof` 和 `wsf_six_dof` 都有 `AeroCoreObject`），必须通过 function-index 中的 `qualified_name`（含命名空间前缀）和 `path` 精准确认模块归属。
+抽样至少 3 条 Method-level 记录，验证 `path`、`line_start`、`line_end` 能定位到真实源码。若路径无法解析、索引 JSONL 损坏或关键行号明显越界，停止提取并输出上游阻塞项；不要猜测源码位置。
 
-**已知模块清单**（仅限 workspace/source-index/ 中已索引的模块）：
+## 标准工作流
 
-| 索引目录 | 模块 | 中文说明 | 定位 |
-|---------|------|---------|------|
-| core | wsf_space | 空间/轨道力学 | 轨道预报、机动、事件、大气、碎片 |
-| wsf_plugins | wsf_p6dof | 拟六自由度飞行器运动学 | 旧模块，Heun 积分 + 稳定性导数气动 |
-| wsf_plugins | wsf_six_dof | 点质/刚体六自由度飞行器运动学 | 新模块，刚体积分 + 点质积分 + SAS + 气动 + 推进 + 飞控 |
+### 1. 建立可续跑候选清单
 
-### 算法粒度准则（一张卡片 = 一个算法）
+运行：
 
-每张算法卡片必须只描述**一个**独立的算法。以下情况必须拆分为多张卡片：
+```bash
+python3 skill/algorithm-extractor/algorithm-extraction/scripts/build_algorithm_candidates.py \
+  --function-index workspace/source-index/function-index.jsonl \
+  --body-summary workspace/source-index/function-body-summary.jsonl \
+  --source-root source_root \
+  --output workspace/algorithm-extraction/algorithm-candidates.jsonl
+```
 
-1. **数值积分方法 ⊥ 控制算法**：如 Heun 积分器 与 SAS 稳定增稳系统是两类完全不同的算法，必须分开。
-2. **边界值问题 ⊥ 初轨确定**：如 Lambert 求解器（已知两个位置求速度）与仅角度初轨确定（从传感器角度反推轨道）是不同的数学问题，必须分开。
-3. **不同物理机制的模型**：如分段指数大气（纯高度衰减）与 Jacchia-Roberts 大气（含太阳/地磁修正）是两种独立的大气模型，必须分开。
-4. **经典机动 ⊥ 最优瞄准**：如轨道要素变更/Hohmann 转移（基于解析公式）与交会瞄准（基于 Lambert + 代价函数优化）是不同的机动类型，必须分开。
+脚本默认纳入 `math` 与 `state_update`，并按计算密度、数学操作和名称信号排序。只有在任务明确包含业务控制流程时才加 `--include-control-flow`。
 
-**反面示例**（禁止出现的杂揉）：
-- `pointmass-integration-sas-card.md` — 将 PointMass 积分器与 SAS 控制算法打包在一起
-- `space-lambert-solver-card.md` 原来同时包含 Lambert 求解器 + 角度IOD
-- `space-atmosphere-model-card.md` 原来同时包含分段指数大气 + Jacchia-Roberts 大气
-- `space-orbital-maneuvers-card.md` 原来同时包含 Delta-V 机动 + 要素变更 + 交会瞄准
+若真实源码证明某个被上游误标为 `none` 或 `control_flow` 的函数是算法，可重复使用
+`--include-candidate-id <id>` 精确纳入；不得为纳入少量误分类函数而无差别扩大整个
+`control_flow` 分母。经人工闭环的显式候选会在以后默认重跑时保留。
 
-### 算法命名规范
+保留候选状态，不覆盖人工或历史处理结果：
 
-所有算法卡片文件名必须严格遵循 `<domain>-<algorithm>-card.md` 格式：
+- `pending`：尚未审查
+- `selected`：已确认属于可独立描述的算法
+- `extracted`：卡片与接口规格均已生成并验证
+- `rejected`：不是算法，必须填写 `decision_reason`
+- `deferred`：证据不足或超出本轮范围，必须填写 `decision_reason`
 
-- **domain**：表示算法所属的大领域。使用短横线连接的小写英文，如 `flight-dynamics`、`space`。
-- **algorithm**：表示具体算法名称。使用短横线连接的小写英文，如 `rigid-body-integrator`、`norad-orbital-propagator`。
+### 2. 确定范围并分批
 
-**已知 domain 清单**：
+按 `module`、业务域和调用关系分批，每批建议 20–50 个候选。为本轮生成
+`workspace/algorithm-extraction/batches/<batch-id>.jsonl`，记录候选 ID、范围、状态和失败原因。
 
-| domain | 适用模块 | 说明 |
-|--------|---------|------|
-| `flight-dynamics` | wsf_p6dof, wsf_six_dof | 大气层内飞行动力学（气动/推进/飞控/起落架） |
-| `space` | wsf_space | 空间/轨道力学（轨道预报/机动/大气/碎片/交会） |
+不得以“处理了若干代表函数”声称模块完成。完成度以覆盖账本为准。
 
-### 算法完整性检查
+### 3. 从候选函数聚类为算法
 
-在完成一批算法提取后，必须进行完整性检查：
+逐个读取候选的真实源码，并结合调用者、被调函数、状态读写和相邻实现判断算法边界：
 
-1. **math 标记全覆盖**：遍历 function-index.jsonl 中 `algorithm_hint=math` 的所有函数，确认每个函数已被某张卡片覆盖。未被覆盖的 math 函数是遗漏算法的最强信号。
-2. **源文件扫描**：列举目标模块的 `.hpp` 文件，寻找具有独立数学模型的类（如独立的物理子系统、独立的数值求解器），判断其是否应单独成卡。
-3. **模块间对等检查**：如果一个模块中被提取了某类算法（如 wsf_p6dof 有气动系数卡片），检查其对等模块（如 wsf_six_dof）中是否有对应算法尚未提取。
+- 一个算法可以跨多个函数，但必须共享同一数学目标、状态和输入输出契约。
+- 同一函数包含可独立教授、独立测试的不同数学机制时，拆为多张卡片。
+- 包装器、注册器、日志、序列化和纯配置解析通常标记为 `rejected`。
+- 数值积分、滤波、制导、控制律、坐标变换、查表插值、物理模型和状态估计通常标记为 `selected`。
 
+为每个算法分配稳定 ID `ALG-<DOMAIN>-<SLUG>`。重跑时复用已有 ID，不按批次或日期重新编号。
 
-## 输入
+### 4. 建立证据包
 
-- 已经提取好的`workspace/source-index/` 中的索引。
-- AFSIM 源码片段或源码目录。
+每个算法至少收集：
 
-## 执行步骤
+1. 入口与核心函数的 `candidate_id`、`qualified_name`、`path:line_start-line_end`。
+2. 直接调用链、读取状态、写入状态和生命周期位置。
+3. 真实源码中的核心计算片段及其语义摘要。
+4. 相关配置、枚举、常量、单位和坐标系约定。
+5. 可用时，再用官方文档、演示场景或既有卡片交叉验证。
 
-1. **接收分析任务**：接收`function-index.jsonl`文件，获取需要分析的函数/方法，结合`file-index.jsonl`、`symbol-index.jsonl`和`dependency-index.jsonl`进行补充获取该函数/方法对应的完整源代码片段和其他需要搜索的信息。
-   - **在此步骤中确认模块归属**：从 function-index 中目标函数的 `path` 字段提取模块名（path 的第一级目录），验证源文件确实位于对应模块目录下。切勿仅凭类名或功能相似性推断模块。
-   - **优先处理 math 标记函数**：`algorithm_hint=math` 的函数是算法提取的最高优先级目标。全部 math 函数提取完毕后，再处理 `state_update` 和 `model_update` 标记的函数。
-2. **扫描计算核心**：区分算法核心、工程封装、框架依赖三类内容，定位函数中的主要计算块（循环、算术密集区、数学库调用）。
-3. **还原函数逻辑**：
-   - 抽取输入、输出、状态变量、单位、边界条件和错误处理，解析函数代码执行流程和算法计算步骤，转换为清晰伪代码和算法流程图。
-   - 基于计算步骤推导出对应的数学表达式。
-   - 考虑矢量、矩阵、四元数等结构，推导其数学操作（点积、叉积、矩阵乘法等）。
-   - 对于数值积分、插值等算法，还原为数学上的离散形式，标注所用的数值方法（如 RK4、欧拉法）。
-4. **构建符号映射**：列出代码中每个变量与公式符号的对应关系，包括单位（若能推断）。
-   - **"所属函数 (Method)" 列必须使用 function-index.jsonl 中的函数名**：该列的值必须是 `function-index.jsonl` 中 `function` 字段的精确名称，不能使用源码内部的私有方法名、C++ 方法名、或任意编造的名称。
-     - 如果某个常量/变量所在的实际 C++ 方法不在 function-index 中（如私有方法 `SGP4_init`、模板方法 `TakeStep`），应向上查找到最近的、在 function-index 中存在的公开函数名（如 `Initialize`、`Propagate`）。
-     - 如果多个常量分散在多个函数中且无单一公开函数覆盖，可选择最相关的公开函数，或在确认无法单一定位时使用多个函数名（以逗号分隔）。
-5. **撰写算法卡片**：将结果输出到markdown文件，附加物理意义和假设。评估可移植性的高、中、低，并说明原因。给出验证方案，包括单元测试、数值对比、场景回放或边界测试。
-   - **在此步骤中检查算法粒度**：在撰写卡片前，确认当前算法是一个独立算法而非多个算法的打包。如果一张卡片中出现了两类不同数学基础的公式（如既有数值积分离散格式又有 PID 控制律），则应拆分为多张卡片。
-   - **在此步骤中检查命名规范**：确认卡片文件名严格遵循 `<domain>-<algorithm>-card.md` 格式。
-6. **汇总**：在完成一批函数的解析后，生成一份汇总的算法文档，包含所有公式列表和分类（如运动学、空气动力学、传感器模型等）。
-   - 分类必须按模块（wsf_p6dof / wsf_six_dof / wsf_space 等）和领域（flight-dynamics / space 等）两个维度组织。
-   - 统计所有 math 标记函数的覆盖情况，标注未被任何卡片覆盖的 math 函数。
-7. **过程留痕**：把每一步的决策依据和执行计划生成文档进行记录归档，放在目录docs/records里面，以便人工追溯。
-   - 记录中必须包含：模块归属的确认依据（function-index path）、算法粒度决策（为何选择合并或拆分）、math 函数覆盖检查结果。
-8. **自检**：在所有卡片生成完毕后，执行以下自检步骤：
-   - 检查每张卡片的"所属函数 (Method)"列是否全部使用 function-index.jsonl 中的函数名。
-   - 检查算法卡片文件名是否全部符合 `<domain>-<algorithm>-card.md` 规范。
-   - 检查是否存在多算法杂揉的卡片（一个卡片包含两类不同数学基础的公式）。
-   - 检查 compendium 中是否遗漏了已生成的卡片。
+索引只用于定位；源码是行为结论的最低证据。官方文档与演示可以补充意图和用法，但不能替代源码证明实现细节。
 
-## 常见错误与预防
+### 5. 还原算法
 
-以下是从实际执行中总结出的高频错误，每次执行本 skill 时必须主动规避。
+区分并显式记录：
 
-### 错误 1：模块归属错误
+- 算法核心、AFSIM 框架封装、I/O/日志、缓存和注册逻辑。
+- 输入、输出、参数、内部状态、初值、更新时机、副作用。
+- 单位、坐标系、符号约定、有效范围、边界条件和错误处理。
+- 离散时间公式与连续时间公式；不要把实现中的离散更新误写成连续模型。
+- 代码直接给定的经验系数、可从上下文证明的常量、无法证明来源的常量。
 
-**表现**：将属于 `wsf_six_dof` 的算法标注为 `wsf_p6dof`，或反之。
-**根因**：两个模块都有 `AeroCoreObject`、`Integrator` 等同名类，仅凭类名推断模块。
-**预防**：始终从 function-index.jsonl 的 `path` 字段确认模块名。`wsf_p6dof` 为旧模块（拟六自由度），`wsf_six_dof` 为新模块（点质/刚体六自由度）。
+仅在证据充分时给出公式名称或经典算法归类。不能确认时标记“待人工复核”，并说明缺少哪一类证据。
 
-### 错误 2：算法杂揉（一张卡片包含多个独立算法）
+### 6. 生成三类产物
 
-**表现**：将数值积分器与控制算法、两种不同的大气模型、Lambert 求解器与初轨确定等打包在一张卡片中。
-**根因**：这些算法在源码中常被一起调用，或共享同一个外层类，容易被视为"一个算法"。
-**预防**：判断标准——如果两个算法可以使用不同的数学教材独立教授，有独立的输入输出和独立的数学公式体系，则必须分开。具体参考"算法粒度准则"章节。
+每个算法生成：
 
-### 错误 3：算法遗漏
+- `docs/algorithms/<domain>-<algorithm>-card.md`
+- `docs/extracted-algorithms/<algorithm>/<domain>-<algorithm>-interface-spec.md`
 
-**表现**：提取了某模块的部分算法后即认为完成，遗漏了模块中其他独立算法。如最初只提取了 wsf_six_dof 的积分器而遗漏了气动、推进、飞控等子系统。
-**根因**：只关注了明显的传播/积分类函数，忽略了力模型、控制模型、传感器模型等同样包含独立数学的子系统。
-**预防**：执行"算法完整性检查"三步法——math 函数全覆盖 + 源文件扫描 + 模块间对等检查。
+同步更新：
 
-### 错误 4：Method 列使用非索引函数名
+- `docs/algorithms/CompendiumofAlgorithms.md`
+- `workspace/algorithm-extraction/algorithm-coverage.jsonl`
 
-**表现**：算法卡片中"所属函数 (Method)"列填写了 C++ 源码中的私有方法名（如 `SGP4_init`、`TakeStep`、`AdvanceToTime`），而这些函数不在 function-index.jsonl 中。
-**根因**：直接使用了阅读源码时看到的 C++ 方法名，未与 function-index 交叉核对。
-**预防**：在最终输出前，逐一检查 Method 列的每个值是否可以在 function-index.jsonl 中找到匹配的 `function` 字段。对私有/内部方法，向上映射到最近的公开函数。
+覆盖账本每行对应一个候选，至少包含 `candidate_id`、源码定位、状态、关联 `algorithm_ids`、决策理由和验证状态。一个候选被多个算法共享时允许列出多个 ID。
 
-### 错误 5：命名规范不一致
+完成批次审查后，把决策写入批次 JSONL，并运行：
 
-**表现**：卡片文件名混用 `p6dof-`（模块名前缀）和 `pointmass-`（算法名前缀），不符合 `<domain>-<algorithm>-card.md` 规范。
-**根因**：没有在创建卡片时统一使用 domain 前缀。
-**预防**：创建卡片文件前，先确定 domain（参考"已知 domain 清单"），再确定 algorithm 名称，拼接为 `<domain>-<algorithm>-card.md`。全部卡片使用相同的 domain 集合。
+```bash
+python3 skill/algorithm-extractor/algorithm-extraction/scripts/apply_algorithm_decisions.py \
+  --manifest workspace/algorithm-extraction/algorithm-candidates.jsonl \
+  --decisions workspace/algorithm-extraction/batches/<batch-id>.jsonl \
+  --coverage workspace/algorithm-extraction/algorithm-coverage.jsonl
+```
 
-### 错误 6：遗漏"所属函数"列
+脚本会校验候选 ID 与状态约束，原子更新候选清单并重建全量覆盖账本。
 
-**表现**：较简单的卡片（如轨道事件条件、Lambert 求解器、大气模型等）最初缺少完整的"算法变量和常量"表格，或表格缺少"所属函数 (Method)"列。
-**根因**：对模板要求的理解不一致——所有卡片无论复杂度如何，都必须包含三张变量/常量表格。
-**预防**：生成每张卡片后，检查是否包含：输入变量表、输出变量表、常量表，且每个表都包含"英文标识符、中文名称、数据类型、含义、单位、所属函数 (Method)"六列。
+### 7. 验证并闭环
 
-## 输出
+按 `SKILL_VERIFY.md` 执行验证。硬性门禁：
 
-- 要求所有输出文件用词统一，文件名、模块名、符号名、函数名、依赖名在所有文件中都保持一致，不应产生歧义。
-- 不能使用省略号省略列举内容，如果列举的条目多于30，而应当新建个文件将省略内容全部列出，并将文件连接放置到原本的省略位置。
-- 所有生成的文档都应当面向母语为中文且没有afsim基础知识的新手程序员。
+- 所有本批候选均为 `extracted`、`rejected` 或 `deferred`，不得遗留无解释状态。
+- 每张卡片的源码位置、Method、模块和行号可在当前索引与源码中复核。
+- 每个公式符号都能映射到代码变量、配置量或明确的推导中间量。
+- 卡片、接口规格、Compendium 和覆盖账本中的算法 ID、名称和路径一致。
+- 每个算法至少有正常、边界和退化/异常三类验证方案。
 
-### `docs/extracted-algorithms/<algorithm>/<domain>-<algorithm>-interface-spec.md`
+验证失败时只修复失败项并重验，不重新生成已通过的批次。
 
-接口规范卡片。要求和格式应当严格遵循模板skill/algorithm-extractor/template_list/template_interface-spec.md
+### 8. 记录执行结果
 
-### `docs/algorithms/<domain>-<algorithm>-card.md`
+在 `docs/records/<date>-algorithm-extraction-<scope>.md` 记录输入版本、范围、候选统计、提取/拒绝/延期数量、产物、验证结果和未决问题。记录可审查的证据与决策，不记录隐藏推理过程。
 
-算法卡片。要求和格式应当严格遵循模板skill/algorithm-extractor/template_list/template_algorithm-card.md
+## 完成定义
 
-### `docs/algorithms/CompendiumofAlgorithms.md`
+只有同时满足以下条件才能声称范围完成：
 
-afsim源代码中所有算法的汇总文档。一章对应一个算法卡片表示的算法，要求和格式应当严格遵循模板skill/algorithm-extractor/template_list/template_algorithm-card.md
+1. 范围边界可枚举，并记录所用索引版本或文件摘要。
+2. 范围内候选均已闭环。
+3. 所有 `extracted` 候选可追溯到算法卡片与接口规格。
+4. 所有 `rejected`/`deferred` 候选有具体理由。
+5. 质检硬性门禁全部通过。
+
+若目标是“全量 AFSIM 算法提取”，按模块持续执行，直到全局候选账本闭环；不要把已有少量模块或既有 32 张卡片视为全量。
+
+## 停止条件
+
+遇到以下情况停止当前项并报告阻塞，不得补写臆测内容：
+
+- 源码缺失、许可证限制或路径无法解析。
+- 索引与源码的符号、行号或函数体不一致。
+- 单位、坐标系或状态来源无法由当前证据确定。
+- 候选跨越的调用链超出用户明确范围。

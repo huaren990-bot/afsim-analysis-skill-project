@@ -1,6 +1,6 @@
 ---
 name: cpp-proj-boundary-verify
-description: Phase 1 验证: 检查 project-boundary.json 和 file-classification.jsonl 的输出质量、完整性、模板合规性。
+description: "Phase 1 验证: 检查 project-boundary.json 和 file-classification.jsonl 的输出质量、完整性、模板合规性。"
 metadata:
   phase: 1
   role: verifier

@@ -1,6 +1,6 @@
 ---
 name: cpp-proj-symbols
-description: Phase 3: C++项目符号级细粒度分析 — 精细化 symbol-index.jsonl、生成 macro-index.jsonl 和 enum-index.jsonl，提取完整签名、枚举值、宏定义。
+description: "Phase 3: C++项目符号级细粒度分析 — 精细化 symbol-index.jsonl、生成 macro-index.jsonl 和 enum-index.jsonl，提取完整签名、枚举值、宏定义。"
 metadata:
   phase: 3
   requires-codegraph: true

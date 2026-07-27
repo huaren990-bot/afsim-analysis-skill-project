@@ -1,85 +1,108 @@
 ---
 name: requirement-mapping
-description: 当用户需要把自有项目需求、规范文档、接口定义或现有源码与 AFSIM 功能能力进行对照，生成需求缺口、功能映射和候选 AFSIM 模块清单时，使用本 skill。
+description: 将人工确认的需求规范与已验证的 AFSIM 参考实现、算法卡片以及目标系统能力进行逐条对照，生成需求覆盖结论、原子功能单元 FU、缺口报告、映射/追溯矩阵和机器可读 gap-specs。用于目标系统能力缺口分析和迁移前范围定义；不用于澄清未确认需求、仅凭索引猜测 AFSIM 功能或直接生成实现代码。
 ---
 
+# AFSIM 需求映射
 
+把“需求事实”“AFSIM 参考能力”“目标系统现状”作为三条独立证据链。相似函数名不等于覆盖，AFSIM 有实现也不等于可直接迁移。
 
-# AFSIM 需求映射 Skill
+## 输入门禁
 
-本 skill 负责把“用户想要什么”和“AFSIM 已经有什么”连接起来，为后续功能迁移和算法复用提供明确目标。基于人工确认后的需求规范文档（即经过勾选和简化的版本），将每条确认后的需求映射到 AFSIM 源码中的具体功能函数，并判断目标系统当前的能力状态，最终生成需求缺口报告和功能映射矩阵，指导后续的代码迁移工作。本 skill 并不直接阅读源码，而是依赖上游 Agent 已经生成的结构化索引和自有内核的功能摘要（如果没有自有内核功能摘要可以忽略）。
+必须有：
 
-## 输入
+- `docs/requirements/<req-id>/2_<req-id>-requirement-<slug>.md`
+- 需求原始来源
+- AFSIM 参考实现文档或可用于现场验证的索引与源码
+- 目标系统源码、索引或明确声明“按空系统处理”
 
-- 用户确认的需求规范文档，位置在`docs/requirements/<requirement_index>/`，若不明确则人工确认。
-- 自有项目源码或接口说明。(如果没有自有项目，可以按照空系统处理，即所有需求都视为缺失)
-- AFSIM 架构报告和函数索引。
-- 已有算法卡片。
+可选但推荐：
 
-## 执行步骤
-0. 预处理：
-  - 确认本次需求编号、用户确认的需求规范文档，若不明确则人工确认。
-  - 确认目标系统功能索引路径，若不明确则人工确认。
-  - 确认 AFSIM 源码功能索引路径，若不明确则人工确认。
+- `workspace/requirements/<req-id>/<req-id>-afsim-evidence.jsonl`
+- 完整算法卡片与接口规格
+- 目标系统架构、接口和测试
 
-1. 加载输入：
+若需求未确认，先使用 `requirement-spec-generator`。若 AFSIM 候选只有索引摘要，先使用 `requirement-reference-implementation` 或在本流程中完成源码验证。
 
-- 读取人工确认后的需求规范文档（docs/requirements/<requirement_index>/2_<requirement_index>-requirement-<name>.md）
-- 加载 AFSIM 源码索引（function-index, symbol-index）
-- 加载目标系统功能索引（由人工或之前分析提供，没有则视为空系统）
-- 加载 AFSIM 架构报告和算法卡片作为补充
+## 工作流
 
-2. 解析确认后需求：
+### 1. 建立需求基线
 
-- 提取所有被需要简化和不需要简化的需求条目。
-- 对于被简化的条目，使用精简后的描述；对于保持详细的，使用细化功能点。
+枚举全部确认的原子需求 ID，记录来源、验收标准、优先级、输入输出、单位、坐标系、状态和非功能约束。后续所有产物必须覆盖同一 ID 集合。
 
-3. AFSIM 算法卡片逐卡验证：
-  - 对每条确认需求涉及的各 AFSIM 参考算法，必须打开对应的完整算法卡片（`docs/algorithms/flight-dynamics-*.md`）逐张阅读。
-  - 不可仅依赖 `CompendiumofAlgorithms.md` 的一句话摘要替代卡片正文。
-  - 逐卡确认以下内容：
-      - 该算法的输入是什么、输出是什么（精确到变量名和物理含义）。
-      - 该算法与管线上下游算法之间的接口关系——上游输出是否等于本算法输入、本算法输出是否等于下游输入。
-      - 若发现当前管线存在"输入变量无人产出"或"输出变量无人消费"的断链，标注为管线缺口，提出补充算法或修复管线顺序的建议。
+### 2. 验证 AFSIM 侧
 
-4. 对**每个**部分满足或缺失的需求，生成一个原子功能单元（FU），例如模型计算、状态更新、传感器观测、事件处理、结果输出包含：
-    - FU ID，关联需求 ID
-    - 功能描述（基于确认的需求描述）
-    - 期望接口签名（输入、输出、类型）
-    - AFSIM 参考实现（源函数位置，若找到；若 AFSIM 中也无对应功能，填"无"，标记为 🆕）
-    - 建议迁移方式：
-        - `direct_adaptation`（直接适配——AFSIM 有参考，自有系统有类似实现）
-        - `partial_rewrite`（局部重写——AFSIM 有参考，自有系统部分满足）
-        - `cleanroom`（Clean-room 重实现——AFSIM 有参考，自有系统完全缺失）
-        - `novel`（全新设计——AFSIM 无参考，自有系统也缺失，需从领域文献/算法教材中寻找设计依据）
-    - 优先级（沿用人工确认的优先级）
+对每条需求：
 
-5. 对**每条需求**给出状态：已满足、部分满足、缺失、缺失（AFSIM无参考）、未知。
-   - **缺失**：自有系统缺失，但 AFSIM 中有对应参考实现，可通过 cleanroom 方式迁移
-   - **缺失（AFSIM无参考）**：自有系统缺失，且 AFSIM 中也找不到对应功能，需 novel 全新设计
+1. 读取已验证证据 JSONL。
+2. 打开命中的完整算法卡片和接口规格。
+3. 抽查真实源码，确认 qualified name、路径、行号、接口、状态读写和生命周期。
+4. 将候选标为 `verified`、`rejected` 或 `unknown`。
 
-6. 生成输出：
-    - **需求追溯矩阵**：生成`3_<requirement_index>-requirement-to-afsim-trace.md`，（REQ -> AFSIM 源 -> FU）展示每条需求对应的 AFSIM 实现函数和生成的功能单元。按模板 `skill/requirement-mapper/tamplate_list/template_requirement-to-afsim-trace.md` 格式输出。
-    - **功能映射矩阵**：生成`3_<requirement_index>-function-mapping-matrix.md`，（需求 -> AFSIM 功能 -> 目标系统功能）展示每条需求对应的 AFSIM 功能和目标系统当前的能力状态。按模板 `skill/requirement-mapper/tamplate_list/template_function-mapping-matrix.md` 格式输出。
-    - **缺口分析报告**：生成`3_<requirement_index>-requirement-gap-analysis.md`，总结需求缺口，给出迁移建议和优先级排序。按模板 `skill/requirement-mapper/tamplate_list/template_requirement-gap-analysis.md` 格式输出。
-    - **结构化缺口规格**：生成 `3_<requirement_index>-gap-specs.jsonl`，供下游迁移 Skill 使用。按模板 `skill/requirement-mapper/tamplate_list/template_gap-specs.md` 格式输出。
+Compendium 与函数索引只能定位，不能单独支撑 `full`/`partial` 结论。
 
-7. 过程留痕：把每一步的决策依据和执行计划生成文档进行记录归档，放在目录docs/records里面，以便人工追溯。
+### 3. 验证目标系统侧
 
-## 输出文件
+用目标源码、接口或测试证明当前能力。未提供目标系统时，显式记录 `target_assumption: empty_system`，不要把“未提供证据”写成“已证明不存在”。
 
-- `docs/requirements/<requirement_index>/3_<requirement_index>-requirement-gap-analysis.md` — 完整缺口报告
-- `docs/requirements/<requirement_index>/3_<requirement_index>-function-mapping-matrix.md` — 功能映射矩阵
-- `docs/requirements/<requirement_index>/3_<requirement_index>-requirement-to-afsim-trace.md` — 需求到AFSIM的追溯矩阵
-- `workspace/requirements/<requirement_index>/<requirement_index>-gap-specs.jsonl` — 结构化缺口规格（供下游迁移 Skill 使用）
+### 4. 判定覆盖状态
 
-## 质量要求
+使用统一状态：
 
-- 每条需求必须保留原文或来源。
-- 每个状态判断必须给出证据。
-- 不把 AFSIM 候选能力直接等同于可迁移能力，迁移可行性由 `afsim-migration-builder` 评估。
+- `satisfied`：目标系统满足需求及验收标准。
+- `partial`：目标系统部分满足。
+- `missing_with_afsim_reference`：目标系统缺失，AFSIM 有已验证参考。
+- `missing_without_afsim_reference`：目标系统缺失，记录范围内未找到 AFSIM 参考。
+- `unknown`：任一关键证据不足。
 
+分别记录需求证据、AFSIM 证据、目标系统证据和差异，不把三者混写成一句结论。
 
+### 5. 生成原子 FU
 
+仅为 `partial`、`missing_with_afsim_reference` 和 `missing_without_afsim_reference` 生成 FU。FU 必须可独立实现或测试，并包含：
 
+- 稳定 `fu_id` 与关联 `req_ids`。
+- 功能描述与验收标准。
+- 完整接口：类型、单位、坐标系、约束、错误处理和副作用。
+- 上游输入来源、下游输出消费者、状态生命周期。
+- 已验证 AFSIM 参考或明确的无参考检索范围。
+- 目标系统差异、耦合度、风险和优先级。
+- 建议方式：`direct_adaptation`、`partial_rewrite`、`cleanroom` 或 `novel`。
 
+`novel` 只能用于记录范围内无 AFSIM 参考的缺口；需要外部文献时记录待检索项，不伪造引用。
+
+### 6. 检查管线完整性
+
+把 FU 排成数据流并检查：
+
+- 中间输入来自外部边界、上游 FU 或明确状态。
+- 中间输出被下游 FU、系统状态或最终验收使用。
+- 类型、单位、坐标系和时间语义在边上匹配。
+- 初始化、循环更新、事件触发、重置和终止完整。
+
+外部输入、最终输出、诊断输出和持久状态应标注边界类型，不误报为孤儿参数。
+
+### 7. 生成产物
+
+按现有模板生成：
+
+- `docs/requirements/<req-id>/3_<req-id>-requirement-gap-analysis.md`
+- `docs/requirements/<req-id>/3_<req-id>-function-mapping-matrix.md`
+- `docs/requirements/<req-id>/3_<req-id>-requirement-to-afsim-trace.md`
+- `workspace/requirements/<req-id>/<req-id>-gap-specs.jsonl`
+
+模板目录为 `skill/requirement-mapper/tamplate_list/`。保留该历史目录名，不在输出中创建第二套 `template_list`。
+
+gap-specs 每行一个 FU，除模板字段外必须包含 `coverage_status`、`acceptance_criteria`、`dataflow` 和结构化 `evidence`。AFSIM 无参考时，`afs_reference` 的函数、类、路径和行号留空，并记录检索范围。
+
+### 8. 验证和留痕
+
+按 `SKILL_VERIFY.md` 验证，输出到 `docs/verification/requirement-mapping-<req-id>-verify-report.md`。在 `docs/records/<date>-requirement-mapping-<req-id>.md` 记录输入版本、证据边界、状态统计、FU 统计、未决问题和产物。
+
+## 硬性门禁
+
+- 四类产物中的 REQ/FU ID、状态和证据一致。
+- 每条非 `unknown` 状态都有当前证据。
+- 每个 AFSIM 源引用能定位真实源码。
+- 每个 FU 可独立验收，数据流边界明确。
+- 不记录隐藏推理过程。

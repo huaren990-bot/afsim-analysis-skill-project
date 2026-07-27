@@ -1,6 +1,6 @@
 ---
 name: cpp-proj-symbols-verify
-description: Phase 3 验证: 检查 symbol-index.jsonl 精细化质量、macro-index.jsonl 过滤正确性、enum-index.jsonl 枚举值完整性。
+description: "Phase 3 验证: 检查 symbol-index.jsonl 精细化质量、macro-index.jsonl 过滤正确性、enum-index.jsonl 枚举值完整性。"
 metadata:
   phase: 3
   role: verifier

@@ -1,6 +1,6 @@
 ---
 name: cpp-proj-dependencies
-description: Phase 5: 跨模块依赖关系分析 — 生成 dependency-index.jsonl（≥200条，覆盖6种relation）和 dependency-graph.md（含Mermaid图）。
+description: "Phase 5: 跨模块依赖关系分析 — 生成 dependency-index.jsonl（≥200条，覆盖6种relation）和 dependency-graph.md（含Mermaid图）。"
 metadata:
   phase: 5
   requires-codegraph: true

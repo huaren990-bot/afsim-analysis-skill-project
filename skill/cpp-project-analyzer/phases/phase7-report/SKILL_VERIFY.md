@@ -1,6 +1,6 @@
 ---
 name: cpp-proj-final-verify
-description: Phase 7 验证: 全量交叉一致性检查 — 验证四份最终产物与全部索引文件之间的一致性，产出最终验证报告。
+description: "Phase 7 验证: 全量交叉一致性检查 — 验证四份最终产物与全部索引文件之间的一致性，产出最终验证报告。"
 metadata:
   phase: 7
   role: verifier

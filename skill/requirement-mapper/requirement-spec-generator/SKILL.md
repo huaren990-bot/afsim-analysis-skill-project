@@ -1,78 +1,95 @@
 ---
 name: requirement-spec-generator
-description: 本 skill 负责将模糊的功能需求文档转化为一份高度结构化、仅需人工勾选与简单选项的待确认需求规范文档。它结合已有 AFSIM 认知来细化功能点，并为每一条细化需求提供“是否必需”“是否简化”“优先级”等选项，人工只需做选择题，大幅降低需求澄清成本。
+description: 将用户提供的模糊 AFSIM/仿真功能需求、规范文档、接口说明或场景描述整理为来源可追溯、可验证、可人工确认的结构化需求规范，生成稳定 REQ ID、验收标准、数据与单位约束、歧义清单和确认版文档。用于需求尚未定稿、需要先澄清“要什么”再做 AFSIM 能力匹配的场景；不用于直接判断 AFSIM 是否实现或生成迁移代码。
 ---
 
-# 需求规范生成 Skill
+# 需求规范生成
 
-## 执行步骤
-
-0. 预处理：
-  - 确认本次需求编号、用户提供的功能需求文档，若不明确则人工确认。
-  - 确认目标系统功能索引路径，若不明确则人工确认。
-  - 确认 AFSIM 源码功能索引路径，若不明确则人工确认。
-
-1. 加载上下文：
-  - 读取 AFSIM 架构报告（docs/architecture/afsim-architecture.md）
-  - 读取算法卡片概览（docs/algorithms/CompendiumofAlgorithms.md）
-  - 加载 AFSIM 源码功能索引（workspace/source-index/function-index.jsonl）
-  - 若已有目标系统功能索引，也一并加载。
-
-2. 解析用户模糊的功能需求文档：
-  - 读取用户提供的功能需求文档（不知道是哪个找人工确认）
-  - 提取文档结构和关键领域词
-  - 解析用户自然语言，将模糊表述拆解为可验证的功能陈述。
-
-3. 将需求拆分为算法流水线
-  1. AFSIM 能力匹配：对于每一条细化需求，在 AFSIM 源码功能索引`function-index.jsonl`和算法卡片概览`CompendiumofAlgorithms.md`中通过语义搜索找到最相关的函数或类。
-    - 若找到匹配：评估匹配函数的接口、依赖、输入输出是否与需求吻合。
-      - 注意：不可仅依赖 `CompendiumofAlgorithms.md` 的一句话摘要替代卡片正文。若在CompendiumofAlgorithms.md中找到需求涉及的各 AFSIM 参考算法，必须打开对应的完整算法卡片（`docs/algorithms/flight-dynamics-*.md`）逐张阅读。
-      - 注意：不可仅依赖 `function-index.jsonl` 的函数名和简要描述来判断匹配度，必须打开对应的源码文件逐行阅读，确认输入输出、依赖关系和功能实现。
-    - 记录候选函数的证据（路径、函数名、行号、功能摘要）。
-    - **若未找到匹配**：标记为 🆕 AFSIM 无参考实现，该需求的算法流程需从领域文献或算法教材中寻找设计依据，不可依赖 AFSIM 源码。
-
-  2. 目标系统能力对比：在目标系统功能索引中搜索对应功能。
-    - 判定覆盖度：
-        - ✅ 完全满足（功能完全匹配，接口兼容）
-        - ⚠️ 部分满足（有类似功能但需要修改接口或补充参数）
-        - ❌ 缺失（无相关实现，但 AFSIM 有参考实现）
-        - 🆕 缺失（AFSIM无参考）（无相关实现，且 AFSIM 中也无对应功能）
-        - ❓ 无法判断（索引或描述不足，需人工补充）
-    - 判定非功能需求：
-        - 多线程支持：根据算法复杂度、实时性要求和目标系统架构评估是否需要多线程支持。
-        - 性能要求：评估算法的时间复杂度和性能需求，判断是否需要优化或并行化。
-        - 可移植性：评估是否依赖特定平台或库，是否需要适配层。
-        - 其他非功能需求：如内存限制、性能要求等。
-  
-  3. 为除了”✅ 完全满足”之外的需求设计算法简化方案，生成结构化需求草稿，将所有的`勾选框`和`Y/N选项`留给人工确认。
-
-4. 等待人工确认：
-  - 将生成的结构化需求草稿（docs/requirements/<requirement_index>/1_<requirement_index>-requirement-<name>.md）交给人工确认。
-  - 人工确认内容包括：
-    - 是否需要简化
-    - 是否选择简化方案
-    - 优先级排序
-    - 非功能需求的确认
-    - 其他修改要求
-  - 人工确认无需再修改后，生成最终的需求规范文档（docs/requirements/<requirement_index>/2_<requirement_index>-requirement-<name>.md），最终的需求规范文档中只保留人工选择的方案即可。
-    
-4. 过程留痕：把每一步的决策依据和执行计划生成文档进行记录归档，放在目录docs/records里面，以便人工追溯。
+先忠实固化用户需求，再引入 AFSIM 作为候选解。禁止用 AFSIM 现有实现反向改写用户原始目标。
 
 ## 输入
 
-- AFSIM：
-  - 架构文档（docs/algorithms/*.md）
-  - 算法文档（docs/algorithms/*.md）
-  - 系统索引（workspace/source-index/*.jsonl）
-- 自有系统：（如果有的话，没有按照空系统处理）
-  - 架构文档（docs/algorithms/*.md）
-  - 算法文档（docs/algorithms/*.md）
-  - 系统索引（workspace/source-index/*.jsonl）
-- 用户功能需求文档（docs/requirements/<requirement_index>/0_<name>.md）
-- 其他网络文献
+- 用户指定的需求来源；默认查找 `docs/requirements/<req-id>/0_*.md`。
+- 用户提供的接口、场景、数据字典、性能目标和参考文献。
+- 可选：目标系统架构与功能索引。
+- 可选：AFSIM 架构、算法卡片和源码索引，仅用于后置可行性提示。
 
-## 输出
+## 工作流
 
-### `docs/requirements/<requirement_index>/1_<requirement_index>-requirement-<name>.md` / `docs/requirements/<requirement_index>/2_<requirement_index>-requirement-<name>.md`
+### 1. 固定范围和标识
 
-需求规范文档。要求和格式应当严格遵循模板`skill/requirement-mapper/template_list/template_requirement-specification.md`
+确定一个稳定的顶层 `req_id`，格式优先为 `REQ-###`。为每条原子需求分配稳定子 ID，例如 `REQ-002-FUNC-01`。已有 ID 不得因排序、措辞或重跑而变化。
+
+记录输入文件、章节、页码/行号或用户消息作为 `source_ref`。无法确定来源的内容标为“分析补充”，不得伪装成用户原文。
+
+### 2. 独立解析原始需求
+
+在不读取 AFSIM 候选实现的前提下，提取：
+
+- 目标、触发条件、前置条件和完成条件。
+- 输入、输出、状态、副作用、单位、坐标系和时间语义。
+- 正常流程、替代流程、异常流程和边界条件。
+- 精度、实时性、吞吐、并发、平台、安全和可移植性约束。
+- 明确不在范围内的内容。
+
+将复合陈述拆成可单独验收的原子需求。每条需求使用“系统应……”形式，并给出至少一个可验证验收标准。
+
+### 3. 建立歧义与假设账本
+
+把信息分为：
+
+- `confirmed`：用户或输入文档明确给出。
+- `assumed`：为继续工作而采用的可撤销假设。
+- `unknown`：缺少信息，且不同选择会改变接口或行为。
+- `conflict`：不同来源互相矛盾。
+
+对每个 `unknown`/`conflict` 给出影响和最小确认问题。只有会改变需求边界、接口、单位或验收结果的问题才阻塞确认版；次要问题可保留假设继续。
+
+### 4. 检查需求管线
+
+按算法/功能流水线排列原子需求，核对：
+
+- 每个中间输入由外部输入或上游步骤产生。
+- 每个最终输出有明确消费者或验收用途。
+- 同名量的类型、单位、坐标系和采样时刻一致。
+- 状态初始化、更新、重置和终止条件完整。
+
+外部输入与最终输出不是“孤儿参数”，应显式标注为系统边界。
+
+### 5. 后置参考 AFSIM
+
+在需求基线形成后，才可读取：
+
+- `docs/architecture/afsim-architecture.md`
+- `docs/algorithms/CompendiumofAlgorithms.md` 及命中的完整算法卡片
+- `workspace/source-index/function-index.jsonl`
+
+只添加“AFSIM 候选能力/可行性提示”，不改变需求语义。候选函数未经源码复核时标为 `index-derived`，不得写成已验证参考实现。
+
+### 6. 生成待确认与确认版
+
+按 `skill/requirement-mapper/tamplate_list/template_requirement-specification.md` 生成：
+
+- `docs/requirements/<req-id>/1_<req-id>-requirement-<slug>.md`
+- 人工确认后生成 `docs/requirements/<req-id>/2_<req-id>-requirement-<slug>.md`
+
+确认版必须：
+
+- 保留原始来源和稳定 ID。
+- 只保留已选方案，同时保留未决问题与已批准假设。
+- 明确版本、确认状态、确认人/来源和日期。
+- 不把未确认的 AFSIM 候选写入强制需求。
+
+### 7. 留痕
+
+在 `docs/records/<date>-requirement-spec-<req-id>.md` 记录输入、拆分规则、ID 映射、确认项、假设、冲突和产物。记录可审查依据，不记录隐藏推理过程。
+
+## 质量门禁
+
+- 每条原子需求有唯一 ID、来源、可验证行为和验收标准。
+- 所有物理量尽可能包含类型、单位、坐标系和时间语义；未知项显式列出。
+- 需求与候选解决方案分离。
+- 待确认版与确认版差异可追踪。
+- 不使用省略号隐藏未列出的需求；长清单拆到附录并链接。
+
+若缺少会改变需求本质的输入，生成问题清单并停止确认版，不臆测用户选择。

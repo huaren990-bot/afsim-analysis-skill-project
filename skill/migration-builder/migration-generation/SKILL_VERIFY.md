@@ -1,172 +1,81 @@
 ---
 name: migration-generation-verify
-description: 迁移程序生成验证: 检查 <req_index>-SDD.md 和 REQ_xxx.h、REQ_xxx.cpp、test_demo.cpp、<req_index>/README.md 的输出质量、完整性、模板合规性。
-metadata:
-  phase: migration-generation
-  role: verifier
-  verifies: afsim-migration-builder
+description: 验证 migration-implementer 生成的 SDD、C++ 代码、CMake、自动化测试、README 和执行证据是否与确认设计一致、实际可构建运行且行为满足 oracle。用于迁移实现验收和修复后复验，不补写实现。
 ---
 
-# migration-generation 验证: 迁移设计程序质量检查
+# 迁移实现验证
 
-## 目标
+## 输入
 
-验证 migration-generation Skill (`SKILL.md`) 的产出质量，确保输出文档完整、格式正确、模板合规、代码质量合格、与输入一致。
+- 确认版 FU 设计与 migration-function JSONL
+- SDD
+- 头文件、实现文件、测试、CMakeLists 和 README
+- 构建/测试日志
+- 目标系统规范与来源证据
 
-## 验证对象
+## 检查
 
-- `docs/migration/<req_index>/<req_index>-SDD.md` | 软件设计说明 |
-- `tests/migration_src/<req_index>/<requirement_name>.h` | 接口声明， 追溯注释 |
-- `tests/migration_src/<req_index>/<requirement_name>.cpp` | 核心实现，分段注释 |
-- `tests/migration_src/<req_index>/<requirement_name>_test.cpp` | 完整可运行示例 |
-- `tests/migration_src/<req_index>/README.md` | 编译、依赖、运行说明 |
-- `docs/records/` 操作留痕文件
+### 1. 产物与占位符
 
-## 验证步骤
+- 所有约定文件存在，名称与实际构建目标一致。
+- 不存在 `<placeholder>`、`TBD`、空函数、固定 PASS、注释掉的核心实现或 silent fallback。
+- README 中的命令能从干净构建目录执行。
 
-### 检查 0: SDD.md 文件存在性与基本完整性
+### 2. 追溯与一致性
 
-1. 文件存在于 `docs/migration/<req_index>/` 目录下。
-2. 文件非空且行数 > 80。
-3. 所有 mermaid 代码块语法正确（````mermaid` ... ```` 闭合完整，无孤立开标签），每个标签内容均使用双引号包裹。
-4. 文件以"附录"或"修改记录"章节结尾。
-5. 文件严格遵守模板目录结构。
+- 每个 JSONL 函数在头文件声明、实现和测试中出现。
+- 每个公共 API 追溯到 function/FU/REQ 和设计版本。
+- SDD、JSONL、声明、实现、测试中的签名、单位、坐标系、默认值和错误语义一致。
+- 代码没有未设计的额外公共 API。
 
-### 检查 1: 代码文件存在性与基本完整性
+### 3. 来源与许可证
 
-| # | 文件 | 检查方式 |
-|---|------|---------|
-| 1 | `<requirement_name>.h` | 存在、非空、行数 > 30，含头文件保护宏（`#ifndef`/`#define`/`#endif` 或 `#pragma once`） |
-| 2 | `<requirement_name>.cpp` | 存在、非空、行数 > 80，含 `#include "<requirement_name>.h"` |
-| 3 | `<requirement_name>_demo.cpp` | 存在、非空、行数 > 100，含 `TEST()` 函数 |
-| 4 | `README.md` | 存在、非空、行数 > 15 |
+- AFSIM 来源标注与 `exists_in_afsim` 一致。
+- clean-room 实现没有无说明复制 AFSIM 实现表达。
+- novel 实现有可核查设计依据。
+- 许可证不明确时不得把直接复制标记为通过。
 
-### 检查 2: SDD.md 文档头部与章节完整性
+### 4. 代码质量
 
-逐项检查必填字段：
+- 开启项目可用的编译警告；无未解释警告。
+- 检查未使用变量/结果、无效表达式、越界、NaN/Inf、单位混用和状态未更新。
+- 状态初始化、连续更新、重置、错误路径和线程/所有权符合设计。
 
-| # | 字段/章节 | 检查方式 |
-|---|----------|---------|
-| 1 | `文档版本` | 直接读取，格式为 `x.y`，非空 |
-| 2 | `日期` | 日期格式合法（YYYY-MM-DD） |
-| 3 | `作者` | 非空 |
-| 4 | `关联需求` | 非空，格式 REQ-XXX |
-| 5 | `关联迁移计划` | 非空，指向 `docs/migration/<req_index>/<req_index>-FU-design.md` |
-| 6 | `### 1. 目的` | 章节存在且非空 |
-| 7 | `### 2. 范围` | 章节存在，列出包含的 FU 及简要功能 |
-| 8 | `### 3. 参考文档` | 章节存在，含需求规范、迁移计划、AFSIM 源文件路径（novel FU 替换为文献引用） |
-| 9 | `## 测试策略` | 章节存在，含单元测试、集成测试、验证方法 |
-| 10 | `## 限制与假设` | 章节存在且非空 |
-| 11 | `## 人工确认` | 章节存在，含确认状态表格（需求ID / 确认状态 / 确认人 / 日期） |
-| 12 | `## 附录` | 章节存在，含变量映射表和修改记录 |
+### 5. 测试质量
 
-### 检查 3: SDD.md 功能组件章节模板合规性
+- 测试包含真实断言和失败退出码。
+- 覆盖正常、边界、退化/异常、状态序列和单位转换。
+- 关键算法至少使用一种独立 oracle：解析解、黄金数据、独立实现、守恒量、单调性或合理范围。
+- 审查“应变化却恒定”与“应守恒却漂移”等结果。
 
-对照 `skill/afsim-migration-builder/template_list/template_sdd.md`，检查每个 FU 的功能组件章节：
+### 6. 实际构建与运行
 
-1. `#### 1.FU-{xxx}:{名称}` 子章节标题存在。
-2. `##### 1.1. 功能定位` 小节存在且非空。
-3. `##### 1.2. 外部接口` 小节存在，含表格：
-   | 序号 | 接口类型 | 参数类型 | 参数 | 参数描述 |
-4. `##### 1.3. 运行逻辑` 小节存在，含 mermaid `flowchart` 代码块。
-5. `##### 1.4. 数学公式` 小节存在，至少 1 个 LaTeX `$...$` 公式，并且每个公式后必须有公式中数学符号的中文解释说明，如"$x$表示速度"。
-6. 对于 novel FU：公式来源标注为领域文献/算法教材引用，而非 AFSIM 源码。
+在本轮实际执行：
 
-### 检查 4:<requirement_name>.h 模板合规性与代码质量
+1. 干净配置。
+2. 完整编译。
+3. 自动化测试。
+4. 可用时运行格式、静态分析和 sanitizer。
 
-1. 头文件保护宏正确（`#ifndef` / `#define` / `#endif` 配对完整，或 `#pragma once`）。
-2. 每个函数声明前有完整的 Doxygen 风格注释（`@brief`、`@param`、`@return` 等）。
-3. 每个函数注释中含实现来源：AFSIM 源文件路径 + 行号，或 novel FU 的设计依据文献引用。
-4. `<requirement_index>-migration-function.jsonl` 中所有函数接口均在头文件中声明。
-5. 必要的 `#include` 和命名空间声明完整。
+报告命令、工具版本、退出码和摘要。没有实际日志时只能为 `not_run`，不能推定通过。
 
-### 检查 5: <requirement_name>.cpp 模板合规性与代码质量
+### 7. 文档
 
-1. 每个 函数 实现以 `/* === name: 描述 === */` 分段开头。
-2. 关键代码逻辑有中文注释（核心算法步骤、边界条件处理、关键决策点）。
-3. novel FU：实现开始处标注设计依据文献引用。
-4. 所有与 AFSIM 源码有差异的修改点均有注释说明。
-5. 函数签名与 `.h` 文件中的声明一致。
+- SDD 覆盖范围、组件、接口、数据流、状态、公式、误差、差异、测试和限制。
+- README 只提供依赖、构建、测试、运行和预期输出，不与 SDD 冲突。
+- 记录文件列出的路径与实际产物一致。
 
-### 检查 6: <requirement_name>_demo.cpp 模板合规性与可运行性
+## 通过门禁
 
-对照 `skill/afsim-migration-builder/template_list/template_test_demo.cpp`：
+以下全部满足才通过：
 
-1. 文件开头注释含编译命令（如 `g++ ...`）和运行方法。
-2. 含 `TEST()` 函数，`TEST()` 统一调用各测试用例函数。
-3. 至少 3 个集成测试测试用例函数：
-   - 设计为正常情况测试。
-   - 设计为边界情况测试。
-   - 设计为异常情况测试。
-4. 每个测试用例以 `/* --- TC-xxx: 描述 --- */` 开头。
-5. 每个测试用例含详细注释和预期输出说明。
-6. 审查`<requirement_name>.cpp`的逻辑正确性与输出合理性（仅编译通过+PASS标签 ≠ 逻辑正确）：
-   1. 逐测试用例审查仿真/计算循环中的代码逻辑：
-      - 检查是否存在"计算了但未使用"的变量（变量赋值后从未被后续表达式引用）
-      - 检查循环体内所有依赖状态变量是否在每步迭代后更新（避免全循环使用不变的初始值）
-   2. 运行并审查输出：
-      - 根据输入参数和物理/业务常识预估合理输出区间，比对实际输出是否在该区间内
-      - 关注不变量：应变化但始终不变的字段（如位置Z在重力下不降、速度在推力下不变）→ 逻辑缺陷信号
-   3. 代码卫生检查：
-      - 是否有语义无效的表达式（如零向量加法、乘以1、加0等）
-      - 是否有未被调用的函数、未使用的#include、未使用的变量
-
-
-
-### 检查 7: README.md 完整性
-
-对照 `skill/afsim-migration-builder/template_list/template_README.md`：
-
-1. 含编译命令（如 g++ 命令行、CMake 等）。
-2. 含依赖列表（所需头文件、第三方库、目标系统组件）。
-3. 含运行 demo 的步骤说明。
-4. 含预期输出示例。
-5. 与 SDD 分工明确：不涉及设计细节和算法推导。
-
-### 检查 9: 操作留痕完整性
-
-1. `docs/records/` 目录下存在与 migration-generation 相关的操作留痕文件。
-2. 留痕文件含：操作日期、操作描述、输出文件清单。
-3. 留痕中的文件路径与实际输出文件路径一致。
+- 追溯与接口一致。
+- 来源/许可证无阻塞。
+- 干净编译成功。
+- 所有自动化测试通过。
+- 关键行为 oracle 通过。
+- 无未解释严重警告、占位符或逻辑缺陷。
 
 ## 输出
 
-生成验证报告，保存到 `docs/verification/migration-generation-verify-report.md`，包含：
-
-```markdown
-# migration-generation 验证报告
-
-> **日期**：YYYY-MM-DD
-> **验证对象**：<req_index>-SDD.md, <requirement_name>.h, <requirement_name>.cpp, <requirement_name>_demo.cpp, README.md, 操作留痕
-
-## 检查结果汇总
-
-| # | 检查项 | 结果 | 详情 |
-|---|--------|------|------|
-| 0 | SDD.md 文件存在性与基本完整性 | ✅/❌ | ... |
-| 1 | 代码文件存在性与基本完整性 | ✅/❌ | ... |
-| 2 | SDD.md 文档头部与章节完整性 | ✅/❌ | ... |
-| 3 | SDD.md 功能组件章节模板合规性 | ✅/❌ | ... |
-| 4 | REQ_xxx.h 模板合规性与代码质量 | ✅/❌ | ... |
-| 5 | REQ_xxx.cpp 模板合规性与代码质量 | ✅/❌ | ... |
-| 6 | test_demo.cpp 模板合规性与可运行性 | ✅/❌ | ... |
-| 7 | README.md 完整性 | ✅/❌ | ... |
-| 8 | migration-function.jsonl 格式与字段完整性 | ✅/❌ | ... |
-| 9 | 操作留痕完整性 | ✅/❌ | ... |
-
-## 不通过项详情
-
-（逐项说明不通过的原因和建议修复方法）
-
-## 总体评价
-
-- 通过项：N/10
-- 不通过项：M/10
-- 建议：通过 / 修正后重新验证 / 人工介入
-```
-
-## 质量门槛
-
-1. 10 项检查中至少 8 项通过。
-2. 检查 4（<requirement_name>.h 质量）、检查 5（<requirement_name>.cpp 质量）、检查 6（<requirement_name>_demo.cpp）必须全部通过（共 3 项硬性门槛）。
-3. 如有不通过项，明确写出修复指引。
+写入 `docs/verification/migration-implementation-<req-id>-verify-report.md`，包含环境、命令、退出码、测试结果、逐项证据、缺陷定位、修复建议和结论：`通过`、`修复后复验`、`未运行` 或 `上游阻塞`。

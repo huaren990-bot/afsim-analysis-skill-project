@@ -1,6 +1,6 @@
 ---
 name: cpp-proj-modules-verify
-description: Phase 2 验证: 检查 file-index.jsonl、symbol-index.jsonl、module-overview.md 的覆盖率、模板合规性和交叉一致性。
+description: "Phase 2 验证: 检查 file-index.jsonl、symbol-index.jsonl、module-overview.md 的覆盖率、模板合规性和交叉一致性。"
 metadata:
   phase: 2
   role: verifier

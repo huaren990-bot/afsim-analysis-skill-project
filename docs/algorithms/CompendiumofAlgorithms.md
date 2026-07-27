@@ -1,8 +1,8 @@
 # AFSIM 算法汇总文档
 
-> **日期**：2026-06-11
-> **状态**：draft
-> **说明**：本文档汇总了从 AFSIM 源代码中提取的所有算法模型。每个算法对应一张独立的算法卡片。
+> **日期**：2026-07-27
+> **状态**：持续提取中
+> **说明**：本文档包含 32 项历史提取结果和当前候选账本流程新增的已验证算法；它不是全量 AFSIM 算法完成声明。当前候选与状态见 `workspace/algorithm-extraction/algorithm-coverage.jsonl`。
 
 ---
 
@@ -242,6 +242,307 @@
 
 ---
 
+## 三、传感器与声学（Sensors and Acoustics）
+
+### ALG-SENSORS-ACOUSTIC-ATMOSPHERIC-ABSORPTION：均匀大气声吸收
+
+1. 算法英文名称：Uniform-Atmosphere Acoustic Absorption
+2. 算法中文名称：均匀大气声吸收算法
+3. 算法功能：依据路径中点的温度、相对湿度、压力比和频率，计算氧、氮分子弛豫及经典吸收合成的 dB/100 m 声衰减。
+4. 算法所属模块：`core/wsf_mil`
+5. 核心源码证据：`WsfAcousticSensor::AtmosphericAttenuation#14341903e4`，`afsim-2_9/swdev/src/core/wsf_mil/source/sensor/WsfAcousticSensor.cpp:648-676`
+6. 算法对应卡片：[sensors-acoustic-atmospheric-absorption-card.md](sensors-acoustic-atmospheric-absorption-card.md)
+7. 接口规格：[sensors-acoustic-atmospheric-absorption-interface-spec.md](../extracted-algorithms/acoustic-atmospheric-absorption/sensors-acoustic-atmospheric-absorption-interface-spec.md)
+8. 验证状态：verified
+
+### ALG-SENSORS-ACOUSTIC-DETECTION-PROBABILITY：声学探测概率高斯近似
+
+1. 算法英文名称：Acoustic Detection-Probability Gaussian Approximation
+2. 算法中文名称：声学探测概率高斯近似算法
+3. 算法功能：将接收声级相对有效噪声和检测门限的裕量，通过标准正态累积分布多项式近似映射为探测概率。
+4. 算法所属模块：`core/wsf_mil`
+5. 核心源码证据：`WsfAcousticSensor::ComputeProbabilityOfDetection#867e4f1774`，`afsim-2_9/swdev/src/core/wsf_mil/source/sensor/WsfAcousticSensor.cpp:686-752`
+6. 算法对应卡片：[sensors-acoustic-detection-probability-card.md](sensors-acoustic-detection-probability-card.md)
+7. 接口规格：[sensors-acoustic-detection-probability-interface-spec.md](../extracted-algorithms/acoustic-detection-probability/sensors-acoustic-detection-probability-interface-spec.md)
+8. 验证状态：verified
+
+### ALG-SENSORS-ACOUSTIC-DOPPLER-COEFFICIENT：声学 Doppler 频率系数
+
+1. 算法英文名称：Acoustic Doppler Frequency Coefficient
+2. 算法中文名称：声学 Doppler 频率系数算法
+3. 算法功能：把收发两端沿视线速度和路径中点声速组合为频率倍率，并识别源码定义的超声速不可听条件。
+4. 算法所属模块：`core/wsf_mil`
+5. 核心源码证据：`WsfAcousticSensor::ComputeDopplerTerm#8805cb99d3`，`afsim-2_9/swdev/src/core/wsf_mil/source/sensor/WsfAcousticSensor.cpp:983-1026`
+6. 算法对应卡片：[sensors-acoustic-doppler-coefficient-card.md](sensors-acoustic-doppler-coefficient-card.md)
+7. 接口规格：[sensors-acoustic-doppler-coefficient-interface-spec.md](../extracted-algorithms/acoustic-doppler-coefficient/sensors-acoustic-doppler-coefficient-interface-spec.md)
+8. 验证状态：verified
+
+### ALG-SENSORS-ACOUSTIC-GROUND-EFFECT：声学地面效应与反射干涉
+
+1. 算法英文名称：Acoustic Ground Effect and Reflection Interference
+2. 算法中文名称：声学地面效应与反射干涉算法
+3. 算法功能：结合反射几何、湍流相干性、复地面阻抗、边界损失和直达/反射路径差，计算源码兼容的地面效应修正值。
+4. 算法所属模块：`core/wsf_mil`
+5. 核心源码证据：`WsfAcousticSensor::GroundEffectAttenuation#7f17591001`，`afsim-2_9/swdev/src/core/wsf_mil/source/sensor/WsfAcousticSensor.cpp:761-911`
+6. 算法对应卡片：[sensors-acoustic-ground-effect-card.md](sensors-acoustic-ground-effect-card.md)
+7. 接口规格：[sensors-acoustic-ground-effect-interface-spec.md](../extracted-algorithms/acoustic-ground-effect/sensors-acoustic-ground-effect-interface-spec.md)
+8. 验证状态：verified
+
+### ALG-SENSORS-ACOUSTIC-AUDITORY-FILTER-WEIGHTING：三分之一倍频程听觉加权
+
+1. 算法英文名称：One-Third-Octave Auditory Filter Weighting
+2. 算法中文名称：三分之一倍频程听觉加权算法
+3. 算法功能：使用固定 5×24 经验权重矩阵，对目标声谱或背景谱的相邻三分之一倍频程线性声级进行局部加权求和。
+4. 算法所属模块：`core/wsf_mil`
+5. 核心源码证据：`WsfAcousticSensor::ApplyFilterWeighting#e15d7f9c4e`，`afsim-2_9/swdev/src/core/wsf_mil/source/sensor/WsfAcousticSensor.cpp:584-628`
+6. 算法对应卡片：[sensors-acoustic-auditory-filter-weighting-card.md](sensors-acoustic-auditory-filter-weighting-card.md)
+7. 接口规格：[sensors-acoustic-auditory-filter-weighting-interface-spec.md](../extracted-algorithms/acoustic-auditory-filter-weighting/sensors-acoustic-auditory-filter-weighting-interface-spec.md)
+8. 验证状态：verified
+
+### ALG-SENSORS-OTH-IONOSPHERIC-CHARACTERISTICS：OTH 电离层传播特性
+
+1. 算法英文名称：OTH Ionospheric Propagation Characteristics
+2. 算法中文名称：OTH 电离层传播特性算法
+3. 算法功能：依据雷达纬度、年内日、太阳时、电离层峰值参数和载频，计算太阳几何、反射高度电子密度、临界/最低可用频率、最大入射角及球形地球单跳范围。
+4. 算法所属模块：`core/wsf_mil`
+5. 核心源码证据：`OTH_Beam::ComputeIonosphericCharacteristics#2d5548a2cc`，`afsim-2_9/swdev/src/core/wsf_mil/source/sensor/WsfOTH_RadarSensor.cpp:1000-1089`
+6. 算法对应卡片：[sensors-oth-ionospheric-characteristics-card.md](sensors-oth-ionospheric-characteristics-card.md)
+7. 接口规格：[sensors-oth-ionospheric-characteristics-interface-spec.md](../extracted-algorithms/oth-ionospheric-characteristics/sensors-oth-ionospheric-characteristics-interface-spec.md)
+8. 验证状态：verified
+
+### ALG-SENSORS-OPTICAL-GLIMPSE-ANGULAR-CDF：光学掠视角分离 Monte Carlo CDF
+
+1. 算法英文名称：Optical Glimpse Angular-Separation Monte Carlo CDF
+2. 算法中文名称：光学掠视角分离 Monte Carlo 累积分布算法
+3. 算法功能：在方位/俯仰球面视场内独立抽样视线点和目标点，以 1° 分箱估计两者角分离的 181 节点累积分布。
+4. 算法所属模块：`core/wsf_mil`
+5. 核心源码证据：`GlimpseProbability::ComputeProbabilityDistribution#a7048f096e`，`afsim-2_9/swdev/src/core/wsf_mil/source/sensor/WsfOpticalSensor.cpp:625-697`
+6. 算法对应卡片：[sensors-optical-glimpse-angular-cdf-card.md](sensors-optical-glimpse-angular-cdf-card.md)
+7. 接口规格：[sensors-optical-glimpse-angular-cdf-interface-spec.md](../extracted-algorithms/optical-glimpse-angular-cdf/sensors-optical-glimpse-angular-cdf-interface-spec.md)
+8. 验证状态：verified
+
+### ALG-SENSORS-SAR-DWELL-TIME：SAR 方位分辨率驻留时间
+
+1. 算法英文名称：SAR Resolution-Driven Dwell Time
+2. 算法中文名称：SAR 方位分辨率驻留时间算法
+3. 算法功能：由波长、斜距、速度、方位分辨率、斜视角和擦地角计算合成孔径驻留时间，并保留扫描背面哨兵与 1000 s 源码硬上限。
+4. 算法所属模块：`core/wsf_mil`
+5. 核心源码证据：`WsfSAR_Sensor::ComputeDwellTime#e973416337`，`afsim-2_9/swdev/src/core/wsf_mil/source/sensor/WsfSAR_Sensor.cpp:2133-2162`
+6. 算法对应卡片：[sensors-sar-dwell-time-card.md](sensors-sar-dwell-time-card.md)
+7. 接口规格：[sensors-sar-dwell-time-interface-spec.md](../extracted-algorithms/sar-dwell-time/sensors-sar-dwell-time-interface-spec.md)
+8. 验证状态：verified
+
+### ALG-SENSORS-SAR-AZIMUTH-RESOLUTION：SAR 驻留时间反算方位分辨率
+
+1. 算法英文名称：SAR Dwell-Time Azimuth Resolution
+2. 算法中文名称：SAR 驻留时间反算方位分辨率算法
+3. 算法功能：由 SAR 几何、载频、Doppler 展宽因子和驻留时间反算可达方位分辨率，并保留旧角分辨率路径、背面扫描和退化几何的 1000 m 源码哨兵。
+4. 算法所属模块：`core/wsf_mil`
+5. 核心源码证据：`WsfSAR_Sensor::ComputeAzimuthResolution#091f833369`，`afsim-2_9/swdev/src/core/wsf_mil/source/sensor/WsfSAR_Sensor.cpp:2192-2232`
+6. 算法对应卡片：[sensors-sar-azimuth-resolution-card.md](sensors-sar-azimuth-resolution-card.md)
+7. 接口规格：[sensors-sar-azimuth-resolution-interface-spec.md](../extracted-algorithms/sar-azimuth-resolution/sensors-sar-azimuth-resolution-interface-spec.md)
+8. 验证状态：verified
+
+### ALG-SENSORS-SAR-CLUTTER-TO-NOISE-RATIO：SAR 地杂波噪声比
+
+1. 算法英文名称：SAR Clutter-to-Noise Ratio
+2. 算法中文名称：SAR 地杂波噪声比算法
+3. 算法功能：计算地面分辨率单元等效 RCS，经 AFSIM 双程 RF 功率、脉冲压缩、脉冲积分、积分增益和调整因子得到线性 CNR。
+4. 算法所属模块：`core/wsf_mil`
+5. 核心源码证据：`WsfSAR_Sensor::ComputeCNR#1c885b981d`，`afsim-2_9/swdev/src/core/wsf_mil/source/sensor/WsfSAR_Sensor.cpp:2063-2129`
+6. 算法对应卡片：[sensors-sar-clutter-to-noise-ratio-card.md](sensors-sar-clutter-to-noise-ratio-card.md)
+7. 接口规格：[sensors-sar-clutter-to-noise-ratio-interface-spec.md](../extracted-algorithms/sar-clutter-to-noise-ratio/sensors-sar-clutter-to-noise-ratio-interface-spec.md)
+8. 验证状态：verified
+
+### ALG-SENSORS-SAR-IMAGE-FIELD-OF-VIEW：SAR 图像尺寸视场反算
+
+1. 算法英文名称：SAR Image-Size Field-of-View
+2. 算法中文名称：SAR 图像尺寸视场反算算法
+3. 算法功能：当用户指定 SAR 图像宽高并存在 cue 时，由图像中心、斜距、NED down 分量和俯角反算天线方位/俯仰视场，并更新图像中心状态。
+4. 算法所属模块：`core/wsf_mil`
+5. 核心源码证据：`WsfSAR_Sensor::ComputeFOV#e0203ca715`，`afsim-2_9/swdev/src/core/wsf_mil/source/sensor/WsfSAR_Sensor.cpp:2628-2688`
+6. 算法对应卡片：[sensors-sar-image-field-of-view-card.md](sensors-sar-image-field-of-view-card.md)
+7. 接口规格：[sensors-sar-image-field-of-view-interface-spec.md](../extracted-algorithms/sar-image-field-of-view/sensors-sar-image-field-of-view-interface-spec.md)
+8. 验证状态：verified
+
+### ALG-SENSORS-SAR-GROUND-RANGE-RESOLUTION：SAR 距离向地距分辨率
+
+1. 算法英文名称：SAR Ground-Range Resolution
+2. 算法中文名称：SAR 距离向地距分辨率算法
+3. 算法功能：由发射机脉宽或接收机带宽、脉冲压缩比和擦地角投影计算 SAR 距离向地距分辨率，并保留旧角分辨率路径。
+4. 算法所属模块：`core/wsf_mil`
+5. 核心源码证据：`WsfSAR_Sensor::ComputeGroundRangeResolution#ac1540f0b7`，`afsim-2_9/swdev/src/core/wsf_mil/source/sensor/WsfSAR_Sensor.cpp:2235-2261`
+6. 算法对应卡片：[sensors-sar-ground-range-resolution-card.md](sensors-sar-ground-range-resolution-card.md)
+7. 接口规格：[sensors-sar-ground-range-resolution-interface-spec.md](../extracted-algorithms/sar-ground-range-resolution/sensors-sar-ground-range-resolution-interface-spec.md)
+8. 验证状态：verified
+
+### ALG-SENSORS-SAR-SLANT-RANGE-GRAZING：SAR 曲率地球斜距与擦地角
+
+1. 算法英文名称：SAR Curved-Earth Slant Range and Grazing Angle
+2. 算法中文名称：SAR 曲率地球斜距与擦地角算法
+3. 算法功能：在球形地球几何下，由传感器高度、positive-down 俯角和有效地球半径倍数计算地面关注点斜距与擦地角。
+4. 算法所属模块：`core/wsf_mil`
+5. 核心源码证据：`WsfSAR_Sensor::ComputeSlantRange#bb0631eb2b`，`afsim-2_9/swdev/src/core/wsf_mil/source/sensor/WsfSAR_Sensor.cpp:2273-2338`
+6. 算法对应卡片：[sensors-sar-slant-range-grazing-card.md](sensors-sar-slant-range-grazing-card.md)
+7. 接口规格：[sensors-sar-slant-range-grazing-interface-spec.md](../extracted-algorithms/sar-slant-range-grazing/sensors-sar-slant-range-grazing-interface-spec.md)
+8. 验证状态：verified
+
+### ALG-SENSORS-SAR-PRF-UNAMBIGUOUS-RANGE：SAR 非模糊距离 PRF 选择
+
+1. 算法英文名称：SAR Unambiguous-Range PRF Selection
+2. 算法中文名称：SAR 非模糊距离 PRF 选择算法
+3. 算法功能：根据当前斜距选择位于非模糊距离边界内的脉冲重复频率；普通路径保留 0.9 裕度，约束图路径使用边界值。
+4. 算法所属模块：`core/wsf_mil`
+5. 核心源码证据：`WsfSAR_Sensor::ComputePRF#3eaf3fdd9f`，`afsim-2_9/swdev/src/core/wsf_mil/source/sensor/WsfSAR_Sensor.cpp:2165-2189`
+6. 算法对应卡片：[sensors-sar-prf-unambiguous-range-card.md](sensors-sar-prf-unambiguous-range-card.md)
+7. 接口规格：[sensors-sar-prf-unambiguous-range-interface-spec.md](../extracted-algorithms/sar-prf-unambiguous-range/sensors-sar-prf-unambiguous-range-interface-spec.md)
+8. 验证状态：verified
+
+### ALG-SENSORS-SAR-ONE-M2-CALIBRATION：SAR 1 m² 目标自由空间校准
+
+1. 算法英文名称：SAR One-Square-Meter Calibration
+2. 算法中文名称：SAR 1 m² 目标自由空间校准算法
+3. 算法功能：用单基地自由空间雷达方程在 1 m² 检测距离和接收机噪声功率之间互算，并计算当前配置对应的自由空间检测距离。
+4. 算法所属模块：`core/wsf_mil`
+5. 核心源码证据：`WsfSAR_Sensor::Calibrate#7f7c2eeadf`，`afsim-2_9/swdev/src/core/wsf_mil/source/sensor/WsfSAR_Sensor.cpp:2704-2843`
+6. 算法对应卡片：[sensors-sar-one-m2-calibration-card.md](sensors-sar-one-m2-calibration-card.md)
+7. 接口规格：[sensors-sar-one-m2-calibration-interface-spec.md](../extracted-algorithms/sar-one-m2-calibration/sensors-sar-one-m2-calibration-interface-spec.md)
+8. 验证状态：verified
+
+### ALG-SENSORS-LADAR-PLANCK-SPECTRAL-RADIANT-EMITTANCE：LADAR 普朗克谱辐射出射度
+
+1. 算法英文名称：LADAR Planck Spectral Radiant Emittance
+2. 算法中文名称：LADAR 普朗克谱辐射出射度
+3. 算法功能：按源码常数和 `expm1` 数值稳定分母，计算指定温度及微米波长的黑体谱辐射出射度。
+4. 算法所属模块：`core/wsf_mil`
+5. 核心源码证据：`WsfLADAR_Sensor::SpectralRadiantEmittance#e62bac53c9`，`afsim-2_9/swdev/src/core/wsf_mil/source/sensor/WsfLADAR_Sensor.cpp:205-232`
+6. 算法对应卡片：[sensors-ladar-planck-spectral-radiant-emittance-card.md](sensors-ladar-planck-spectral-radiant-emittance-card.md)
+7. 接口规格：[sensors-ladar-planck-spectral-radiant-emittance-interface-spec.md](../extracted-algorithms/ladar-planck-spectral-radiant-emittance/sensors-ladar-planck-spectral-radiant-emittance-interface-spec.md)
+8. 验证状态：verified
+
+### ALG-SENSORS-LADAR-BACKGROUND-RADIANCE：LADAR 黑体背景谱辐照度初始化
+
+1. 算法英文名称：LADAR Blackbody Background Radiance Initialization
+2. 算法中文名称：LADAR 黑体背景谱辐照度初始化
+3. 算法功能：仅在背景温度为正时，以接收机波长调用普朗克谱量并按源码 $10^6$ 步骤写入背景谱辐照度状态。
+4. 算法所属模块：`core/wsf_mil`
+5. 核心源码证据：`WsfLADAR_Sensor::ComputeBackgroundRadiance#5c2a42d009`，`afsim-2_9/swdev/src/core/wsf_mil/source/sensor/WsfLADAR_Sensor.cpp:234-244`
+6. 算法对应卡片：[sensors-ladar-background-radiance-card.md](sensors-ladar-background-radiance-card.md)
+7. 接口规格：[sensors-ladar-background-radiance-interface-spec.md](../extracted-algorithms/ladar-background-radiance/sensors-ladar-background-radiance-interface-spec.md)
+8. 验证状态：verified
+
+### ALG-SENSORS-LADAR-TARGET-SOLAR-IRRADIANCE：LADAR 目标太阳反射谱辐照度
+
+1. 算法英文名称：LADAR Target Solar Irradiance
+2. 算法中文名称：LADAR 目标太阳反射谱辐照度
+3. 算法功能：用背景谱辐照度、目标面积与反射率、单程传输率和距离平方计算接收端太阳噪声谱辐照度。
+4. 算法所属模块：`core/wsf_mil`
+5. 核心源码证据：`WsfLADAR_Sensor::ComputeTargetSolarIrradiance#ad32e21a39`，`afsim-2_9/swdev/src/core/wsf_mil/source/sensor/WsfLADAR_Sensor.cpp:259-281`
+6. 算法对应卡片：[sensors-ladar-target-solar-irradiance-card.md](sensors-ladar-target-solar-irradiance-card.md)
+7. 接口规格：[sensors-ladar-target-solar-irradiance-interface-spec.md](../extracted-algorithms/ladar-target-solar-irradiance/sensors-ladar-target-solar-irradiance-interface-spec.md)
+8. 验证状态：verified
+
+### ALG-SENSORS-LADAR-GAUSSIAN-DETECTION-PROBABILITY：LADAR Gaussian 探测概率近似
+
+1. 算法英文名称：LADAR Gaussian Detection Probability Approximation
+2. 算法中文名称：LADAR Gaussian 探测概率近似
+3. 算法功能：按源码给出的分段多项式近似，将光子计数 S/N 相对阈值的裕量映射为探测概率。
+4. 算法所属模块：`core/wsf_mil`
+5. 核心源码证据：`WsfLADAR_Sensor::ComputeGaussianDetectionProbability#a63ba7cb81`，`afsim-2_9/swdev/src/core/wsf_mil/source/sensor/WsfLADAR_Sensor.cpp:638-681`
+6. 算法对应卡片：[sensors-ladar-gaussian-detection-probability-card.md](sensors-ladar-gaussian-detection-probability-card.md)
+7. 接口规格：[sensors-ladar-gaussian-detection-probability-interface-spec.md](../extracted-algorithms/ladar-gaussian-detection-probability/sensors-ladar-gaussian-detection-probability-interface-spec.md)
+8. 验证状态：verified
+
+### ALG-SENSORS-LADAR-DETECTION-PROBABILITY-SELECTION：LADAR 探测概率选择与噪声功率换算
+
+1. 算法英文名称：LADAR Detection Probability Selection
+2. 算法中文名称：LADAR 探测概率选择与噪声功率换算
+3. 算法功能：由信号/噪声光子计数计算 S/N 和接收机噪声功率，并按查表优先、Gaussian 回退规则确定探测概率。
+4. 算法所属模块：`core/wsf_mil`
+5. 核心源码证据：`WsfLADAR_Sensor::ComputeProbabilityOfDetection#04d3a9fa19`，`afsim-2_9/swdev/src/core/wsf_mil/source/sensor/WsfLADAR_Sensor.cpp:601-627`
+6. 算法对应卡片：[sensors-ladar-detection-probability-selection-card.md](sensors-ladar-detection-probability-selection-card.md)
+7. 接口规格：[sensors-ladar-detection-probability-selection-interface-spec.md](../extracted-algorithms/ladar-detection-probability-selection/sensors-ladar-detection-probability-selection-interface-spec.md)
+8. 验证状态：verified
+
+### ALG-SENSORS-OPTICAL-CURVED-EARTH-PATH-HEIGHT：光学路径球形地球高度
+
+1. 算法英文名称：Optical Curved-Earth Path Height
+2. 算法中文名称：光学路径球形地球高度
+3. 算法功能：以球形地球两端半径、总斜距和路径距离两次应用余弦定理，计算光学积分路径任一点的 MSL 高度。
+4. 算法所属模块：`core/wsf_mil`
+5. 核心源码证据：`Integrand::Height#1312e6167f`，`afsim-2_9/swdev/src/core/wsf_mil/source/WsfOpticalPath.cpp:176-193`
+6. 算法对应卡片：[sensors-optical-curved-earth-path-height-card.md](sensors-optical-curved-earth-path-height-card.md)
+7. 接口规格：[sensors-optical-curved-earth-path-height-interface-spec.md](../extracted-algorithms/optical-curved-earth-path-height/sensors-optical-curved-earth-path-height-interface-spec.md)
+8. 验证状态：verified
+
+### ALG-SENSORS-OPTICAL-BOX-PROJECTED-AREA：光学长方体投影面积
+
+1. 算法英文名称：Optical Box Projected Area
+2. 算法中文名称：光学长方体投影面积
+3. 算法功能：在无显式光学签名且平台长宽高均有效时，以视线方位/俯仰余弦计算三个正交面投影面积之和。
+4. 算法所属模块：`core/wsf_mil`
+5. 核心源码证据：`WsfOpticalSignature::GetValue#6d56123998`，`afsim-2_9/swdev/src/core/wsf_mil/source/WsfOpticalSignature.cpp:166-222`
+6. 算法对应卡片：[sensors-optical-box-projected-area-card.md](sensors-optical-box-projected-area-card.md)
+7. 接口规格：[sensors-optical-box-projected-area-interface-spec.md](../extracted-algorithms/optical-box-projected-area/sensors-optical-box-projected-area-interface-spec.md)
+8. 验证状态：verified
+
+### ALG-SENSORS-OPTICAL-LAYERED-SIMPLE-ATTENUATION：光学分层简单大气透过率
+
+1. 算法英文名称：Optical Layered Simple Attenuation
+2. 算法中文名称：光学分层简单大气透过率
+3. 算法功能：按 1000 m 高度层的平均相对大气密度，将海平面消光系数离散积分为简单平地路径透过率。
+4. 算法所属模块：`core/wsf_mil`
+5. 核心源码证据：`WsfOpticalAttenuation::ComputeSimpleAttenuation#95cb075c59`，`afsim-2_9/swdev/src/core/wsf_mil/source/WsfOpticalAttenuation.cpp:298-363`
+6. 算法对应卡片：[sensors-optical-layered-simple-attenuation-card.md](sensors-optical-layered-simple-attenuation-card.md)
+7. 接口规格：[sensors-optical-layered-simple-attenuation-interface-spec.md](../extracted-algorithms/optical-layered-simple-attenuation/sensors-optical-layered-simple-attenuation-interface-spec.md)
+8. 验证状态：verified
+
+### ALG-AERODYNAMICS-BODY-TOTAL-DRAG-COEFFICIENT：气动体总阻力系数
+
+1. 算法英文名称：Aero Body Total Drag Coefficient
+2. 算法中文名称：气动体总阻力系数
+3. 算法功能：由迎角/侧滑姿态阻力、升力和侧力诱导阻力、表面摩擦及 Mach 外形阻力汇总机体无量纲阻力系数。
+4. 算法所属模块：`mover_creator/source`
+5. 核心源码证据：`AeroBody::CalcDragCoefficient#afedea7029`，`afsim-2_9/swdev/src/mover_creator/source/AeroBody.cpp:293-319`
+6. 算法对应卡片：[aerodynamics-body-total-drag-coefficient-card.md](aerodynamics-body-total-drag-coefficient-card.md)
+7. 接口规格：[aerodynamics-body-total-drag-coefficient-interface-spec.md](../extracted-algorithms/aero-body-total-drag-coefficient/aerodynamics-body-total-drag-coefficient-interface-spec.md)
+8. 验证状态：verified
+
+### ALG-SENSORS-ESA-TAYLOR-DISTRIBUTION-WEIGHTS：ESA Taylor 阵元幅度加权
+
+1. 算法英文名称：ESA Taylor Distribution Weights
+2. 算法中文名称：ESA Taylor 阵元幅度加权算法
+3. 算法功能：分别生成阵面 X/Y 方向的离散 Taylor 权重，峰值归一化后按 AFSIM 顺序量化二维阵元权重与轴向权重。
+4. 算法所属模块：`core/wsf_mil`
+5. 核心源码证据：`WsfESA_AntennaPattern::ComputeDistributionWeights#9a5cd098f9`，`afsim-2_9/swdev/src/core/wsf_mil/source/WsfESA_AntennaPattern.cpp:303-437`
+6. 算法对应卡片：[sensors-esa-taylor-distribution-weights-card.md](sensors-esa-taylor-distribution-weights-card.md)
+7. 接口规格：[sensors-esa-taylor-distribution-weights-interface-spec.md](../extracted-algorithms/esa-taylor-distribution-weights/sensors-esa-taylor-distribution-weights-interface-spec.md)
+8. 验证状态：verified
+
+### ALG-SENSORS-ESA-WEIGHTED-ARRAY-FACTOR：ESA 加权相控阵阵因子
+
+1. 算法英文名称：ESA Weighted Phased-Array Factor
+2. 算法中文名称：ESA 加权相控阵阵因子算法
+3. 算法功能：对带幅度权重的阵元位置执行电子转向相位量化和复数远场求和，按阵元总数平方归一化为线性功率阵因子。
+4. 算法所属模块：`core/wsf_mil`
+5. 核心源码证据：`WsfESA_AntennaPattern::ComputeArrayFactor#0e651783ae`，`afsim-2_9/swdev/src/core/wsf_mil/source/WsfESA_AntennaPattern.cpp:440-498`
+6. 算法对应卡片：[sensors-esa-weighted-array-factor-card.md](sensors-esa-weighted-array-factor-card.md)
+7. 接口规格：[sensors-esa-weighted-array-factor-interface-spec.md](../extracted-algorithms/esa-weighted-array-factor/sensors-esa-weighted-array-factor-interface-spec.md)
+8. 验证状态：verified
+
+### ALG-SENSORS-ESA-APERTURE-EFFICIENCY：ESA 幅度权重孔径效率
+
+1. 算法英文名称：ESA Amplitude-Weight Aperture Efficiency
+2. 算法中文名称：ESA 幅度权重孔径效率算法
+3. 算法功能：由 X/Y 轴权重和已包含量化、随机失效的二维阵元权重，计算轴向及总归一化孔径效率。
+4. 算法所属模块：`core/wsf_mil`
+5. 核心源码证据：`WsfESA_AntennaPattern::ComputeApertureEfficiency#5c73ecce1d`，`afsim-2_9/swdev/src/core/wsf_mil/source/WsfESA_AntennaPattern.cpp:609-649`
+6. 算法对应卡片：[sensors-esa-aperture-efficiency-card.md](sensors-esa-aperture-efficiency-card.md)
+7. 接口规格：[sensors-esa-aperture-efficiency-interface-spec.md](../extracted-algorithms/esa-aperture-efficiency/sensors-esa-aperture-efficiency-interface-spec.md)
+8. 验证状态：verified
+
+---
+
 ## 算法统计
 
 | 分类 | 算法数量 | 算法名称 |
@@ -250,7 +551,8 @@
 | 飞行动力学 (wsf_six_dof, 新模块) | 12 | 刚体积分器, PointMass 积分器, PointMass SAS, RigidBody 气动, PointMass 气动, 推进燃油, 喷气发动机, 自动驾驶仪 PID, 角速率限制执行机构, 一阶滞后执行机构, 编队三状态机动控制 |
 | 飞行动力学 (跨模块) | 3 | 角速率限制执行机构（p6dof + six_dof）, 编队三状态机动控制（p6dof + six_dof）, 稳定性导数气动模型（p6dof + six_dof） |
 | 空间/轨道力学 | 19 | 姿态定向, 多级火箭, JPL DE 历表, J2 摄动, 月球第三体, Walker 星座, NORAD 传播器, 数值积分传播器, 轨道事件条件, Lambert, 仅角度 IOD, 分段指数大气, Jacchia-Roberts 大气, NASA 碎片, 轨道机动, 交会瞄准, 拉格朗日点, 交会判别, 太阳终结线 |
-| **合计** | **32** | |
+| 传感器/声学 (`core/wsf_mil`) | 26 | 均匀大气声吸收, 声学探测概率高斯近似, 声学 Doppler 频率系数, 声学地面效应与反射干涉, 三分之一倍频程听觉加权, OTH 电离层传播特性, 光学掠视角分离 CDF, SAR 驻留时间, SAR 方位分辨率, SAR 地杂波噪声比, SAR 图像视场反算, SAR 地距分辨率, SAR 斜距与擦地角, SAR PRF 选择, SAR 1 m² 校准, LADAR 普朗克谱辐射, LADAR 背景谱辐照度, LADAR 太阳反射谱辐照度, LADAR Gaussian 探测概率, LADAR 探测概率选择, 光学球面路径高度, 光学长方体投影面积, 光学分层简单透过率, ESA Taylor 幅度加权, ESA 加权阵因子, ESA 孔径效率 |
+| **合计** | **59** | |
 
 ---
 
@@ -290,3 +592,21 @@
 | 拉格朗日点 | **高** | 标准三体问题公式 |
 | 轨道交会判别 | 中 | 核心公式标准（Vallado），但强依赖轨道外推器和样条插值框架 |
 | 太阳终结线与地影分析 | **高** | 标准解析几何方法，直线-椭球求交自包含 |
+| 均匀大气声吸收 | **高** | 核心为无状态标量公式；只需把 AFSIM 大气采样替换为显式 SI 输入 |
+| 声学探测概率高斯近似 | **极高** | 无状态分段标量函数，仅依赖指数运算；需确认是否保留非正 dB 信号早退语义 |
+| 声学 Doppler 频率系数 | **极高** | 两个视线速度投影和一个标量比值；需按调用者乘法解释倍率 |
+| 声学地面效应与反射干涉 | 中 | 复数核心可移植，但反射几何、地形/地表与返回值单位存在阻塞性疑点 |
+| 三分之一倍频程听觉加权 | **高** | 固定短窗加权与谱采样回调易解耦；经验权重和线性声级单位需追溯 |
+| OTH 电离层传播特性 | 中高 | 标量核心易迁移；当地太阳时、夜侧不稳定链和最小距离反三角定义域必须显式处理 |
+| 光学掠视角分离 CDF | 中高 | 球面采样与分箱易迁移；逐位兼容取决于标准库实数随机映射和 float 累计语义 |
+| SAR 方位分辨率驻留时间 | **极高/中** | 公式极简；背面哨兵、1000 s 硬上限和调用者二次裁剪需要保持调用契约 |
+| SAR 驻留时间反算方位分辨率 | **极高/中** | 闭式标量公式易迁移；旧角分辨率路径、背面门禁和 1000 m 哨兵需保留兼容语义 |
+| SAR 地杂波噪声比 | 中 | RCS 与脉冲积分链可迁移；双程 RF 功率、临时地面目标和噪声模型强依赖 AFSIM |
+| SAR 图像尺寸视场反算 | 中 | 三角反算核心简单；cue、WCS/NED 转换、地形中心修正和天线写回耦合框架 |
+| SAR 距离向地距分辨率 | **高** | 纯标量公式；参数来源于发射机、接收机和旧配置路径 |
+| SAR 曲率地球斜距与擦地角 | **高** | 球面三角公式自包含；有效地球半径倍数需从 AFSIM 配置映射 |
+| SAR 非模糊距离 PRF 选择 | **极高** | 一行非模糊距离公式；需保留 0.9 裕度和 `2R+1` 分母保护 |
+| SAR 1 m² 目标自由空间校准 | 中高 | 标准双程雷达方程；初始化时写回接收机噪声功率的副作用需显式处理 |
+| ESA Taylor 阵元幅度加权 | **高** | 离散公式自包含；需保留功率比语义、向零截断及二维先量化的更新顺序 |
+| ESA 加权相控阵阵因子 | **高/中** | 平面阵列复数和易迁移；零频率回退和非平面 Z 相位差异需显式兼容策略 |
+| ESA 幅度权重孔径效率 | **极高** | 纯标量归约；100% 失效的全零权重必须用状态替代源码 NaN |

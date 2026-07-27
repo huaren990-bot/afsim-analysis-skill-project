@@ -1,6 +1,6 @@
 ---
 name: cpp-proj-modules
-description: Phase 2: C++项目模块级粗粒度分析 — 逐模块使用 codegraph_explore，建立文件索引(file-index.jsonl)、符号粗索引(symbol-index.jsonl)、模块概览文档。产出 3 个文件。
+description: "Phase 2: C++项目模块级粗粒度分析 — 逐模块使用 codegraph_explore，建立文件索引(file-index.jsonl)、符号粗索引(symbol-index.jsonl)、模块概览文档。产出 3 个文件。"
 metadata:
   phase: 2
   requires-codegraph: true

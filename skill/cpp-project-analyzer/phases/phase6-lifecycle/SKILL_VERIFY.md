@@ -1,6 +1,6 @@
 ---
 name: cpp-proj-lifecycle-verify
-description: Phase 6 验证: 检查 lifecycle.md、dataflow.md、extension-points.md 的覆盖完整性、Mermaid 可追溯性。
+description: "Phase 6 验证: 检查 lifecycle.md、dataflow.md、extension-points.md 的覆盖完整性、Mermaid 可追溯性。"
 metadata:
   phase: 6
   role: verifier

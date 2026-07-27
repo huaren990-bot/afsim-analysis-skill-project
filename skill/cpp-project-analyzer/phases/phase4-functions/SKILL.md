@@ -1,6 +1,6 @@
 ---
 name: cpp-proj-functions
-description: Phase 4: 函数/方法级深度提取 — 生成四层 function-index.jsonl 和函数体摘要 function-body-summary.jsonl。
+description: "Phase 4: 函数/方法级深度提取 — 生成四层 function-index.jsonl 和函数体摘要 function-body-summary.jsonl。"
 metadata:
   phase: 4
   requires-codegraph: true
